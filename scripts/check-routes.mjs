@@ -79,11 +79,12 @@ for (const path of [
 }
 const api = await fetch(base + "/api/enquiries", {
   method: "POST",
-  headers: { origin: base },
+  headers: { origin: base, "content-type": "application/json" },
+  body: "{}",
 });
-if (api.status !== 503)
+if (![400, 503].includes(api.status))
   failures.push({
-    api: "Unconfigured backend must reject saving",
+    api: "Missing form must be rejected whether backend is configured or disabled",
     status: api.status,
   });
 const report = {

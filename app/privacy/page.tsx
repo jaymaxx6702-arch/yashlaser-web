@@ -22,7 +22,10 @@ export default function Privacy() {
       <p>
         When website submission is enabled, artwork is stored privately for the
         Yash Laser team. Customer uploads are not part of our public product
-        gallery. Share only images and logos you have permission to use.
+        gallery. Original files may retain embedded photo metadata. Uploads
+        begin when you submit; an interrupted submission may leave a private
+        file pending cleanup. Share only images and logos you have permission to
+        use.
       </p>
       <p>
         WhatsApp opens only when you choose the handoff button. In the WhatsApp

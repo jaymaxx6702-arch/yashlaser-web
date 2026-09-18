@@ -51,12 +51,12 @@ export const categories: Category[] = [
 ];
 export const categoryHref = (id: CategoryId) => "/categories/" + id;
 export const productHref = (p: Product) => "/products/" + p.slug;
-export const money = (minor: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 2,
+});
+export const money = (minor: number) => currencyFormatter.format(minor / 100);
 export function priceLabel(p: Product) {
   if (p.pricingMode === "quote_required") return "Price on enquiry";
   const prices = p.variants

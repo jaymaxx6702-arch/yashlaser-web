@@ -1,12 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 import {
   resolveSelection,
   type CustomizationProduct,
 } from "@/lib/customization";
 import { business, whatsappUrl } from "@/data/business";
+import {
+  blobHash,
+  postEnquiryJson,
+  uploadPrivate,
+  type UploadSession,
+} from "@/lib/direct-upload";
 import { CustomizationEditor } from "@/components/customization/CustomizationEditor";
 import { CanvasPreview } from "@/components/customization/CanvasPreview";
 import { useCustomization } from "@/components/customization/useCustomization";
@@ -54,6 +60,11 @@ export function CustomizationForm({
     saved: boolean;
   } | null>(null);
   const requestKey = useRef({ fingerprint: "", id: "" });
+  const uploadSession = useRef<{
+    requestId: string;
+    session: UploadSession;
+  } | null>(null);
+  const [uploadStatus, setUploadStatus] = useState("");
   async function prepare(review = false) {
     editor.setError("");
     setBusy(true);
@@ -88,31 +99,62 @@ export function CustomizationForm({
       const fingerprint = JSON.stringify([snapshot.designId, customer]);
       if (requestKey.current.fingerprint !== fingerprint)
         requestKey.current = { fingerprint, id: crypto.randomUUID() };
-      const requestId = requestKey.current.id,
-        form = new FormData(e.currentTarget);
-      form.set("requestId", requestId);
-      form.set("productId", p.id);
-      form.set("variantId", doc.variantId);
-      form.set("quantity", String(doc.quantity));
-      form.set("fit", doc.image.fit);
-      form.set("line1", doc.text[0].text);
-      form.set("line2", doc.text[1].text);
-      form.set("customization", JSON.stringify(doc));
-      form.set("designId", snapshot.designId);
-      form.set("snapshot", snapshot.png, "design.png");
-      if (editor.artwork)
-        form.set("artwork", editor.artwork, doc.artwork?.name || "artwork.png");
+      const requestId = requestKey.current.id;
+      const payload = {
+        ...customer,
+        requestId,
+        productId: p.id,
+        variantId: doc.variantId,
+        quantity: doc.quantity,
+        customization: doc,
+        designId: snapshot.designId,
+        website: String(new FormData(e.currentTarget).get("website") || ""),
+      };
       let reference = "YL-DRAFT-" + requestId.slice(0, 8).toUpperCase(),
         saved = false;
       if (onlineSubmission) {
-        const response = await fetch("/api/enquiries", {
-          method: "POST",
-          body: form,
-        });
-        const result = await response.json();
-        if (!response.ok)
-          throw new Error(result.error || "Unable to save. Please try again.");
-        reference = result.reference;
+        setUploadStatus("Preparing private upload…");
+        let session =
+          uploadSession.current?.requestId === requestId &&
+          uploadSession.current.session.expiresAt > Date.now() + 10000
+            ? uploadSession.current.session
+            : null;
+        if (!session) {
+          const signed = await postEnquiryJson("/api/enquiries/uploads", {
+            ...payload,
+            preview: {
+              bytes: snapshot.png.size,
+              sha256: await blobHash(snapshot.png),
+            },
+          });
+          if (signed.reference) {
+            reference = signed.reference;
+            saved = true;
+          } else {
+            session = signed as UploadSession;
+            uploadSession.current = { requestId, session };
+          }
+        }
+        if (!saved && session) {
+          if (session.artwork && !session.artworkDone) {
+            if (!editor.artwork)
+              throw new Error("Please select your artwork again.");
+            setUploadStatus("Uploading original artwork privately…");
+            await uploadPrivate(session.artwork, editor.artwork);
+            session.artworkDone = true;
+          }
+          if (!session.previewDone) {
+            setUploadStatus("Uploading preview privately…");
+            await uploadPrivate(session.preview, snapshot.png);
+            session.previewDone = true;
+          }
+          setUploadStatus("Verifying artwork and saving enquiry…");
+          const result = await postEnquiryJson("/api/enquiries", {
+            ...payload,
+            uploadReceipt: session.receipt,
+          });
+          reference = result.reference;
+        }
         saved = true;
       }
       const message = [
@@ -143,6 +185,7 @@ export function CustomizationForm({
         "Please confirm the quotation and final digital mockup before production.",
       ].join("\n");
       setSuccess({ reference, message, saved });
+      setUploadStatus("");
       setStep("success");
     } catch (e) {
       editor.setError(
@@ -210,10 +253,22 @@ export function CustomizationForm({
       </p>
       {editor.error && (
         <p className="form-error" role="alert">
-          {editor.error}
+          {editor.error}{" "}
+          {step === "enquiry" && (
+            <a
+              href={whatsappUrl(
+                `Hello Yash Laser, please help with my enquiry for ${p.name}. Design: ${snapshot?.designId || "not generated"}. Size: ${p.variants.find((v) => v.id === editor.document.variantId)?.name || "To confirm"}. Quantity: ${editor.document.quantity}. I will attach my preview and artwork. ${business.url}/products/${p.slug}`,
+              )}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Continue enquiry on WhatsApp ↗
+            </a>
+          )}
         </p>
       )}
       {editor.processing && <p role="status">Preparing your photograph…</p>}
+      {busy && uploadStatus && <p role="status">{uploadStatus}</p>}
       {overflow && step === "design" && (
         <p className="form-error" role="alert">
           Some text does not fit. Shorten it or reduce its font size before
@@ -249,8 +304,7 @@ export function CustomizationForm({
               href={"/products/" + p.slug}
               onClick={async (e) => {
                 e.preventDefault();
-                if (await editor.flush())
-                    router.push("/products/" + p.slug);
+                if (await editor.flush()) router.push("/products/" + p.slug);
                 else
                   editor.setError(
                     "Download a preview before leaving: this browser could not save the draft.",

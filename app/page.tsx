@@ -3,6 +3,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductVisual } from "@/components/ProductVisual";
 import { categories, products } from "@/data/catalog";
+export const metadata = { alternates: { canonical: "/" } };
 export default function Home() {
   return (
     <main id="main-content">

@@ -6,7 +6,7 @@ export const business = {
   alternate: "+91 94274 94264",
   email: "yashlaser@gmail.com",
   address: "Swagat Residency, Kamalpur, Prantij, Sabarkantha, Gujarat 383205",
-  url: "https://www.yashlaser.in",
+  url: "https://shop.yashlaser.in",
 };
 export const whatsappUrl = (message: string) =>
   "https://wa.me/" + business.whatsapp + "?text=" + encodeURIComponent(message);

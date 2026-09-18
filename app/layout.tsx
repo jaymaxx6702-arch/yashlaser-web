@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.yashlaser.in"),
+  metadataBase: new URL("https://shop.yashlaser.in"),
   title: {
     default: "Yash Laser | Personal by Design · Established 1997",
     template: "%s | Yash Laser",

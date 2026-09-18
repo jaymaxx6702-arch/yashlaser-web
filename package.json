@@ -12,7 +12,8 @@
     "migrate": "node scripts/migration/run.mjs",
     "check:catalogue": "node scripts/migration/check.mjs",
     "check:routes": "node scripts/check-routes.mjs",
-    "test:customization": "node --import tsx --test tests/customization.test.ts"
+    "test:customization": "node --import tsx --test tests/customization.test.ts",
+    "test:production": "node --import tsx --test tests/production.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

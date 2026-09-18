@@ -25,8 +25,12 @@ export function allowedAdmin(id: string) {
 export async function adminUser() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!token) return null;
-  const { data, error } = await getSupabase().auth.getUser(token);
-  return !error && data.user && allowedAdmin(data.user.id) ? data.user : null;
+  try {
+    const { data, error } = await getSupabase().auth.getUser(token);
+    return !error && data.user && allowedAdmin(data.user.id) ? data.user : null;
+  } catch {
+    return null;
+  }
 }
 export async function requireAdmin() {
   const user = await adminUser();

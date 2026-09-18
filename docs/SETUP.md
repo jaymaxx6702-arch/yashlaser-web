@@ -6,16 +6,16 @@ With no Supabase configuration, the form prepares a WhatsApp draft. It clearly s
 ## Supabase
 
 1. Create your Supabase project.
-2. Run both files in supabase/migrations in filename order in its SQL editor.
+2. Apply supabase/migrations in filename order for a new project. For an existing project, apply only pending migrations. Migration 004 can alternatively be applied with `node --env-file=.env.local scripts/configure-private-uploads.mjs`.
 3. Copy .env.example to .env.local and set SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SECRET_KEY (or the legacy SUPABASE_SERVICE_ROLE_KEY). The secret key stays server-only; the publishable key is not needed by the enquiry endpoint. Never prefix a secret key variable with NEXT_PUBLIC_. API keys do not provide SQL migration access: apply the existing migrations in the dashboard SQL editor or using a private Postgres connection.
 4. Set ENQUIRIES_ENABLED=true and restart Next.js. Keep the same variables in your production server's secret environment.
 5. Submit a test enquiry with artwork. Verify one enquiry + item, a private customer-artwork object, and an inaccessible anonymous object URL. Verify repeat request_id returns the same reference.
 6. Confirm a private upload cannot be fetched with an anonymous or authenticated user key. The server key must never enter NEXT_PUBLIC_* variables.
 7. After verification, remove only your own test records and artwork from the dashboard.
 
-No admin UI or online payment is provided. Staff use the Supabase dashboard to review enquiries and private artwork. Uploaded images are validated, decoded, orientation-corrected and stored as metadata-free lossless WebP. Keep source artwork via the agreed customer conversation when needed. Do not make the bucket public.
+Staff use the protected `/admin` panel to review enquiries and private artwork (see ADMIN.md). No online payment is provided. Original JPEG/PNG/WebP files and PNG previews upload directly to private Storage; the API verifies hashes, MIME, dimensions and decoded pixels before saving references. Originals retain their bytes and may retain embedded metadata. Older WebP uploads continue to work. Do not make the bucket public.
 
-Apply deployment request limits (14 MB) and rate limiting/WAF before a public launch. The route bounds streamed bodies, checks same-origin submission, validates product/variant/quantity, enforces consent, strips image metadata, and applies a database phone-based rate limit. A honeypot and in-process throttle provide additional basic protection, not a distributed anti-bot service.
+Both upload-signing and enquiry endpoints accept only bounded metadata JSON (32 KiB), never image bytes. Configure rate limiting/WAF before public launch; see VERCEL.md. Signed receipts bind server-generated paths to the validated enquiry. Persistent phone quotas, origin checks, consent, honeypot and bounded per-instance IP throttling provide additional protection.
 
 ## Catalogue
 
