@@ -1,0 +1,26 @@
+# Customization engine
+
+- model.ts: versioned document, strict shared validation, limits and category/template allowlist.
+- templates.ts: normalized category frames; changing variant updates the selected size without inventing physical dimensions.
+- geometry.ts: normalized source crop, cover/contain scaling and bounded pan.
+- render.ts: single 1000 × 1000 canvas renderer for live preview and snapshot export.
+- snapshot.ts: PNG + portable design JSON, content-derived design ID. Preview is indicative, not production artwork.
+- persistence.ts: IndexedDB image/document draft, 24-hour restore window; expired drafts are purged when an editor opens. Contact details are never persisted. Reset removes photo/text; product/quantity remain selected.
+- CustomizationEditor: common pointer, keyboard, slider, text and crop controls. CanvasPreview is also used for enquiry review.
+- useCustomization: image lifecycle, concurrent upload protection, local recovery, save queue and optional background-removal integration.
+
+Original browser uploads are bounded to 8 MB / 25 MP. Cropping is non-destructive; source crop, pan and zoom remain in the JSON. PNG export does not include customer contact information. WhatsApp links cannot attach files: customers download/share the preview and attach their original artwork separately.
+
+## Backend
+
+Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.
+
+## Optional background removal
+
+Implement BackgroundRemovalAdapter and inject it into CustomizationForm in a client-side integration. Default: no adapter and no AI call. A browser model or an owned self-hosted rembg service can implement removeBackground(Blob, {signal}). Return transparent PNG/WebP. The output passes the same upload validation and becomes the new draft artwork. Check model/code licence, local memory requirements and deployment configuration before enabling a provider. Do not put service secrets in this client interface.
+
+## Checks
+
+npm run test:customization
+npm run lint
+npm run build

@@ -1,0 +1,374 @@
+# Category mapping review
+
+Every product is evaluated using its title, descriptive purpose and price validity. Prices are never used to guess a product type. Original category is retained as provenance.
+
+- 31482675 | PM Modi Memento - Premium Award Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 0/0 | Product title and descriptive use both establish a recognition award.
+- 31494157 | 002 - Decorative Home Temple for Puja & Festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged. REVIEW: Temple 002 description calls it a memento; confirm actual purpose.
+- 31530148 | 003 - Decorative Home Temple for Puja & Festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged. REVIEW: Temple 003 description incorrectly describes an electronic device.
+- 31534394 | 1001 - Best Event of Gujarat State Award Plaque | CERTIFICATE → awards/recognition-mementos | INR 0/0 | Product title and descriptive use both establish a recognition award.
+- 31534408 | W002 - Premium Wall Clock Plaque Memento Shield | ACRYLIC → other/clocks | INR 0/0 | Wall clock for home/office use; award keywords in description are cross-selling.
+- 31534412 | W001 - Premium Award Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 0/0 | Product title and descriptive use both establish a recognition award.
+- 31534419 | 1003 - Personalized Wedding Couple Cut Out Standee | CUT OUT → standees/event-standees | INR 0/0 | Personal photo/person/event standee identified in name and description.
+- 31593509 | 427 - Premium Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 215/140 | Product title and descriptive use both establish a recognition award.
+- 31593556 | 428 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 31593865 | 310 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 31593934 | 384 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 31605838 | 206 - Premium Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 290/190 | Product title and descriptive use both establish a recognition award.
+- 31605853 | 001 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 490/320 | Product title and descriptive use both establish a recognition award.
+- 31605858 | 167 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 31748751 | Custom Elegant Acrylic Name Plate (12x4") | NAME PLATE → name-plates/door-name-plates | INR 273/245 | Primary function is personalised identification/signage, not recognition.
+- 31769051 | Pen Holder | ACRYLIC → other/pen-holders | INR 299/299 | Name and description identify a functional pen holder, not an award.
+- 31778553 | Keychain With Mobile Stand - Plaque Memento Shield | KEYCHAIN → keychains/utility-keychains | INR 20/20 | Primary product is a keychain; ignore unrelated award keywords.
+- 31811095 | 402 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 162/145 | Product title and descriptive use both establish a recognition award.
+- 31811103 | 413 - Premium Acrylic Award for Get-together & Award Ceremony | ACRYLIC → awards/acrylic-awards | INR 275/180 | Product title and descriptive use both establish a recognition award.
+- 31811109 | 414 - Premium Acrylic Award for Get-together & Award Ceremony | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 31811119 | 422 - Premium Acrylic Award for Get-together & Award Ceremony | ACRYLIC → awards/acrylic-awards | INR 325/210 | Product title and descriptive use both establish a recognition award.
+- 31811157 | 407 - Elegant Certificate Award Plaque | CERTIFICATE → awards/certificate-awards | INR 245/220 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 31850300 | CP 29 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 600/390 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 31851381 | EC 59 - Premium Custom Acrylic Memento | WOODEN MOMENTO → awards/acrylic-awards | INR 170/120 | Product title and descriptive use both establish a recognition award.
+- 31851402 | EC 58 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 170/120 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 31851471 | CP 35 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 1700/1100 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 31855532 | ABS 67 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 688/480 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32176581 | 928 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 990/640 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176587 | CP 85 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 1750/1250 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176594 | ABS 122 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 370/240 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32176603 | CP 72 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 552/360 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176609 | CP 70 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 940/610 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176612 | CP 97 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 1260/820 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176651 | CP 125 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 835/540 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176864 | EC 141 - Premium Custom Acrylic Memento | WOODEN MOMENTO → awards/acrylic-awards | INR 480/340 | Product title and descriptive use both establish a recognition award.
+- 32176872 | 855 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 943/670 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176876 | EC 128 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 294/190 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176882 | EC 95 - Premium Custom Acrylic Memento | WOODEN MOMENTO → awards/acrylic-awards | INR 162/115 | Product title and descriptive use both establish a recognition award.
+- 32176892 | EC 117 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 363/260 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176895 | CP 109 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 433/310 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176911 | RW 46 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 370/265 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32176912 | EC 140 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 401/290 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32178561 | EC 131 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 217/155 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32178564 | EC 127 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 360/260 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32178569 | CP 34 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 595/425 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32178584 | CP 55 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 826/590 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32178599 | RW 32 - Premium Wooden Memento | WOODEN MOMENTO → awards/wooden-mementos | INR 1052/750 | Wooden recognition memento identified by product title; material conflicts separately flagged. REVIEW: RW 32 wooden title conflicts with EC 154 acrylic description.
+- 32178608 | BW 1 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 1314/940 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32346160 | CP 127 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 3960/2580 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32346167 | CP 130 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 1995/1430 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32346170 | ABS 103 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 292/190 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32346172 | ABS 104 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 384/250 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32346174 | ABS 105 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 315/205 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32346249 | Y 39 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 2350/1520 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350914 | ABS 99 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 291/190 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350924 | ABS 81 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 690/450 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350928 | Q 71 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 407/265 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350932 | ABS 91 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 222/145 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350935 | Q 35 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 307/200 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350937 | ABS 142 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 499/325 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350939 | Q 108 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 360/235 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32350953 | J 1013 - Premium Trophy & Award | SPORTS TROPHY → awards/acrylic-awards | INR 1926/1255 | Product title and descriptive use both establish a recognition award.
+- 32350956 | ABS 32 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 805/525 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32375302 | ABS 137 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 525/340 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32375314 | ABS 139 - Premium Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 1873/1220 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32798381 | EC 149 - Premium Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 275/180 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32818384 | CP 52 - Premium Wooden Clock Memento Trophy | WOODEN MOMENTO → awards/clock-mementos | INR 544/355 | Commemorative award with an integrated clock; recognition is its stated purpose.
+- 32851249 | 004 - Premium Acrylic Award for Get-together & Award Ceremony | ACRYLIC → awards/acrylic-awards | INR 460/300 | Product title and descriptive use both establish a recognition award.
+- 32851250 | 005 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 325/210 | Product title and descriptive use both establish a recognition award.
+- 32851251 | 006 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851253 | 007 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851254 | 008 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 325/210 | Product title and descriptive use both establish a recognition award.
+- 32851255 | 009 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 340/220 | Product title and descriptive use both establish a recognition award.
+- 32851256 | 010 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851261 | 011 - Premium Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 0/0 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851262 | 014 - Premium Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 415/270 | Product title and descriptive use both establish a recognition award.
+- 32851266 | 018 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 690/450 | Product title and descriptive use both establish a recognition award.
+- 32851269 | 021 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 370/240 | Product title and descriptive use both establish a recognition award.
+- 32851273 | 023 - Shree Acrylic Certificate Award Plaque | CERTIFICATE → awards/certificate-awards | INR 0/0 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851274 | 024 - Premium Acrylic Award for Greeting & Best Wishes | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851275 | 026 - Elegant Acrylic Certificate Award Plaque | CERTIFICATE → awards/certificate-awards | INR 310/200 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851276 | 027 - Shree Acrylic Religious Signage | CERTIFICATE → other/spiritual-decor | INR 0/0 | Religious display/signage intended for devotional spaces.
+- 32851277 | 029 - Premium Acrylic Award for Get-together & Award Ceremony | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851279 | 031 - Premium Acrylic Award for Get-together Event | ACRYLIC → awards/acrylic-awards | INR 370/240 | Product title and descriptive use both establish a recognition award.
+- 32851280 | 035 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851281 | 036 - Decorative Home Temple for Puja & Festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851282 | 037 - Premium Acrylic Award for Golden - Silver Jubilee | ACRYLIC → awards/acrylic-awards | INR 370/240 | Product title and descriptive use both establish a recognition award.
+- 32851284 | 039 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 370/250 | Product title and descriptive use both establish a recognition award.
+- 32851285 | 040 - Premium Acrylic Award for Golden - Silver Jubilee | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851286 | 041 - Premium Acrylic Award for Golden - Silver Jubilee | ACRYLIC → awards/acrylic-awards | INR 399/260 | Product title and descriptive use both establish a recognition award.
+- 32851287 | 042 - Premium Acrylic Award for Corporate Recognition | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851289 | 043 - Premium Acrylic Award for Corporate Recognition | ACRYLIC → awards/acrylic-awards | INR 537/350 | Product title and descriptive use both establish a recognition award.
+- 32851292 | 045 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851294 | 046 - Premium Acrylic Award for Corporate Recognition | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851295 | 047 - Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851296 | 048 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 415/270 | Product title and descriptive use both establish a recognition award.
+- 32851297 | 049 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851299 | 050 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851304 | 051 - Goddess Saraswati Acrylic Frame for Puja & Festivals | TEMPLE (MANDIR) → other/spiritual-decor | INR 368/240 | Religious display/signage intended for devotional spaces.
+- 32851307 | 053 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851308 | 054 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 367/240 | Product title and descriptive use both establish a recognition award.
+- 32851311 | 056 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851314 | 059 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851315 | 060 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 422/275 | Product title and descriptive use both establish a recognition award.
+- 32851316 | 061 - Premium Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851317 | 063 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851318 | 064 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851321 | 066 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 752/490 | Product title and descriptive use both establish a recognition award.
+- 32851323 | 068 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 644/420 | Product title and descriptive use both establish a recognition award.
+- 32851324 | 070 - Premium Acrylic Award for Samaj Ratna | ACRYLIC → awards/acrylic-awards | INR 430/280 | Product title and descriptive use both establish a recognition award.
+- 32851327 | 077 - Premium Acrylic Award for Greeting & Best Wishes | ACRYLIC → awards/acrylic-awards | INR 307/200 | Product title and descriptive use both establish a recognition award.
+- 32851328 | 079 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851331 | 080 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851332 | 082 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851333 | 083 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851335 | 085 - Premium Acrylic Award for Performance | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851336 | 090 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 199/130 | Product title and descriptive use both establish a recognition award.
+- 32851337 | 092 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 214/140 | Product title and descriptive use both establish a recognition award.
+- 32851338 | 093 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851339 | 094 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851341 | 099 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 706/460 | Product title and descriptive use both establish a recognition award.
+- 32851350 | 103 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851352 | 105 - Acrylic Award for Competition Prize Distribution | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851357 | 107 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851358 | 108 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851360 | 109 - Decorative Home Temple for Puja & Festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851361 | 110-decorative-home-temple-puja-festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged. REVIEW: Title code 110; description code 113.
+- 32851363 | 111-decorative-home-temple-puja-festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged. REVIEW: Title code 111; description code 113.
+- 32851365 | 112 - baba ramdev Acrylic Cut Out for Home & Office Decor | CUT OUT → other/decorative-cutouts | INR 445/290 | Non-personalised historical/spiritual/festival cutout; distinguish from customer photo standees. REVIEW: Title identifies Baba Ramdev; description says meditating monk.
+- 32851367 | 113-decorative-home-temple-puja-festivals | TEMPLE (MANDIR) → other/home-temples | INR 0/0 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851368 | 115 - Religious & Decorative Plaque Memento Shield | TEMPLE (MANDIR) → other/spiritual-decor | INR 0/0 | Religious display/signage intended for devotional spaces.
+- 32851369 | 116 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851370 | 123 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851371 | 124 - Elegant Acrylic Award for Appreciation | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851374 | 127 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851377 | 128 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851379 | 129 - Elegant Acrylic Award for Best Wishes | ACRYLIC → awards/acrylic-awards | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851380 | 130 - Modern Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851381 | 131 - Elegant Acrylic Award for Best Wishes | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851382 | 132 - Elegant Acrylic Award for Greeting Ceremonies | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851385 | 133 - Elegant Acrylic Award for Best Wishes | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851387 | 134 - Premium Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851388 | 135 - Premium Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851389 | 137 - Premium Acrylic Award for Competition | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851390 | 138 - Elegant Acrylic Trophy for Corporate Honors | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851391 | 143 - Modern Acrylic Excellence Award | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851392 | 144 - Premium Cricket Sports Trophy & Award | SPORTS TROPHY → awards/sports-trophies | INR 323/210 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851393 | 147 - Elegant Acrylic Recognition Plaque | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851395 | 149 - Golden Jubilee Acrylic Commemorative Award | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851420 | 152 - Modern Acrylic Award for Excellence | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851421 | 153 - Elegant Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851423 | 154 - Premium Acrylic Excellence Award | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851424 | 155 - Elegant Acrylic Memento for Recognition | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851425 | 157 - Custom Acrylic Certificate Award Plaque | CERTIFICATE → awards/certificate-awards | INR 399/260 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851427 | 158 - Mahatma Gandhi Acrylic Cut Out for Independence Day | CUT OUT → other/decorative-cutouts | INR 260/170 | Non-personalised historical/spiritual/festival cutout; distinguish from customer photo standees.
+- 32851429 | 159 - Personalized Life-Size Cut Out Standee for Events | CUT OUT → standees/event-standees | INR 260/170 | Personal photo/person/event standee identified in name and description. REVIEW: Life-size title but small unqualified size variants; dimensions need confirmation.
+- 32851431 | 160 - Elegant Acrylic Award for Corporate Honors | ACRYLIC → awards/acrylic-awards | INR 276/182 | Product title and descriptive use both establish a recognition award.
+- 32851432 | 161 - Decorative Home Temple for Puja & Festivals | TEMPLE (MANDIR) → other/home-temples | INR 337/220 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851436 | 168 - Sophisticated Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 475/310 | Product title and descriptive use both establish a recognition award.
+- 32851438 | 177 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 506/330 | Product title and descriptive use both establish a recognition award.
+- 32851439 | 180 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 290/190 | Product title and descriptive use both establish a recognition award.
+- 32851441 | 181 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851442 | 182 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851443 | 183 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 475/310 | Product title and descriptive use both establish a recognition award.
+- 32851445 | 188 - Premium Acrylic Award for Excellence | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851446 | 193 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851449 | 195 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851450 | 196 - Premium Acrylic Award for Recognition | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851512 | 205 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 430/280 | Product title and descriptive use both establish a recognition award.
+- 32851515 | 210 - Premium Acrylic Award for Society Recognition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851517 | 212 - Premium Acrylic Recognition Award | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851518 | 213 - Premium Sports Trophy & Award Plaque Memento Shield | TEMPLE (MANDIR) → awards/sports-trophies | INR 475/310 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851519 | 215 - Premium Acrylic Award for Science & Environmental Achievement | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851520 | 217 -vivekanand Acrylic Cut Out for Puja & Festivals | CUT OUT → other/decorative-cutouts | INR 214/140 | Non-personalised historical/spiritual/festival cutout; distinguish from customer photo standees. REVIEW: Title identifies Vivekanand; description says Lord Hanuman.
+- 32851522 | 218 - Premium Sports Award & Memento | SPORTS TROPHY → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851523 | 219 - Premium Chess Trophy | SPORTS TROPHY → awards/recognition-mementos | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851524 | 220 - Premium Sports Trophy | SPORTS TROPHY → awards/sports-trophies | INR 337/220 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851525 | 222 - Premium Acrylic Award for Competition Excellence | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851526 | 221 - Premium Acrylic Trophy for Competition Excellence | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851535 | 229 - Premium Acrylic Award for Science & Environmental Excellence | ACRYLIC → awards/acrylic-awards | INR 598/390 | Product title and descriptive use both establish a recognition award.
+- 32851552 | 230 - Premium Acrylic Award for Society Recognition | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851606 | 231 - Premium Acrylic Award for Science & Academic Excellence | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851607 | 232 - Premium Acrylic Award for Society Recognition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851608 | 237 - Premium Acrylic Award for Competition Excellence | ACRYLIC → awards/acrylic-awards | INR 460/300 | Product title and descriptive use both establish a recognition award.
+- 32851613 | 245 - Premium Acrylic Award for Society Recognition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851614 | 246 - Premium Acrylic Award for Society Excellence | ACRYLIC → awards/acrylic-awards | INR 367/240 | Product title and descriptive use both establish a recognition award.
+- 32851615 | 247 - Premium Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851618 | 249 - Elegant Acrylic Award for Society Recognition | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851620 | 250 - Premium Acrylic Geometric Achievement Award | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851621 | 251 - Premium Star-Design Acrylic Trophy for Achievement | ACRYLIC → awards/acrylic-awards | INR 430/280 | Product title and descriptive use both establish a recognition award.
+- 32851622 | 252 - Premium Acrylic Trophy for Achievement & Recognition | ACRYLIC → awards/acrylic-awards | INR 537/350 | Product title and descriptive use both establish a recognition award.
+- 32851623 | 254 - Premium Acrylic Award for Society Excellence | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851627 | 255 - Classic Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 475/310 | Product title and descriptive use both establish a recognition award.
+- 32851628 | 256 - Elegant Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851629 | 257 - Premium Acrylic Award for Academic Excellence | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851631 | 258 - Premium Acrylic Award for Academic & Corporate Excellence | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851633 | 259 - Decorative Home Temple for Puja & Festivals | TEMPLE (MANDIR) → other/home-temples | INR 506/330 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851642 | Yash Laser Premium Acrylic Award for Society & Corporate Recognition 263 | ACRYLIC → awards/acrylic-awards | INR 367/240 | Product title and descriptive use both establish a recognition award.
+- 32851643 | 264 - Elegant Acrylic Award for Corporate Recognition | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851644 | 265 - Premium Acrylic Award for Academic Excellence | ACRYLIC → awards/acrylic-awards | INR 460/300 | Product title and descriptive use both establish a recognition award.
+- 32851645 | 266 - Modern Acrylic Award for Excellence | ACRYLIC → awards/acrylic-awards | INR 460/300 | Product title and descriptive use both establish a recognition award.
+- 32851651 | 267 - Elegant Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 290/190 | Product title and descriptive use both establish a recognition award.
+- 32851652 | 269 - Sophisticated Acrylic Achievement Award | ACRYLIC → awards/acrylic-awards | INR 475/310 | Product title and descriptive use both establish a recognition award.
+- 32851653 | 270 - Premium Acrylic Geometric Achievement Award | ACRYLIC → awards/acrylic-awards | INR 506/330 | Product title and descriptive use both establish a recognition award.
+- 32851655 | 271 - Sleek Acrylic Trophy for Achievement & Recognition | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851656 | 272 - Premium Acrylic Award for Professional Recognition | ACRYLIC → awards/acrylic-awards | INR 385/250 | Product title and descriptive use both establish a recognition award.
+- 32851661 | 274 - Elegant Acrylic Award for Corporate & Society Recognition | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851663 | 275 - Premium Acrylic Achievement Award for Competitive Excellence | ACRYLIC → awards/acrylic-awards | INR 355/230 | Product title and descriptive use both establish a recognition award.
+- 32851664 | 276 - Custom Certificate Award Plaque | CERTIFICATE → awards/certificate-awards | INR 385/250 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851665 | 277 - Contemporary Acrylic Award for Professional Excellence | ACRYLIC → awards/acrylic-awards | INR 290/190 | Product title and descriptive use both establish a recognition award.
+- 32851666 | 278 - Decorative Home Temple (Mandir) for Spiritual Space | TEMPLE (MANDIR) → other/home-temples | INR 415/270 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851668 | 279 - Premium Sports Trophy & Award Plaque Memento Shield | TEMPLE (MANDIR) → awards/sports-trophies | INR 890/580 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851669 | 280 - Elegant Acrylic Trophy for Corporate & Academic Honors | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851671 | 281 - Elegant Acrylic Memento for Professional Recognition | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851672 | 282 - Versatile Acrylic Award for Competition Excellence | ACRYLIC → awards/acrylic-awards | INR 353/230 | Product title and descriptive use both establish a recognition award.
+- 32851673 | 283-decorative-home-temple-spiritual-space | TEMPLE (MANDIR) → other/home-temples | INR 430/280 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851674 | 284 - Prestigious Acrylic Award for Excellence | ACRYLIC → awards/acrylic-awards | INR 491/320 | Product title and descriptive use both establish a recognition award.
+- 32851675 | 285 - Elegant Acrylic Trophy for Competition Winners | ACRYLIC → awards/acrylic-awards | INR 353/230 | Product title and descriptive use both establish a recognition award.
+- 32851676 | 286 - Executive Acrylic Achievement Award for Corporate Recognition | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851677 | 287 - Premium Acrylic Achievement Award for Corporate Honors | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851678 | 290 - Refined Acrylic Achievement Plaque for Distinguished Honors | ACRYLIC → awards/acrylic-awards | INR 614/400 | Product title and descriptive use both establish a recognition award.
+- 32851680 | 291 - Exquisite Acrylic Trophy for Competitive Excellence | ACRYLIC → awards/acrylic-awards | INR 307/200 | Product title and descriptive use both establish a recognition award.
+- 32851681 | 292 - Sophisticated Acrylic Plaque for Professional Recognition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851683 | 293 - Bespoke Acrylic Award for Achievement & Recognition | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851684 | 295 - Premium Acrylic Memento for Corporate Recognition | ACRYLIC → awards/acrylic-awards | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851686 | 296 - Premium Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 353/230 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851687 | 298 - Bespoke Acrylic Trophy for Distinguished Honors | ACRYLIC → awards/acrylic-awards | INR 353/230 | Product title and descriptive use both establish a recognition award.
+- 32851688 | 299 - Sleek Acrylic Recognition Trophy for Corporate & Academic Honors | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851689 | 301 - Distinctive Acrylic Award Plaque for Commemorative Honors | ACRYLIC → awards/acrylic-awards | INR 353/230 | Product title and descriptive use both establish a recognition award.
+- 32851690 | 302 - Artisan Acrylic Memento for Distinguished Honors & Recognition | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851692 | 303 - Premium Acrylic Recognition Award for Professional Milestones | ACRYLIC → awards/acrylic-awards | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851693 | 304 - Athletic Meet Excellence Award Trophy | CERTIFICATE → awards/sports-trophies | INR 337/220 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851694 | 305 - Elegant Acrylic Achievement Award for Academic Excellence | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851695 | 307 Swamivivekanand Acrylic Cut Out for Puja & Festivals | CUT OUT → other/decorative-cutouts | INR 292/190 | Non-personalised historical/spiritual/festival cutout; distinguish from customer photo standees. REVIEW: Title identifies Swami Vivekanand; description says Shivaji Maharaj.
+- 32851696 | 308 - Modern Acrylic Recognition Plaque for Corporate Awards | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851697 | 312 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851698 | 313 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851699 | 314 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 475/310 | Product title and descriptive use both establish a recognition award.
+- 32851700 | 318 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851701 | 320-decorative-home-temple-spiritual-space | TEMPLE (MANDIR) → other/home-temples | INR 445/290 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851702 | 321 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 291/190 | Product title and descriptive use both establish a recognition award.
+- 32851703 | 322 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851704 | 323 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851705 | 324 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851706 | 325 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851708 | 326 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851709 | 327 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 414/270 | Product title and descriptive use both establish a recognition award.
+- 32851710 | 328 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851712 | 329 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 690/450 | Product title and descriptive use both establish a recognition award.
+- 32851714 | 330 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 598/390 | Product title and descriptive use both establish a recognition award.
+- 32851716 | 331 - Custom Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851717 | 332 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851718 | 333 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851719 | 334 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851720 | 335 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851721 | 336 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 214/140 | Product title and descriptive use both establish a recognition award.
+- 32851722 | 337 - Decorative Home Temple for Spiritual Space | TEMPLE (MANDIR) → other/home-temples | INR 614/400 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851723 | 338-decorative-home-temple-mandir | TEMPLE (MANDIR) → other/home-temples | INR 383/250 | Home temple is devotional decor, not a trophy; contradictory source text is separately flagged.
+- 32851724 | 339 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851725 | 340 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 506/330 | Product title and descriptive use both establish a recognition award.
+- 32851726 | 341 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 475/310 | Product title and descriptive use both establish a recognition award.
+- 32851728 | 343- Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851730 | 344 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 445/290 | Product title and descriptive use both establish a recognition award.
+- 32851731 | 345 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851733 | 346 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851734 | 347 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 422/275 | Product title and descriptive use both establish a recognition award.
+- 32851735 | 348 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851736 | 349 - Modern Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 168/110 | Product title and descriptive use both establish a recognition award.
+- 32851737 | 350 - Elegant Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851739 | 351 - Elegant Acrylic Recognition Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 169/110 | Product title and descriptive use both establish a recognition award.
+- 32851740 | Yash Laser Premium Acrylic Achievement Award Trophy 352 | ACRYLIC → awards/acrylic-awards | INR 245/160 | Product title and descriptive use both establish a recognition award.
+- 32851741 | 353 - Premium Acrylic Recognition Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851742 | 354 - Distinctive Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851744 | 355 - Stylish Acrylic Recognition Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851745 | 356 - Modern Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851746 | 357 - Sophisticated Acrylic Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851747 | 358 - Classic Acrylic Achievement Trophy Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851748 | 359 - Student Academic Excellence Acrylic Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851749 | 360 - Premium Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 644/420 | Product title and descriptive use both establish a recognition award.
+- 32851750 | 361 - Exclusive Acrylic Recognition Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 353/230 | Product title and descriptive use both establish a recognition award.
+- 32851753 | 362 - Elegant Acrylic Achievement Trophy Medal Plaque Memento Shield Award | ACRYLIC → awards/acrylic-awards | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851754 | 363 - Versatile Acrylic Recognition Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851755 | 364 - Stunning Acrylic Recognition Trophy Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 323/210 | Product title and descriptive use both establish a recognition award.
+- 32851756 | 365 - Premium Acrylic Keepsake Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 368/240 | Product title and descriptive use both establish a recognition award.
+- 32851757 | 366 - Elegant Acrylic Recognition Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 199/130 | Product title and descriptive use both establish a recognition award.
+- 32851759 | 367 - Exquisite Acrylic Achievement Award Trophy Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 199/130 | Product title and descriptive use both establish a recognition award.
+- 32851760 | 368 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851761 | 369 - Academic Excellence Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851762 | 370 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851763 | 373 - Academic Excellence Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851764 | 372 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851765 | 374 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851766 | 375 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851768 | 376 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851769 | 377 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851771 | 378 - Academic Excellence Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851772 | 379 - Rotary Club of Gandhinagar Certificate Award Plaque | CERTIFICATE → awards/certificate-awards | INR 399/260 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851773 | 380 - Acrylic Award Medal Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851774 | 381 - Academic Excellence Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 276/180 | Product title and descriptive use both establish a recognition award.
+- 32851775 | 383 - Premium Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851778 | 388 - Premium Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 414/270 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851782 | 389 - Premium cricket Trophy & Award Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 345/225 | Product title and descriptive use both establish a recognition award.
+- 32851784 | 390 - Academic Excellence Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 337/220 | Product title and descriptive use both establish a recognition award.
+- 32851785 | 391 - Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851786 | 392 - Premium Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 1043/680 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851787 | 394 - Premium Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 875/570 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851788 | 395 - Religious Cultural Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 291/190 | Product title and descriptive use both establish a recognition award.
+- 32851789 | 396 - Award Medal Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851791 | 397 - New Delhi School Academic Excellence Award Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851793 | 398 - Academic Excellence Award Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 291/190 | Product title and descriptive use both establish a recognition award.
+- 32851794 | 399 - New Delhi School Academic Excellence Award Plaque Memento Shield | ACRYLIC → awards/recognition-mementos | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851796 | 401 - Nataraja Artistic Acrylic Award Plaque Memento Shield | ACRYLIC → awards/acrylic-awards | INR 353/230 | Product title and descriptive use both establish a recognition award.
+- 32851797 | 403 - Artistic Acrylic Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 322/210 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851798 | 404 - Premium Sports Trophy & Award Plaque Memento Shield | ACRYLIC → awards/sports-trophies | INR 260/170 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851799 | 405 - Premium Custom Acrylic Memento | ACRYLIC → awards/acrylic-awards | INR 214/140 | Product title and descriptive use both establish a recognition award.
+- 32851800 | 406 - Premium Sports Trophy & Award | ACRYLIC → awards/sports-trophies | INR 175/115 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851801 | 408 - Elegant Celebration Award Plaque | ACRYLIC → awards/recognition-mementos | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851804 | 410 - Navratri Mahotsav Acrylic Cut-out Decor | ACRYLIC → other/festival-decor | INR 422/275 | Non-personalised historical/spiritual/festival cutout; distinguish from customer photo standees.
+- 32851805 | 411 - Navratri Mahotsav Celebration Acrylic Plaque | ACRYLIC → awards/acrylic-awards | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851807 | 412 - Navratri Mahotsav Celebration Acrylic Plaque | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32851812 | 415 - Custom Acrylic Academic Excellence Award Trophy | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851813 | 416 Golden Acrylic Trophy for Competition Prize | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851814 | Yash Laser Golden Acrylic Trophy for Sports & Competitions 417 | ACRYLIC → awards/acrylic-awards | INR 260/170 | Product title and descriptive use both establish a recognition award.
+- 32851815 | 418-elegant-arch-acrylic-trophy-competition-prize | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851817 | 419-elegant-curved-acrylic-trophy-award-ceremony | ACRYLIC → awards/acrylic-awards | INR 292/190 | Product title and descriptive use both establish a recognition award.
+- 32851818 | 420-first-rank-acrylic-award-trophy-academic-excellence | ACRYLIC → awards/acrylic-awards | INR 322/210 | Product title and descriptive use both establish a recognition award.
+- 32851819 | 423-elegant-acrylic-award-trophy-achievement | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851822 | 425 - Star Design Acrylic Trophy for Academic Excellence | ACRYLIC → awards/acrylic-awards | INR 307/200 | Product title and descriptive use both establish a recognition award.
+- 32851823 | 426 - Premium Sports Trophy & Award | ACRYLIC → awards/sports-trophies | INR 260/170 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851824 | 429 - Premium Sports Trophy & Award | ACRYLIC → awards/sports-trophies | INR 323/210 | Sports/athletic recognition explicitly identified in title and descriptive purpose.
+- 32851825 | 430 Acrylic Trophy for Academic Excellence | ACRYLIC → awards/acrylic-awards | INR 230/150 | Product title and descriptive use both establish a recognition award.
+- 32851829 | 431-custom-acrylic-certificate-award-wooden-stand | ACRYLIC → awards/certificate-awards | INR 245/160 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851830 | 432 Custom Acrylic Certificate Award with Wooden Stand | ACRYLIC → awards/certificate-awards | INR 323/210 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32851832 | 433 Custom Acrylic Certificate Plaque with Wooden Base | ACRYLIC → awards/certificate-awards | INR 353/230 | Certificate recognition plaque/trophy; material is a separate attribute. REVIEW: Title code 433; description/legacy URL code 432.
+- 32851833 | 434 Student Academic Excellence Award | ACRYLIC → awards/acrylic-awards | INR 245/160 | Product title and descriptive use both establish a recognition award.
+- 32851834 | Yash Laser Custom Acrylic Certificate Award Trophy with Golden Border 435 | ACRYLIC → awards/certificate-awards | INR 353/230 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32854408 | 030 - Modern Acrylic Trophy for Recognition | ACRYLIC → awards/acrylic-awards | INR 383/250 | Product title and descriptive use both establish a recognition award.
+- 32862468 | Golden Acrylic Award Trophy for Puja & Festivals | TEMPLE (MANDIR) → awards/acrylic-awards | INR 0/0 | Product title and descriptive use both establish a recognition award.
+- 32866408 | S 435 - Custom Acrylic Certificate Award Trophy | CERTIFICATE → awards/certificate-awards | INR 0/0 | Certificate recognition plaque/trophy; material is a separate attribute.
+- 32868888 | EC 144 - Premium Wooden Memento Plaque | WOODEN MOMENTO → awards/wooden-mementos | INR 245/175 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32869658 | EC 119 - Elegant Wooden Memento Trophy | WOODEN MOMENTO → awards/wooden-mementos | INR 115/85 | Wooden recognition memento identified by product title; material conflicts separately flagged.
+- 32869661 | EC 153 -custom-laser-cut-acrylic-memento | WOODEN MOMENTO → awards/acrylic-awards | INR 107/80 | Product title and descriptive use both establish a recognition award.
+- 32869664 | EC 154 - Premium Custom Acrylic Memento | WOODEN MOMENTO → awards/acrylic-awards | INR 107/80 | Product title and descriptive use both establish a recognition award.
+- 32869668 | EC 152 -ec-152-custom-laser-cut-acrylic-memento | WOODEN MOMENTO → awards/acrylic-awards | INR 107/80 | Product title and descriptive use both establish a recognition award.
+- 32869675 | EC 76 -custom-laser-cut-acrylic-memento | WOODEN MOMENTO → awards/acrylic-awards | INR 138/100 | Product title and descriptive use both establish a recognition award.
+- 32869677 | EC 108 custom laser-cut acrylic memento award | WOODEN MOMENTO → awards/acrylic-awards | INR 260/190 | Product title and descriptive use both establish a recognition award.
+- 32870131 | EC 110 Custom Laser Trophy | Yash Laser | WOODEN MOMENTO → awards/recognition-mementos | INR 67/45 | EC 110 title explicitly identifies a laser trophy; SEO-only description is flagged, material is not inferred. REVIEW: EC 110 description consists of SEO instructions; retain source, show neutral product summary.
+- 33190508 | custom size available single person standy photo | STANDY PHOTOS → standees/photo-standees | INR 1490/749 | Personal photo/person/event standee identified in name and description. REVIEW: Single person title includes couple-oriented description.
+- 33190524 | Customized Acrylic Family Photo Standee | Personalized 3D Cut-out Table Top Gift | STANDY PHOTOS → standees/photo-standees | INR 2799/1390 | Personal photo/person/event standee identified in name and description.
+- 33190528 | Customized Acrylic Family Photo Standee | STANDY PHOTOS → standees/photo-standees | INR 2799/1390 | Personal photo/person/event standee identified in name and description.
+- 33190531 | Customized Acrylic Family Photo Standee standy | STANDY PHOTOS → standees/photo-standees | INR 1490/749 | Personal photo/person/event standee identified in name and description.
+- 33190537 | Customized Acrylic Table Desk Photo Standee | 3D Cut-out Couple & Family Gift | STANDY PHOTOS → standees/photo-standees | INR 0/0 | Personal photo/person/event standee identified in name and description.
+- 33190717 | Customized 3D Traditional Couple Photo Standee Standy | STANDY PHOTOS → standees/photo-standees | INR 1999/999 | Personal photo/person/event standee identified in name and description.
+- 33190722 | Customized 3D Single Person Photo Standee STANDY | STANDY PHOTOS → standees/photo-standees | INR 1490/749 | Personal photo/person/event standee identified in name and description.
+- 33190727 | Customized 3D Kids Photo Standee STANDY | STANDY PHOTOS → standees/photo-standees | INR 1490/749 | Personal photo/person/event standee identified in name and description.
+- 33190733 | Customized Acrylic Table Desk Name Plate | NAME PLATE → name-plates/desk-name-plates | INR 0/0 | Primary function is personalised identification/signage, not recognition.
+- 33190735 | Customized Acrylic Table Desk Name Plate 2 | NAME PLATE → name-plates/desk-name-plates | INR 0/0 | Primary function is personalised identification/signage, not recognition.
+- 33190739 | Customized Professional Acrylic Desk Name Plate with photo | NAME PLATE → name-plates/desk-name-plates | INR 300/250 | Primary function is personalised identification/signage, not recognition.
+- 33190740 | Customized Gujarati Acrylic Desk Name Plate | NAME PLATE → name-plates/desk-name-plates | INR 0/0 | Primary function is personalised identification/signage, not recognition.
+- 33190741 | Customized Golden Acrylic Gujarati Desk Name Plate | NAME PLATE → name-plates/desk-name-plates | INR 0/0 | Primary function is personalised identification/signage, not recognition.
+- 33190742 | Customized Black & Gold Acrylic Desk Name Plate | NAME PLATE → name-plates/desk-name-plates | INR 0/0 | Primary function is personalised identification/signage, not recognition.
+- 33190743 | Customized Acrylic Photo Keychain | KEYCHAIN → keychains/photo-keychains | INR 60/50 | Primary product is a keychain; ignore unrelated award keywords.
+- 33190745 | Customized Round Photo bulk Keychain | KEYCHAIN → keychains/photo-keychains | INR 60/50 | Primary product is a keychain; ignore unrelated award keywords.
+- 33192450 | Custom-engraved and printed school teacher ID cards High-quality, durable, and professional identificatio | ID cards → id-cards/school-id-cards | INR 100/60 | Identification card with school/corporate use stated in name and description.
+- 33192458 | Custom-engraved and printed school student ID cards by YASH LASER. High-quality, durable, and professional identificatio | ID cards → id-cards/school-id-cards | INR 0/0 | Identification card with school/corporate use stated in name and description. REVIEW: Student card description refers to staff/faculty.
+- 33192463 | Customized Company ID Card with Lanyard | ID cards → id-cards/corporate-id-cards | INR 0/0 | Identification card with school/corporate use stated in name and description.
+- 33192469 | Customized Company ID Card with Lanyard2 | ID cards → id-cards/corporate-id-cards | INR 0/0 | Identification card with school/corporate use stated in name and description.
+- 33214839 | Couple standee photo cut out | STANDY PHOTOS → standees/photo-standees | INR 999/763 | Personal photo/person/event standee identified in name and description.
+- 33214872 | Personalized Vertical Couple standee 3d Cutout | STANDY PHOTOS → standees/photo-standees | INR 539/539 | Personal photo/person/event standee identified in name and description.
+- 33214876 | Personalized Vertical Couple Standee 3D Cutout 2 | STANDY PHOTOS → standees/photo-standees | INR 595/595 | Personal photo/person/event standee identified in name and description.

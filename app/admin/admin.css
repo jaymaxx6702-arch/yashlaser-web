@@ -1,0 +1,116 @@
+.admin-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px;
+  min-height: 65vh;
+  overflow-wrap: anywhere;
+}
+.admin-shell h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  margin: 20px 0;
+}
+.admin-shell h2 {
+  font-size: 21px;
+  margin: 0 0 16px;
+}
+.admin-shell p {
+  margin: 12px 0;
+}
+.admin-card {
+  display: block;
+  background: #fff;
+  border: 1px solid #ded8cd;
+  border-radius: 12px;
+  padding: 22px;
+  margin: 18px 0;
+}
+.admin-shell label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #b9b4aa;
+  border-radius: 6px;
+  margin-top: 6px;
+  font: inherit;
+  background: #fff;
+  color: #222;
+}
+.admin-shell button {
+  background: #252525;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 44px;
+}
+.admin-shell a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.admin-top,
+.admin-media {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.admin-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 14px;
+  align-items: end;
+}
+.admin-list .admin-card {
+  display: grid;
+  gap: 10px;
+  text-decoration: none;
+}
+.admin-preview {
+  max-width: 480px;
+  margin: 16px auto;
+}
+.admin-preview img {
+  width: 100%;
+  height: auto;
+}
+.admin-shell pre {
+  white-space: pre-wrap;
+  font-size: 12px;
+  max-height: 400px;
+  overflow: auto;
+  padding: 14px;
+  background: #f5f3ee;
+}
+.admin-login {
+  max-width: 440px;
+  margin: 40px auto;
+}
+.admin-shell [role="alert"] {
+  color: #a12727;
+}
+.admin-shell [role="status"] {
+  color: #215c32;
+}
+@media (max-width: 700px) {
+  .admin-filters {
+    grid-template-columns: 1fr;
+  }
+  .admin-card {
+    padding: 16px;
+  }
+  .admin-shell {
+    padding: 20px 14px;
+  }
+  .admin-media {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

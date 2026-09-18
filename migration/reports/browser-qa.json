@@ -1,0 +1,21 @@
+{
+  "build": "passed",
+  "typescript": "passed",
+  "lint": "passed",
+  "browser": {
+    "mobileWidth": 390,
+    "horizontalOverflow": false,
+    "consoleErrors": 0,
+    "checks": [
+      "responsive navigation",
+      "catalogue search: Pen Holder",
+      "standee size price update",
+      "local photo preview",
+      "WhatsApp draft reference and encoded handoff link",
+      "keychain form validation",
+      "fresh enquiry resets text and contact fields"
+    ]
+  },
+  "backend": "Supabase setup prepared; live integration untested because no project/credentials exist. WhatsApp draft mode active; no server-side customer persistence.",
+  "note": "No WhatsApp message was sent during QA."
+}

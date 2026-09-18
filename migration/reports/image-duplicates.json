@@ -1,0 +1,123 @@
+{
+  "exactByteDuplicateGroups": [
+    [
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/4ka7kiug.webp",
+        "productId": 33190740,
+        "imageId": 39263979,
+        "status": "downloaded",
+        "localPath": "/products/33190740-39263979.webp",
+        "width": 819,
+        "height": 819,
+        "bytes": 15428,
+        "sha256": "f3f2cbb4314b2e64e2a3d17a73c9c8ebce9b09d8048e6d06af27593c9d67c524"
+      },
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/ooxl0fvk.webp",
+        "productId": 33190740,
+        "imageId": 39263980,
+        "status": "downloaded",
+        "localPath": "/products/33190740-39263980.webp",
+        "width": 819,
+        "height": 819,
+        "bytes": 15428,
+        "sha256": "f3f2cbb4314b2e64e2a3d17a73c9c8ebce9b09d8048e6d06af27593c9d67c524"
+      }
+    ],
+    [
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/g6Hd8EnE.webp",
+        "productId": 33192450,
+        "imageId": 39268454,
+        "status": "downloaded",
+        "localPath": "/products/33192450-39268454.webp",
+        "width": 998,
+        "height": 561,
+        "bytes": 10178,
+        "sha256": "5b9fec8c5b61370afa25501b9cfe23dac8073c5486c8ddf7586646e36321137c"
+      },
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/mK8uZ06Y.webp",
+        "productId": 33192469,
+        "imageId": 39268461,
+        "status": "downloaded",
+        "localPath": "/products/33192469-39268461.webp",
+        "width": 998,
+        "height": 561,
+        "bytes": 10178,
+        "sha256": "5b9fec8c5b61370afa25501b9cfe23dac8073c5486c8ddf7586646e36321137c"
+      }
+    ],
+    [
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/VHbljE26.webp",
+        "productId": 33192450,
+        "imageId": 39268455,
+        "status": "downloaded",
+        "localPath": "/products/33192450-39268455.webp",
+        "width": 920,
+        "height": 1637,
+        "bytes": 71614,
+        "sha256": "390a3b2dff67e6a6f6d9916c3d2722a8a65d5b13a07ad3d650a3527926edb840"
+      },
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/JZ0R8Sb1.webp",
+        "productId": 33192458,
+        "imageId": 39268452,
+        "status": "downloaded",
+        "localPath": "/products/33192458-39268452.webp",
+        "width": 920,
+        "height": 1637,
+        "bytes": 71614,
+        "sha256": "390a3b2dff67e6a6f6d9916c3d2722a8a65d5b13a07ad3d650a3527926edb840"
+      },
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/CoYhf2Dz.webp",
+        "productId": 33192463,
+        "imageId": 39268450,
+        "status": "downloaded",
+        "localPath": "/products/33192463-39268450.webp",
+        "width": 920,
+        "height": 1637,
+        "bytes": 71614,
+        "sha256": "390a3b2dff67e6a6f6d9916c3d2722a8a65d5b13a07ad3d650a3527926edb840"
+      },
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/yOdNBAxh.webp",
+        "productId": 33192469,
+        "imageId": 39268462,
+        "status": "downloaded",
+        "localPath": "/products/33192469-39268462.webp",
+        "width": 920,
+        "height": 1637,
+        "bytes": 71614,
+        "sha256": "390a3b2dff67e6a6f6d9916c3d2722a8a65d5b13a07ad3d650a3527926edb840"
+      }
+    ],
+    [
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/NiOnIsJl.webp",
+        "productId": 33192450,
+        "imageId": 39268456,
+        "status": "downloaded",
+        "localPath": "/products/33192450-39268456.webp",
+        "width": 921,
+        "height": 921,
+        "bytes": 38980,
+        "sha256": "05ab56837ab3af7391036f536a6e362ce06d77c000b61482255f4a15647e58cf"
+      },
+      {
+        "sourceUrl": "https://cdn.dotpe.in/longtail/store-items/8892470/e5WKmsoX.webp",
+        "productId": 33192463,
+        "imageId": 39268451,
+        "status": "downloaded",
+        "localPath": "/products/33192463-39268451.webp",
+        "width": 921,
+        "height": 921,
+        "bytes": 38980,
+        "sha256": "05ab56837ab3af7391036f536a6e362ce06d77c000b61482255f4a15647e58cf"
+      }
+    ]
+  ],
+  "action": "All source records and files retained; no automatic deletion."
+}

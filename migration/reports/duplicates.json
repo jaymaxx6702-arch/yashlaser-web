@@ -1,0 +1,58 @@
+{
+  "exactSourceIdDuplicates": 0,
+  "slugDuplicates": 0,
+  "candidates": [
+    {
+      "reason": "Matching normalized descriptions; not proof of identical designs",
+      "products": [
+        "yl-32851361",
+        "yl-32851363",
+        "yl-32851367"
+      ]
+    },
+    {
+      "reason": "Matching normalized descriptions; not proof of identical designs",
+      "products": [
+        "yl-33190524",
+        "yl-33190528",
+        "yl-33190531"
+      ]
+    },
+    {
+      "reason": "Matching normalized descriptions; not proof of identical designs",
+      "products": [
+        "yl-33190733",
+        "yl-33190735"
+      ]
+    },
+    {
+      "reason": "Matching normalized descriptions; not proof of identical designs",
+      "products": [
+        "yl-33192463",
+        "yl-33192469"
+      ]
+    },
+    {
+      "reason": "Similar normalized names; manual review only",
+      "products": [
+        "yl-33190528",
+        "yl-33190531"
+      ]
+    },
+    {
+      "reason": "Similar normalized names; manual review only",
+      "products": [
+        "yl-33190733",
+        "yl-33190735"
+      ]
+    },
+    {
+      "reason": "Similar normalized names; manual review only",
+      "products": [
+        "yl-33214872",
+        "yl-33214876"
+      ]
+    }
+  ],
+  "action": "All records retained. No automatic deletion or merge."
+}

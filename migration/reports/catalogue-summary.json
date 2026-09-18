@@ -1,0 +1,40 @@
+{
+  "imported": 370,
+  "unavailableSourceUrls": 2,
+  "skippedAvailableProducts": 0,
+  "categoryCounts": {
+    "awards": 319,
+    "other": 24,
+    "standees": 13,
+    "name-plates": 7,
+    "keychains": 3,
+    "id-cards": 4
+  },
+  "subcategoryCounts": {
+    "acrylic-awards": 234,
+    "home-temples": 14,
+    "recognition-mementos": 16,
+    "clocks": 1,
+    "event-standees": 2,
+    "door-name-plates": 1,
+    "pen-holders": 1,
+    "utility-keychains": 1,
+    "certificate-awards": 11,
+    "wooden-mementos": 26,
+    "sports-trophies": 31,
+    "clock-mementos": 1,
+    "spiritual-decor": 3,
+    "decorative-cutouts": 4,
+    "festival-decor": 1,
+    "photo-standees": 11,
+    "desk-name-plates": 6,
+    "photo-keychains": 2,
+    "school-id-cards": 2,
+    "corporate-id-cards": 2
+  },
+  "variants": 959,
+  "quoteRequired": 30,
+  "failedImages": 0,
+  "pendingImages": 0,
+  "duplicateCandidateGroups": 7
+}

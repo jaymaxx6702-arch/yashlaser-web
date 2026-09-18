@@ -6,12 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:mirror": "node scripts/migration/import-mirror.mjs",
+    "migrate:fetch": "node scripts/migration/fetch-public.mjs",
+    "migrate": "node scripts/migration/run.mjs",
+    "check:catalogue": "node scripts/migration/check.mjs",
+    "check:routes": "node scripts/check-routes.mjs",
+    "test:customization": "node --import tsx --test tests/customization.test.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -20,7 +29,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "html-to-text": "^10.0.1",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

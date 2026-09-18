@@ -1,0 +1,16 @@
+{
+  "mirror": "C:\\Users\\pc\\YashLaser-Old-Site",
+  "htmlPagesScanned": 7,
+  "productPagesExtracted": 0,
+  "priorProductsRetained": 370,
+  "totalRecords": 370,
+  "failures": [],
+  "extracted": [],
+  "summaryPages": [
+    "YashLaser-Old-Site\\www.yashlaser.in\\about-us.html",
+    "YashLaser-Old-Site\\www.yashlaser.in\\collections\\days-celebration-navratri-mahotsav-trophy-awards.html",
+    "YashLaser-Old-Site\\www.yashlaser.in\\collections\\student-academic-excellence-award.html",
+    "YashLaser-Old-Site\\www.yashlaser.in\\index.html"
+  ],
+  "note": "Mirror has no complete product pages. Existing public-site snapshot retained. Use fetch-public.mjs for a refresh."
+}
