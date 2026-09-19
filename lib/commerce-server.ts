@@ -31,6 +31,7 @@ export async function createCommerceOrder(input: {
     name: string;
     phone: string;
     email?: string;
+    userId?: string | null;
   };
   shipping: Record<string, unknown>;
   items: CommerceItemInput[];
@@ -45,11 +46,18 @@ export async function createCommerceOrder(input: {
 
   const { data: existing } = await db
     .from("shop_orders")
-    .select("id,order_no,access_token_hash")
+    .select("id,order_no,access_token_hash,customer_user_id")
     .eq("request_id", input.requestId)
     .maybeSingle();
 
   if (existing) {
+    if (input.customer.userId && !existing.customer_user_id) {
+      await db
+        .from("shop_orders")
+        .update({ customer_user_id: input.customer.userId })
+        .eq("id", existing.id)
+        .is("customer_user_id", null);
+    }
     return {
       id: existing.id as string,
       orderNo: existing.order_no as string,
@@ -66,6 +74,7 @@ export async function createCommerceOrder(input: {
       customer_name: input.customer.name,
       customer_mobile: input.customer.phone,
       customer_email: input.customer.email || null,
+      customer_user_id: input.customer.userId || null,
       shipping_address: input.shipping,
       subtotal_minor: subtotal,
       total_minor: subtotal,

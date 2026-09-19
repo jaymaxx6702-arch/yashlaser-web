@@ -1672,3 +1672,20 @@ del {
 }
 .language-links a { opacity: .75; }
 .language-links a:hover { opacity: 1; }
+
+.account-auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 900px;
+}
+.account-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .account-auth-grid { grid-template-columns: 1fr; }
+  .account-heading { flex-direction: column; }
+}

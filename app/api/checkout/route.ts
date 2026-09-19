@@ -5,6 +5,7 @@ import { getSupabase, submissionEnabled } from "@/lib/supabase";
 import { commerceOrdersEnabled, createCommerceOrder } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { customerUser } from "@/lib/customer-auth";
 
 type CheckoutCustomer = {
   name?: unknown;
@@ -123,9 +124,15 @@ export async function POST(request: Request) {
 
   if (commerceOrdersEnabled()) {
     try {
+      const accountUser = await customerUser();
       const created = await createCommerceOrder({
         requestId,
-        customer: { name, phone, email },
+        customer: {
+          name,
+          phone,
+          email,
+          userId: accountUser?.id || null,
+        },
         shipping: { address, city, state, pincode, notes },
         items: canonical.map((item) => ({
           productId: item.product.id,
