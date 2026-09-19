@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { YashFlowSyncButton } from "@/components/YashFlowSyncButton";
+import { ShipmentEditor } from "@/components/ShipmentEditor";
 
 export default async function ShopOrdersAdminPage() {
   await requireAdmin();
@@ -33,6 +34,7 @@ export default async function ShopOrdersAdminPage() {
               <span>YashFlow: {order.yashflow_sync_status}</span>
               {order.yashflow_last_error && <small>{order.yashflow_last_error}</small>}
               <YashFlowSyncButton orderId={order.id} />
+              <ShipmentEditor orderId={order.id} />
             </article>
           ))}
           {!data?.length && <p>No Shop orders yet.</p>}

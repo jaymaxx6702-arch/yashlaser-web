@@ -114,3 +114,12 @@
     flex-direction: column;
   }
 }
+
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 12px 0 20px;
+  border-bottom: 1px solid #ded8cd;
+}
+.admin-nav a { font-weight: 700; }
