@@ -126,6 +126,38 @@ export default function Home() {
           </p>
         </div>
       </section>
+      <section className="container section" aria-labelledby="project-help-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Made for bigger requirements</p>
+            <h2 id="project-help-title">More than a single product.</h2>
+          </div>
+          <p>
+            Planning a school order, event or custom acrylic requirement?
+            Start with the right request and our team can review the details.
+          </p>
+        </div>
+        <div className="category-grid">
+          <article className="admin-card">
+            <p className="eyebrow">Schools · Corporate</p>
+            <h3>Bulk orders</h3>
+            <p>Share quantities, deadline and Excel/CSV data in one request.</p>
+            <Link className="text-link" href="/bulk-orders">Start bulk request ↗</Link>
+          </article>
+          <article className="admin-card">
+            <p className="eyebrow">Awards · Medals · Gifts</p>
+            <h3>Plan my event</h3>
+            <p>Tell us your event date, people count, budget and requirement.</p>
+            <Link className="text-link" href="/plan-my-event">Plan an event ↗</Link>
+          </article>
+          <article className="admin-card">
+            <p className="eyebrow">Made to requirement</p>
+            <h3>Custom acrylic</h3>
+            <p>Send size, quantity, reference file and production notes.</p>
+            <Link className="text-link" href="/custom-acrylic">Request custom acrylic ↗</Link>
+          </article>
+        </div>
+      </section>
       <section id="our-story" className="container story section">
         <div className="story-year">
           <span className="eyebrow">Our beginning</span>
