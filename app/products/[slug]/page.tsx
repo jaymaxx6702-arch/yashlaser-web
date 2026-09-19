@@ -12,6 +12,7 @@ import {
 import { business } from "@/data/business";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductOptions } from "@/components/ProductOptions";
+import { languageAlternates } from "@/lib/seo";
 export const dynamicParams = false;
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -26,7 +27,10 @@ export async function generateMetadata({
   return {
     title: p.name,
     description: p.description.slice(0, 160),
-    alternates: { canonical: productHref(p) },
+    alternates: {
+      canonical: productHref(p),
+      languages: languageAlternates(productHref(p)),
+    },
     openGraph: {
       title: p.name,
       description: p.description.slice(0, 160),

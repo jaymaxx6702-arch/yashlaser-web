@@ -4,6 +4,28 @@ import { categories, findProduct } from "@/data/catalog";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductOptions } from "@/components/ProductOptions";
 import { isUiLanguage, uiCopy } from "@/lib/i18n";
+import { languageAlternates } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}): Promise<Metadata> {
+  const { lang, slug } = await params;
+  if (!isUiLanguage(lang)) return { title: "Product not found" };
+  const product = findProduct(slug);
+  if (!product) return { title: "Product not found" };
+  const path = "/products/" + product.slug;
+  return {
+    title: product.name,
+    description: product.description.slice(0, 160),
+    alternates: {
+      canonical: path,
+      languages: languageAlternates(path),
+    },
+  };
+}
 
 export default async function LocalizedProductPage({
   params,
