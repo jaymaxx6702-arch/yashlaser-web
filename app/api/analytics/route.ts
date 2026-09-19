@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
+type AnalyticsBody = {
+  eventName?: unknown;
+  path?: unknown;
+  productId?: unknown;
+  searchQuery?: unknown;
+  resultCount?: unknown;
+  metadata?: unknown;
+};
+
 const names = new Set([
   "page_view",
   "search",
@@ -32,9 +41,9 @@ export async function POST(request: Request) {
   if (process.env.ANALYTICS_ENABLED !== "true")
     return new NextResponse(null, { status: 204 });
 
-  let body: any;
+  let body: AnalyticsBody | null;
   try {
-    body = await readJsonBody<any>(request, 4 * 1024);
+    body = await readJsonBody<AnalyticsBody>(request, 4 * 1024);
   } catch (error) {
     const status = error instanceof RequestBodyError ? error.status : 400;
     return NextResponse.json(

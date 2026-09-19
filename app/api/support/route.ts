@@ -4,6 +4,15 @@ import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { consumeShopRateLimit } from "@/lib/rate-limit";
 
+type SupportBody = {
+  name?: unknown;
+  mobile?: unknown;
+  email?: unknown;
+  subject?: unknown;
+  message?: unknown;
+  category?: unknown;
+};
+
 export async function POST(request: Request) {
   if (process.env.SUPPORT_ENABLED !== "true")
     return NextResponse.json(
@@ -11,9 +20,9 @@ export async function POST(request: Request) {
       { status: 503 },
     );
 
-  let body: any;
+  let body: SupportBody | null;
   try {
-    body = await readJsonBody<any>(request, 16 * 1024);
+    body = await readJsonBody<SupportBody>(request, 16 * 1024);
   } catch (error) {
     const status = error instanceof RequestBodyError ? error.status : 400;
     return NextResponse.json(

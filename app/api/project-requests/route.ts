@@ -4,6 +4,18 @@ import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { consumeShopRateLimit } from "@/lib/rate-limit";
 
+type ProjectRequestBody = {
+  requestType?: unknown;
+  customer?: unknown;
+  payload?: unknown;
+};
+
+type ProjectCustomer = {
+  name?: unknown;
+  mobile?: unknown;
+  email?: unknown;
+};
+
 const allowedTypes = new Set(["bulk", "event", "custom_acrylic"]);
 const clean = (value: unknown, max = 1000) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -15,9 +27,9 @@ export async function POST(request: Request) {
       { status: 503 },
     );
 
-  let body: any;
+  let body: ProjectRequestBody | null;
   try {
-    body = await readJsonBody<any>(request, 24 * 1024);
+    body = await readJsonBody<ProjectRequestBody>(request, 24 * 1024);
   } catch (error) {
     const status = error instanceof RequestBodyError ? error.status : 400;
     return NextResponse.json(
@@ -25,10 +37,14 @@ export async function POST(request: Request) {
       { status },
     );
   }
+  const customer =
+    body?.customer && typeof body.customer === "object"
+      ? (body.customer as ProjectCustomer)
+      : null;
   const requestType = clean(body?.requestType, 40);
-  const name = clean(body?.customer?.name, 80);
-  const mobile = clean(body?.customer?.mobile, 20);
-  const email = clean(body?.customer?.email, 160);
+  const name = clean(customer?.name, 80);
+  const mobile = clean(customer?.mobile, 20);
+  const email = clean(customer?.email, 160);
 
   if (
     !allowedTypes.has(requestType) ||
