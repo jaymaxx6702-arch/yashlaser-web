@@ -68,9 +68,27 @@ export async function syncShopOrderToYashFlow(orderId: string) {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(25000),
     });
-    const result = await response.json().catch(() => ({}));
+    const contentType = response.headers.get("content-type") || "";
+    const raw = await response.text();
+    let result: Record<string, unknown> = {};
+    if (contentType.includes("application/json")) {
+      try {
+        result = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        throw new Error(`YashFlow returned invalid JSON (${response.status}).`);
+      }
+    } else {
+      const preview = raw.replace(/\s+/g, " ").slice(0, 180);
+      throw new Error(
+        `YashFlow API returned non-JSON (${response.status}, ${contentType || "unknown content-type"}) from ${baseUrl()}. ${preview}`,
+      );
+    }
     if (!response.ok)
-      throw new Error(result.error || `YashFlow sync failed (${response.status}).`);
+      throw new Error(
+        typeof result.error === "string"
+          ? result.error
+          : `YashFlow sync failed (${response.status}).`,
+      );
 
     const refs = Array.isArray(result.orders) ? result.orders : [];
     await db
