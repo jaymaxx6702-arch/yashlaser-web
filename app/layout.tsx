@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { PageAnalytics } from "@/components/Analytics";
 import { organizationStructuredData } from "@/lib/seo";
 import "./globals.css";
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({
             __html: JSON.stringify(organizationStructuredData).replace(/</g, "\\u003c"),
           }}
         />
+        <PageAnalytics />
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>

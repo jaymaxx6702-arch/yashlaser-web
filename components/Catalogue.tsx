@@ -7,6 +7,7 @@ import {
 } from "@/data/catalog";
 import { ProductCard } from "./ProductCard";
 import { uiCopy, type UiCopy } from "@/lib/i18n";
+import { SearchAnalytics } from "@/components/Analytics";
 
 export type CatalogueParams = {
   category?: string;
@@ -62,7 +63,15 @@ export function Catalogue({
   };
 
   return (
-    <main id="main-content" className="container catalogue-page">
+    <>
+      {query && (
+        <SearchAnalytics
+          query={query}
+          resultCount={filtered.length}
+          path={base}
+        />
+      )}
+      <main id="main-content" className="container catalogue-page">
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href={prefix + "/"}>{copy.home}</Link>
         <span>/</span>
@@ -170,6 +179,7 @@ export function Catalogue({
           </Link>
         )}
       </nav>
-    </main>
+      </main>
+    </>
   );
 }
