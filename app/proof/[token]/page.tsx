@@ -27,6 +27,8 @@ export default async function ProofPage({
           <a className="button" href={signedUrl} target="_blank" rel="noreferrer">Open proof PDF ↗</a>
         ) : (
           <a href={signedUrl} target="_blank" rel="noreferrer">
+            {/* Signed private proof URL is intentionally rendered directly. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="proof-image" src={signedUrl} alt={proof.file_name || "Customer proof"} />
           </a>
         )

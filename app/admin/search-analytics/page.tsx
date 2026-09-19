@@ -24,14 +24,11 @@ function topCounts(values: Array<string | null>, limit = 12) {
 export default async function SearchAnalyticsPage() {
   await requireAdmin();
   const db = getSupabase();
-  const since = new Date(Date.now() - 30 * 86400000).toISOString();
-
   const { data, error } = await db
     .from("shop_analytics_events")
     .select(
       "event_name,path,product_id,search_query,result_count,created_at",
     )
-    .gte("created_at", since)
     .order("created_at", { ascending: false })
     .limit(5000);
 
@@ -55,7 +52,7 @@ export default async function SearchAnalyticsPage() {
   return (
     <>
       <h1>Search & commerce analytics</h1>
-      <p>Last 30 days · first-party, privacy-light events only.</p>
+      <p>Most recent 5,000 first-party, privacy-light events.</p>
 
       {error ? (
         <p role="alert">
