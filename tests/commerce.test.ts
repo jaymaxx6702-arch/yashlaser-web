@@ -97,6 +97,7 @@ test("rollout-sensitive feature flags default to disabled in the environment tem
     "REVIEWS_ENABLED",
     "ANALYTICS_ENABLED",
     "RATE_LIMITS_ENABLED",
+    "CUSTOMER_ACCOUNTS_ENABLED",
   ]) {
     assert.match(env, new RegExp("^" + flag + "=false$", "m"));
   }

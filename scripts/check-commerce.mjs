@@ -7,6 +7,8 @@ const requiredFiles = [
   "app/checkout/page.tsx",
   "app/track-order/page.tsx",
   "app/account/page.tsx",
+  "app/account/login/page.tsx",
+  "app/api/account/claim-order/route.ts",
   "app/proof/[token]/page.tsx",
   "app/quote/[token]/page.tsx",
   "app/bulk-orders/page.tsx",
@@ -34,6 +36,7 @@ const migrations = [
   "supabase/migrations/202609190008_project_uploads.sql",
   "supabase/migrations/202609190009_analytics.sql",
   "supabase/migrations/202609190010_rate_limits.sql",
+  "supabase/migrations/202609190011_customer_accounts.sql",
 ];
 
 for (const file of migrations)
