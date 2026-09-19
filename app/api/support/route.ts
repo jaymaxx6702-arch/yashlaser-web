@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { consumeShopRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   if (process.env.SUPPORT_ENABLED !== "true")
@@ -9,7 +11,16 @@ export async function POST(request: Request) {
       { status: 503 },
     );
 
-  const body = await request.json().catch(() => null);
+  let body: any;
+  try {
+    body = await readJsonBody<any>(request, 16 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const name =
     typeof body?.name === "string" ? body.name.trim().slice(0, 80) : "";
   const mobile =
@@ -42,6 +53,18 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Please complete the required support details." },
       { status: 400 },
+    );
+
+  const allowed = await consumeShopRateLimit(
+    "support",
+    mobile.replace(/\D/g, ""),
+    5,
+    600,
+  );
+  if (!allowed)
+    return NextResponse.json(
+      { error: "Too many support requests. Please try again later." },
+      { status: 429 },
     );
 
   const token = newAccessToken();

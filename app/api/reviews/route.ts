@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { consumeShopRateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   const db = getSupabase();
@@ -22,7 +24,16 @@ export async function POST(request: Request) {
       { status: 503 },
     );
 
-  const body = await request.json().catch(() => null);
+  let body: any;
+  try {
+    body = await readJsonBody<any>(request, 8 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const productId =
     typeof body?.productId === "string" ? body.productId.slice(0, 100) : "";
   const name =
@@ -42,6 +53,18 @@ export async function POST(request: Request) {
     rating > 5
   )
     return NextResponse.json({ error: "Invalid review." }, { status: 400 });
+
+  const allowed = await consumeShopRateLimit(
+    "review",
+    productId + ":" + name.toLowerCase(),
+    3,
+    3600,
+  );
+  if (!allowed)
+    return NextResponse.json(
+      { error: "Too many review submissions. Please try again later." },
+      { status: 429 },
+    );
 
   const db = getSupabase();
   const { error } = await db.from("shop_reviews").insert({

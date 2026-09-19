@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 const names = new Set([
   "page_view",
@@ -31,7 +32,16 @@ export async function POST(request: Request) {
   if (process.env.ANALYTICS_ENABLED !== "true")
     return new NextResponse(null, { status: 204 });
 
-  const body = await request.json().catch(() => null);
+  let body: any;
+  try {
+    body = await readJsonBody<any>(request, 4 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const eventName =
     typeof body?.eventName === "string" ? body.eventName : "";
 
