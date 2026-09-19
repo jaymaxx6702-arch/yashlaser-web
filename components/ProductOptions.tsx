@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { loadSelection } from "@/lib/customization/persistence";
 import { business, whatsappUrl } from "@/data/business";
+import { addCartItem } from "@/lib/cart";
 import {
   resolveSelection,
   type CustomizationProduct,
@@ -16,6 +18,7 @@ export function ProductOptions({
 }: {
   product: CustomizationProduct;
 }) {
+  const router = useRouter();
   const [variantId, setVariantId] = useState(resolveSelection(p).variantId);
   const [quantity, setQuantity] = useState("1");
   useEffect(() => {
@@ -127,7 +130,29 @@ export function ProductOptions({
       )}
       <div className="detail-actions">
         <button type="submit" className="button" disabled={!canCustomise}>
-          Personalise & enquire ↗
+          Personalise product ↗
+        </button>
+        <button
+          type="button"
+          className="button button-secondary"
+          disabled={!canCustomise || !validQuantity}
+          onClick={() => {
+            if (!validQuantity) return;
+            addCartItem({
+              productId: p.id,
+              slug: p.slug,
+              name: p.name,
+              variantId: selected?.id || "",
+              variantName: selected?.name || "To confirm",
+              quantity: count,
+              unitPriceMinor: priced ? unitPrice : null,
+              pricingMode: p.pricingMode,
+              notes: "Added from product page; personalisation to confirm.",
+            });
+            router.push("/cart");
+          }}
+        >
+          Add to cart →
         </button>
         {validQuantity && (
           <a
