@@ -14,6 +14,20 @@ export function SiteHeader() {
   const copy = uiCopy[lang];
   const prefix = isUiLanguage(firstSegment) ? "/" + lang : "";
   const localHref = (value: string) => prefix + value;
+  const languageHref = (target: string) => {
+    const segments = path.split("/").filter(Boolean);
+    const bare = isUiLanguage(segments[0] || "")
+      ? "/" + segments.slice(1).join("/")
+      : path;
+    if (bare === "/" || bare === "") return target === "en" ? "/" : "/" + target;
+    if (
+      bare === "/products" ||
+      bare.startsWith("/products/") ||
+      bare.startsWith("/categories/")
+    )
+      return target === "en" ? bare : "/" + target + bare;
+    return target === "en" ? "/products" : "/" + target + "/products";
+  };
   useEffect(() => {
     const sync = () => setCount(cartCount());
     sync();
@@ -67,14 +81,17 @@ export function SiteHeader() {
             <Link href="/cart" aria-current={path === "/cart" ? "page" : undefined}>
               {copy.cart}{count ? ` (${count})` : ""}
             </Link>
+            <Link href="/account" aria-current={path.startsWith("/account") ? "page" : undefined}>
+              {copy.account}
+            </Link>
             <Link href={localHref("/products")} className="nav-cta">
               {copy.explore} <span aria-hidden="true">↗</span>
             </Link>
                       <div className="language-links" aria-label="Language">
-              <Link href="/products">EN</Link>
-              <Link href="/gu/products">ગુજરાતી</Link>
-              <Link href="/hi/products">हिन्दी</Link>
-              <Link href="/mr/products">मराठी</Link>
+              <Link href={languageHref("en")}>EN</Link>
+              <Link href={languageHref("gu")}>ગુજરાતી</Link>
+              <Link href={languageHref("hi")}>हिन्दी</Link>
+              <Link href={languageHref("mr")}>मराठी</Link>
             </div>
           </nav>
         </div>
