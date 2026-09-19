@@ -6,7 +6,7 @@ import {
   type Category,
 } from "@/data/catalog";
 import { ProductCard } from "./ProductCard";
-import { uiCopy, type UiCopy } from "@/lib/i18n";
+import { categoryCopy, uiCopy, type UiCopy, type UiLanguage } from "@/lib/i18n";
 import { SearchAnalytics } from "@/components/Analytics";
 
 export type CatalogueParams = {
@@ -22,11 +22,13 @@ export function Catalogue({
   params,
   prefix = "",
   copy = uiCopy.en,
+  lang = "en",
 }: {
   category?: Category;
   params: CatalogueParams;
   prefix?: string;
   copy?: UiCopy;
+  lang?: UiLanguage;
 }) {
   const base = prefix + (category ? categoryHref(category.id) : "/products");
   const inCategory = products.filter(
@@ -86,10 +88,17 @@ export function Catalogue({
 
       <header className="catalogue-heading">
         <p className="eyebrow">{copy.madePersonal}</p>
-        <h1>{category?.name ?? copy.collection}</h1>
+        <h1>{category ? categoryCopy[lang][category.id].name : copy.collection}</h1>
         <p>
-          {category?.description ??
-            "Discover a starting point for your memories, milestones and identity."}
+          {category
+            ? categoryCopy[lang][category.id].description
+            : lang === "gu"
+              ? "યાદો, સિદ્ધિઓ અને ઓળખ માટે તમારી પસંદગી શોધો."
+              : lang === "hi"
+                ? "यादों, उपलब्धियों और पहचान के लिए अपनी पसंद खोजें।"
+                : lang === "mr"
+                  ? "आठवणी, यश आणि ओळख यांसाठी तुमची निवड शोधा."
+                  : "Discover a starting point for your memories, milestones and identity."}
         </p>
       </header>
 
@@ -103,7 +112,7 @@ export function Catalogue({
             href={prefix + categoryHref(c.id)}
             className={category?.id === c.id ? "selected" : ""}
           >
-            {c.shortName}
+            {categoryCopy[lang][c.id].shortName}
           </Link>
         ))}
       </nav>
