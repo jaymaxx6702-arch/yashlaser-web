@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { products } from "@/data/catalog";
 
 type ReviewBody = {
   productId?: unknown;
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
 
   if (
     !productId ||
+    !products.some((product) => product.id === productId) ||
     name.length < 2 ||
     !reviewText ||
     !Number.isInteger(rating) ||
