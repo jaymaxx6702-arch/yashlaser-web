@@ -3,6 +3,13 @@ import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { consumeShopRateLimit } from "@/lib/rate-limit";
 
+type ReviewBody = {
+  productId?: unknown;
+  name?: unknown;
+  review?: unknown;
+  rating?: unknown;
+};
+
 export async function GET() {
   const db = getSupabase();
   const { data } = await db
@@ -24,9 +31,9 @@ export async function POST(request: Request) {
       { status: 503 },
     );
 
-  let body: any;
+  let body: ReviewBody | null;
   try {
-    body = await readJsonBody<any>(request, 8 * 1024);
+    body = await readJsonBody<ReviewBody>(request, 8 * 1024);
   } catch (error) {
     const status = error instanceof RequestBodyError ? error.status : 400;
     return NextResponse.json(

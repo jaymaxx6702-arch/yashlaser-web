@@ -6,6 +6,24 @@ import { commerceOrdersEnabled, createCommerceOrder } from "@/lib/commerce-serve
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { consumeShopRateLimit } from "@/lib/rate-limit";
 
+type CheckoutCustomer = {
+  name?: unknown;
+  phone?: unknown;
+  email?: unknown;
+  city?: unknown;
+  address?: unknown;
+  state?: unknown;
+  pincode?: unknown;
+  notes?: unknown;
+  consent?: unknown;
+};
+
+type CheckoutBody = {
+  requestId?: unknown;
+  customer?: unknown;
+  items?: unknown;
+};
+
 type CartInput = {
   productId?: string;
   slug?: string;
@@ -22,9 +40,9 @@ export async function POST(request: Request) {
   if (!submissionEnabled())
     return NextResponse.json({ error: "Online checkout requests are temporarily unavailable." }, { status: 503 });
 
-  let body: any;
+  let body: CheckoutBody | null;
   try {
-    body = await readJsonBody<any>(request, 64 * 1024);
+    body = await readJsonBody<CheckoutBody>(request, 64 * 1024);
   } catch (error) {
     const status = error instanceof RequestBodyError ? error.status : 400;
     return NextResponse.json(
@@ -33,7 +51,10 @@ export async function POST(request: Request) {
     );
   }
   const requestId = text(body?.requestId, 36);
-  const customer = body?.customer;
+  const customer =
+    body?.customer && typeof body.customer === "object"
+      ? (body.customer as CheckoutCustomer)
+      : null;
   const items = Array.isArray(body?.items) ? (body.items as CartInput[]) : [];
 
   if (!/^[0-9a-f-]{36}$/i.test(requestId) || !customer || !items.length || items.length > 100)
