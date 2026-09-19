@@ -16,6 +16,7 @@ export default async function LocalizedProductsPage({
       params={await searchParams}
       prefix={"/" + lang}
       copy={uiCopy[lang]}
+      lang={lang}
     />
   );
 }
