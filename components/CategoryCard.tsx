@@ -5,10 +5,14 @@ export function CategoryCard({
   category,
   index,
   prefix = "",
+  displayName,
+  description,
 }: {
   category: Category;
   index: number;
   prefix?: string;
+  displayName?: string;
+  description?: string;
 }) {
   return (
     <Link href={prefix + categoryHref(category.id)} className="category-card">
@@ -19,10 +23,10 @@ export function CategoryCard({
         />
       </div>
       <div className="category-title">
-        <h3>{category.shortName}</h3>
+        <h3>{displayName || category.shortName}</h3>
         <span aria-hidden="true">↗</span>
       </div>
-      <p>{category.description}</p>
+      <p>{description || category.description}</p>
     </Link>
   );
 }
