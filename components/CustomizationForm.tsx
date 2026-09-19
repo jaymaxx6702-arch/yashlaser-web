@@ -22,6 +22,7 @@ import {
   type CustomizationSnapshot,
 } from "@/lib/customization/snapshot";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
+import { addCartItem } from "@/lib/cart";
 const emptyCustomer = {
   customerName: "",
   phone: "",
@@ -195,6 +196,28 @@ export function CustomizationForm({
       setBusy(false);
     }
   }
+  function addSavedDesignToCart() {
+    if (!snapshot || !success?.saved) return;
+    const variant = p.variants.find((v) => v.id === snapshot.document.variantId);
+    const unitPriceMinor =
+      p.pricingMode === "quote_required"
+        ? null
+        : (variant?.effectivePriceMinor ?? p.effectivePriceMinor) || null;
+    addCartItem({
+      productId: p.id,
+      slug: p.slug,
+      name: p.name,
+      variantId: variant?.id || "",
+      variantName: variant?.name || "To confirm",
+      quantity: snapshot.document.quantity,
+      unitPriceMinor,
+      pricingMode: p.pricingMode,
+      designId: snapshot.designId,
+      notes: "Saved enquiry " + success.reference,
+    });
+    router.push("/cart");
+  }
+
   async function share() {
     if (!snapshot) return;
     const file = new File(
@@ -385,14 +408,25 @@ export function CustomizationForm({
                     ? "Your design settings, preview and any uploaded artwork are saved privately. Continue on WhatsApp to discuss the quotation."
                     : "This is a draft, not a submitted order. Open WhatsApp, send the message, then attach your downloaded preview and original artwork."}
                 </p>
-                <a
-                  className="button"
-                  href={whatsappUrl(success.message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Continue on WhatsApp ↗
-                </a>
+                <div className="editor-toolbar">
+                  <a
+                    className="button"
+                    href={whatsappUrl(success.message)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Continue on WhatsApp ↗
+                  </a>
+                  {success.saved && (
+                    <button
+                      className="button button-secondary"
+                      type="button"
+                      onClick={addSavedDesignToCart}
+                    >
+                      Add saved design to cart →
+                    </button>
+                  )}
+                </div>
                 <p>
                   No payment or production begins until your quotation and
                   digital mockup are approved.

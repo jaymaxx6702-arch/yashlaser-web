@@ -12,6 +12,8 @@ import {
 import { business } from "@/data/business";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductOptions } from "@/components/ProductOptions";
+import { ProductViewAnalytics } from "@/components/Analytics";
+import { languageAlternates } from "@/lib/seo";
 export const dynamicParams = false;
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -26,7 +28,10 @@ export async function generateMetadata({
   return {
     title: p.name,
     description: p.description.slice(0, 160),
-    alternates: { canonical: productHref(p) },
+    alternates: {
+      canonical: productHref(p),
+      languages: languageAlternates(productHref(p)),
+    },
     openGraph: {
       title: p.name,
       description: p.description.slice(0, 160),
@@ -53,6 +58,7 @@ export default async function ProductPage({
   };
   return (
     <main id="main-content" className="container detail-page">
+      <ProductViewAnalytics productId={p.id} path={productHref(p)} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

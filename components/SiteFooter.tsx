@@ -44,6 +44,22 @@ export function SiteFooter() {
           <Link className="text-link" href="/contact">
             Contact & enquiries ↗
           </Link>
+          <br />
+          <Link className="text-link" href="/bulk-orders">
+            Bulk orders ↗
+          </Link>
+          <br />
+          <Link className="text-link" href="/plan-my-event">
+            Plan my event ↗
+          </Link>
+          <br />
+          <Link className="text-link" href="/custom-acrylic">
+            Custom acrylic ↗
+          </Link>
+          <br />
+          <Link className="text-link" href="/support">
+            Support ↗
+          </Link>
         </div>
       </div>
       <div className="container footer-bottom">
