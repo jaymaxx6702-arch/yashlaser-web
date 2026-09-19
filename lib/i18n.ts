@@ -8,6 +8,7 @@ export type UiCopy = {
   contact: string;
   trackOrder: string;
   cart: string;
+  account: string;
   explore: string;
   madePersonal: string;
   allProducts: string;
@@ -36,6 +37,7 @@ export const uiCopy: Record<UiLanguage, UiCopy> = {
     contact: "Contact",
     trackOrder: "Track order",
     cart: "Cart",
+    account: "Account",
     explore: "Explore products",
     madePersonal: "Made personal. Since 1997.",
     allProducts: "All products",
@@ -62,6 +64,7 @@ export const uiCopy: Record<UiLanguage, UiCopy> = {
     contact: "સંપર્ક",
     trackOrder: "ઓર્ડર ટ્રેક કરો",
     cart: "કાર્ટ",
+    account: "એકાઉન્ટ",
     explore: "પ્રોડક્ટ જુઓ",
     madePersonal: "વ્યક્તિગત બનાવેલું. 1997થી.",
     allProducts: "બધી પ્રોડક્ટ્સ",
@@ -88,6 +91,7 @@ export const uiCopy: Record<UiLanguage, UiCopy> = {
     contact: "संपर्क",
     trackOrder: "ऑर्डर ट्रैक करें",
     cart: "कार्ट",
+    account: "अकाउंट",
     explore: "प्रोडक्ट देखें",
     madePersonal: "व्यक्तिगत रूप से बनाया गया। 1997 से।",
     allProducts: "सभी प्रोडक्ट",
@@ -114,6 +118,7 @@ export const uiCopy: Record<UiLanguage, UiCopy> = {
     contact: "संपर्क",
     trackOrder: "ऑर्डर ट्रॅक करा",
     cart: "कार्ट",
+    account: "अकाउंट",
     explore: "प्रॉडक्ट पहा",
     madePersonal: "वैयक्तिक बनवलेले. 1997 पासून.",
     allProducts: "सर्व प्रॉडक्ट",
