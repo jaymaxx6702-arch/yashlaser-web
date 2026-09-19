@@ -12,10 +12,28 @@ const paths = [
   "/products",
   "/contact",
   "/privacy",
+  "/bulk-orders",
+  "/plan-my-event",
+  "/custom-acrylic",
+  "/support",
+  "/reviews",
+  "/cart",
+  "/checkout",
+  "/track-order",
+  "/account",
+  "/gu/products",
+  "/hi/products",
+  "/mr/products",
+  "/api/health",
   "/sitemap.xml",
   "/robots.txt",
   ...new Set(products.map((p) => "/categories/" + p.categoryId)),
   ...products.map((p) => "/products/" + p.slug),
+  ...products.slice(0, 3).flatMap((p) => [
+    "/gu/products/" + p.slug,
+    "/hi/products/" + p.slug,
+    "/mr/products/" + p.slug,
+  ]),
   ...new Map(
     products.map((p) => [p.categoryId, "/customize/" + p.slug]),
   ).values(),
@@ -87,6 +105,22 @@ if (![400, 503].includes(api.status))
     api: "Missing form must be rejected whether backend is configured or disabled",
     status: api.status,
   });
+
+const crossSite = await fetch(base + "/api/analytics", {
+  method: "POST",
+  headers: {
+    origin: "https://example.invalid",
+    "sec-fetch-site": "cross-site",
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({ eventName: "page_view", path: "/" }),
+});
+if (crossSite.status !== 403)
+  failures.push({
+    api: "Cross-site unsafe API request must be blocked",
+    status: crossSite.status,
+  });
+await crossSite.arrayBuffer();
 const report = {
   routes: paths.length,
   linkedRoutes: extras.length,
