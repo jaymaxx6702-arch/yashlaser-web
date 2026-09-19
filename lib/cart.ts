@@ -1,4 +1,5 @@
 "use client";
+import { sendAnalyticsEvent } from "@/components/Analytics";
 
 export type CartItem = {
   id: string;
@@ -47,6 +48,12 @@ export function addCartItem(item: Omit<CartItem, "id">) {
     items.push({ ...item, id: crypto.randomUUID() });
   }
   save(items);
+  sendAnalyticsEvent({
+    eventName: "add_to_cart",
+    productId: item.productId,
+    path: "/cart",
+    metadata: { quantity: item.quantity },
+  });
 }
 
 export function updateCartQuantity(id: string, quantity: number) {

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { clearCart, readCart, type CartItem } from "@/lib/cart";
+import { sendAnalyticsEvent } from "@/components/Analytics";
 
 const money = (minor: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(minor / 100);
@@ -54,6 +55,11 @@ export function CheckoutClient() {
     setError("");
     if (!items.length || items.some((x) => x.valid === false)) return;
     setBusy(true);
+    sendAnalyticsEvent({
+      eventName: "begin_checkout",
+      path: "/checkout",
+      metadata: { itemCount: items.length },
+    });
     try {
       if (!requestId.current) requestId.current = crypto.randomUUID();
       const form = new FormData(e.currentTarget);
