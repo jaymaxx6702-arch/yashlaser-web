@@ -32,14 +32,22 @@ export async function login(form: FormData) {
     httpOnly: true,
     sameSite: "strict",
     secure: origin.startsWith("https://"),
-    path: "/admin",
+    path: "/",
     maxAge: Math.min(data.session.expires_in, 3600),
   });
   redirect("/admin");
 }
 export async function logout() {
-  // Expire the same /admin-scoped cookie that login sets.
-  (await cookies()).set(ADMIN_COOKIE, "", {
+  const store = await cookies();
+  // Expire the current root-scoped cookie.
+  store.set(ADMIN_COOKIE, "", {
+    path: "/",
+    httpOnly: true,
+    sameSite: "strict",
+    maxAge: 0,
+  });
+  // Also expire the legacy /admin-scoped cookie from older deployments.
+  store.set(ADMIN_COOKIE, "", {
     path: "/admin",
     httpOnly: true,
     sameSite: "strict",
