@@ -10,6 +10,12 @@ function baseUrl() {
   return (process.env.YASHFLOW_API_URL || "").replace(/\/$/, "");
 }
 
+function safeIntegrationError(message: string) {
+  return message
+    .replace(/sb_secret_[A-Za-z0-9._\-\s]+/g, "sb_secret_[redacted]")
+    .replace(/eyJ[A-Za-z0-9._\-]{20,}/g, "[redacted token]");
+}
+
 function authHeaders() {
   return {
     "content-type": "application/json",
@@ -109,7 +115,8 @@ export async function syncShopOrderToYashFlow(orderId: string) {
     });
     return result;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "YashFlow sync failed.";
+    const rawMessage = error instanceof Error ? error.message : "YashFlow sync failed.";
+    const message = safeIntegrationError(rawMessage);
     await db
       .from("shop_orders")
       .update({
