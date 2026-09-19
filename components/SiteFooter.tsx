@@ -68,6 +68,10 @@ export function SiteFooter() {
           <Link className="text-link" href="/track-order">
             Track order ↗
           </Link>
+          <br />
+          <Link className="text-link" href="/account">
+            Customer account ↗
+          </Link>
         </div>
       </div>
       <div className="container footer-bottom">
