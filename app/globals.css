@@ -1639,3 +1639,15 @@ del {
   background: var(--paper-soft, #f5f1ea);
 }
 @media (max-width: 760px) { .tracking-layout { grid-template-columns: 1fr; } }
+
+.proof-page { max-width: 900px; }
+.proof-image {
+  display: block;
+  width: min(100%, 760px);
+  height: auto;
+  margin: 2rem 0;
+  border: 1px solid var(--line, #ddd6cb);
+  background: white;
+}
+.proof-actions { display: grid; gap: 1rem; margin-top: 2rem; max-width: 760px; }
+.proof-actions label { display: grid; gap: .5rem; }
