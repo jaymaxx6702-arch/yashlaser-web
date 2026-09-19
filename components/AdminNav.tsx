@@ -10,6 +10,7 @@ export function AdminNav() {
       <Link href="/admin/quotes">Quotes</Link>
       <Link href="/admin/support">Support</Link>
       <Link href="/admin/reviews">Reviews</Link>
+      <Link href="/admin/search-analytics">Analytics</Link>
     </nav>
   );
 }
