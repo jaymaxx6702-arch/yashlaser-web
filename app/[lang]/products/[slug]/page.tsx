@@ -4,6 +4,7 @@ import { categories, findProduct } from "@/data/catalog";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductOptions } from "@/components/ProductOptions";
 import { isUiLanguage, uiCopy } from "@/lib/i18n";
+import { ProductViewAnalytics } from "@/components/Analytics";
 import { languageAlternates } from "@/lib/seo";
 import type { Metadata } from "next";
 
@@ -42,6 +43,7 @@ export default async function LocalizedProductPage({
 
   return (
     <main id="main-content" className="container detail-page">
+      <ProductViewAnalytics productId={product.id} path={prefix + "/products/" + product.slug} />
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href={prefix + "/products"}>{copy.collection}</Link>
         <span>/</span>
