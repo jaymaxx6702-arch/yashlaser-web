@@ -1663,3 +1663,12 @@ del {
   .announcement, .site-header, .site-footer, .skip-link { display: none !important; }
   .print-summary { max-width: none; padding: 0; }
 }
+
+.language-links {
+  display: flex;
+  gap: .6rem;
+  align-items: center;
+  font-size: .78rem;
+}
+.language-links a { opacity: .75; }
+.language-links a:hover { opacity: 1; }

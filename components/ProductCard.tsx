@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { priceLabel, productHref, type Product } from "@/data/catalog";
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, prefix = "", actionLabel = "View & personalise" }: { product: Product; prefix?: string; actionLabel?: string }) {
   const image = product.images.find((i) => i.src);
   return (
     <article className="product-card">
       <Link
-        href={productHref(product)}
+        href={prefix + productHref(product)}
         className="product-image"
         aria-label={product.name}
       >
@@ -25,12 +25,12 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="product-copy">
         <p className="eyebrow">{product.label}</p>
         <h3>
-          <Link href={productHref(product)}>{product.name}</Link>
+          <Link href={prefix + productHref(product)}>{product.name}</Link>
         </h3>
         <p className="card-description">{product.description}</p>
         <p className="product-price">{priceLabel(product)}</p>
-        <Link className="text-link" href={productHref(product)}>
-          View & personalise ↗
+        <Link className="text-link" href={prefix + productHref(product)}>
+          {actionLabel} ↗
         </Link>
       </div>
     </article>

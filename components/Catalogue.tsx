@@ -6,6 +6,8 @@ import {
   type Category,
 } from "@/data/catalog";
 import { ProductCard } from "./ProductCard";
+import { uiCopy, type UiCopy } from "@/lib/i18n";
+
 export type CatalogueParams = {
   category?: string;
   q?: string;
@@ -13,14 +15,19 @@ export type CatalogueParams = {
   page?: string;
   legacyCategory?: string;
 };
+
 export function Catalogue({
   category,
   params,
+  prefix = "",
+  copy = uiCopy.en,
 }: {
   category?: Category;
   params: CatalogueParams;
+  prefix?: string;
+  copy?: UiCopy;
 }) {
-  const base = category ? categoryHref(category.id) : "/products";
+  const base = prefix + (category ? categoryHref(category.id) : "/products");
   const inCategory = products.filter(
     (p) => !category || p.categoryId === category.id,
   );
@@ -53,12 +60,13 @@ export function Catalogue({
     search.set("page", String(number));
     return base + "?" + search;
   };
+
   return (
     <main id="main-content" className="container catalogue-page">
       <nav className="breadcrumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
+        <Link href={prefix + "/"}>{copy.home}</Link>
         <span>/</span>
-        <Link href="/products">Collection</Link>
+        <Link href={prefix + "/products"}>{copy.collection}</Link>
         {category && (
           <>
             <span>/</span>
@@ -66,43 +74,46 @@ export function Catalogue({
           </>
         )}
       </nav>
+
       <header className="catalogue-heading">
-        <p className="eyebrow">Made personal. Since 1997.</p>
-        <h1>{category?.name ?? "Our collection"}</h1>
+        <p className="eyebrow">{copy.madePersonal}</p>
+        <h1>{category?.name ?? copy.collection}</h1>
         <p>
           {category?.description ??
             "Discover a starting point for your memories, milestones and identity."}
         </p>
       </header>
+
       <nav className="category-filters" aria-label="Product categories">
-        <Link href="/products" className={!category ? "selected" : ""}>
-          All products
+        <Link href={prefix + "/products"} className={!category ? "selected" : ""}>
+          {copy.allProducts}
         </Link>
         {categories.map((c) => (
           <Link
             key={c.id}
-            href={categoryHref(c.id)}
+            href={prefix + categoryHref(c.id)}
             className={category?.id === c.id ? "selected" : ""}
           >
             {c.shortName}
           </Link>
         ))}
       </nav>
+
       <form action={base} className="catalogue-search">
         <label>
-          Search products
+          {copy.searchProducts}
           <input
             type="search"
             name="q"
             defaultValue={query}
-            placeholder="Name, code or occasion"
+            placeholder={copy.searchProducts}
             maxLength={100}
           />
         </label>
         <label>
-          Product type
+          {copy.productType}
           <select name="subcategory" defaultValue={params.subcategory ?? ""}>
-            <option value="">All types</option>
+            <option value="">{copy.allTypes}</option>
             {subcategories.map(([id, label]) => (
               <option key={id} value={id}>
                 {label}
@@ -118,35 +129,44 @@ export function Catalogue({
           />
         )}
         <button className="button" type="submit">
-          Find products
+          {copy.findProducts}
         </button>
       </form>
+
       <div className="results-heading">
         <h2>
-          {filtered.length} {filtered.length === 1 ? "product" : "products"}
+          {filtered.length}{" "}
+          {filtered.length === 1 ? copy.productSingular : copy.productPlural}
         </h2>
         <span>
-          Page {page} of {pages}
+          {copy.page} {page} {copy.of} {pages}
         </span>
       </div>
+
       {filtered.length ? (
         <div className="product-grid catalogue-grid">
           {filtered.slice((page - 1) * 24, page * 24).map((p) => (
-            <ProductCard key={p.id} product={p} />
+            <ProductCard
+              key={p.id}
+              product={p}
+              prefix={prefix}
+              actionLabel={copy.personalise}
+            />
           ))}
         </div>
       ) : (
-        <p>No matching products. Try another search or product type.</p>
+        <p>{copy.noMatching}</p>
       )}
+
       <nav className="pagination" aria-label="Catalogue pages">
         {page > 1 && (
           <Link className="button button-secondary" href={href(page - 1)}>
-            ← Previous
+            ← {copy.previous}
           </Link>
         )}
         {page < pages && (
           <Link className="button" href={href(page + 1)}>
-            Next →
+            {copy.next} →
           </Link>
         )}
       </nav>

@@ -4,12 +4,14 @@ import { ProductVisual } from "./ProductVisual";
 export function CategoryCard({
   category,
   index,
+  prefix = "",
 }: {
   category: Category;
   index: number;
+  prefix?: string;
 }) {
   return (
-    <Link href={categoryHref(category.id)} className="category-card">
+    <Link href={prefix + categoryHref(category.id)} className="category-card">
       <div className="category-image">
         <span className="category-number">0{index + 1}</span>
         <ProductVisual
