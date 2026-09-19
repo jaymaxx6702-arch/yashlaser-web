@@ -13,7 +13,10 @@
     "check:catalogue": "node scripts/migration/check.mjs",
     "check:routes": "node scripts/check-routes.mjs",
     "test:customization": "node --import tsx --test tests/customization.test.ts",
-    "test:production": "node --import tsx --test tests/production.test.ts"
+    "test:production": "node --import tsx --test tests/production.test.ts",
+    "check:commerce": "node scripts/check-commerce.mjs",
+    "test:commerce": "node --import tsx --test tests/commerce.test.ts",
+    "verify:offline": "npm run check:catalogue && npm run check:commerce && npm run test:customization && npm run test:production && npm run test:commerce"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
