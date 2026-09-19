@@ -1624,3 +1624,18 @@ del {
   .checkout-fields { grid-template-columns: 1fr; }
   .checkout-fields .full { grid-column: auto; }
 }
+
+.tracking-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+.tracking-form { display: grid; gap: 1rem; }
+.tracking-form label { display: grid; gap: .4rem; }
+.tracking-result {
+  padding: 1.5rem;
+  border: 1px solid var(--line, #ddd6cb);
+  background: var(--paper-soft, #f5f1ea);
+}
+@media (max-width: 760px) { .tracking-layout { grid-template-columns: 1fr; } }

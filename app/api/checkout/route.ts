@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { findProduct } from "@/data/catalog";
 import { getSupabase, submissionEnabled } from "@/lib/supabase";
+import { commerceOrdersEnabled, createCommerceOrder } from "@/lib/commerce-server";
 
 type CartInput = {
   productId?: string;
@@ -67,6 +68,42 @@ export async function POST(request: Request) {
       notes: text(raw.notes, 500),
     };
   });
+
+  if (commerceOrdersEnabled()) {
+    try {
+      const created = await createCommerceOrder({
+        requestId,
+        customer: { name, phone, email },
+        shipping: { address, city, state, pincode, notes },
+        items: canonical.map((item) => ({
+          productId: item.product.id,
+          productSlug: item.product.slug,
+          productName: item.product.name,
+          variantId: item.variant?.id || null,
+          variantName: item.variant?.name || null,
+          quantity: item.quantity,
+          unitPriceMinor: item.unitPriceMinor,
+          pricingMode: item.product.pricingMode,
+          designId: item.designId || null,
+          configuration: { notes: item.notes || null },
+        })),
+      });
+      const trackingPath = created.accessToken
+        ? `/track-order?order=${encodeURIComponent(created.orderNo)}&token=${encodeURIComponent(created.accessToken)}`
+        : null;
+      return NextResponse.json({
+        reference: created.orderNo,
+        order: true,
+        trackingPath,
+        idempotent: created.idempotent,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Unable to create order." },
+        { status: 500 },
+      );
+    }
+  }
 
   const db = getSupabase();
   const { data: existing } = await db

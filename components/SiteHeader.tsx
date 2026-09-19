@@ -55,6 +55,9 @@ export function SiteHeader() {
             </Link>
             <Link href="/#our-story">Our story</Link>
             <Link href="/contact">Contact</Link>
+            <Link href="/track-order" aria-current={path === "/track-order" ? "page" : undefined}>
+              Track order
+            </Link>
             <Link href="/cart" aria-current={path === "/cart" ? "page" : undefined}>
               Cart{count ? ` (${count})` : ""}
             </Link>

@@ -19,6 +19,7 @@ export function CheckoutClient() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [trackingPath, setTrackingPath] = useState("");
   const requestId = useRef("");
 
   useEffect(() => {
@@ -79,6 +80,7 @@ export function CheckoutClient() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Unable to submit checkout.");
       setReference(result.reference);
+      setTrackingPath(typeof result.trackingPath === "string" ? result.trackingPath : "");
       clearCart();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to submit checkout.");
@@ -97,7 +99,10 @@ export function CheckoutClient() {
         <p>
           We will confirm the final quotation, proof and delivery before any production or payment.
         </p>
-        <Link className="button" href="/products">Continue browsing ↗</Link>
+        <div className="hero-actions">
+          {trackingPath && <Link className="button" href={trackingPath}>Track this order ↗</Link>}
+          <Link className="text-link" href="/products">Continue browsing ↗</Link>
+        </div>
       </section>
     );
   if (!items.length)
