@@ -47,10 +47,13 @@ export function CartPageClient() {
   }, []);
 
   useEffect(() => {
-    void refresh();
     const handler = () => void refresh();
+    const timer = window.setTimeout(handler, 0);
     window.addEventListener(CART_EVENT, handler);
-    return () => window.removeEventListener(CART_EVENT, handler);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener(CART_EVENT, handler);
+    };
   }, [refresh]);
 
   const total = useMemo(

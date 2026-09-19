@@ -24,25 +24,54 @@ export function CheckoutClient() {
   const requestId = useRef("");
 
   useEffect(() => {
-    const local = readCart();
-    if (!local.length) {
-      setItems([]);
-      setLoading(false);
-      return;
-    }
-    void fetch("/api/cart/validate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ items: local }),
-    })
-      .then(async (r) => {
-        const result = await r.json();
-        if (!r.ok) throw new Error(result.error || "Unable to validate cart.");
-        const byId = new Map(result.items.map((x: Validated) => [x.id, x]));
-        setItems(local.map((x) => ({ ...x, ...(byId.get(x.id) || {}) })));
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      const local = readCart();
+      if (!local.length) {
+        if (!cancelled) {
+          setItems([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      void fetch("/api/cart/validate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items: local }),
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Unable to validate cart."))
-      .finally(() => setLoading(false));
+        .then(async (r) => {
+          const result = await r.json();
+          if (!r.ok)
+            throw new Error(result.error || "Unable to validate cart.");
+          const byId = new Map(
+            result.items.map((x: Validated) => [x.id, x]),
+          );
+          if (!cancelled)
+            setItems(
+              local.map((x) => ({
+                ...x,
+                ...(byId.get(x.id) || {}),
+              })),
+            );
+        })
+        .catch((e) => {
+          if (!cancelled)
+            setError(
+              e instanceof Error
+                ? e.message
+                : "Unable to validate cart.",
+            );
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   const total = useMemo(

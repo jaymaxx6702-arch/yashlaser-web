@@ -59,7 +59,10 @@ export function TrackOrderClient() {
   }
 
   useEffect(() => {
-    if (orderNo && token) void lookup();
+    const timer = window.setTimeout(() => {
+      if (orderNo && token) void lookup();
+    }, 0);
+    return () => window.clearTimeout(timer);
     // query-string lookup runs only on initial mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
