@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { adminUser } from "@/lib/admin";
 import { syncShopOrderToYashFlow } from "@/lib/yashflow";
 
+function safeMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "YashFlow sync failed.";
+  return message
+    .replace(/sb_secret_[A-Za-z0-9._-]+/g, "sb_secret_[redacted]")
+    .replace(/eyJ[A-Za-z0-9._-]{20,}/g, "[redacted token]");
+}
+
 export async function POST(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -17,7 +24,7 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "YashFlow sync failed." },
+      { error: safeMessage(error) },
       { status: 409 },
     );
   }
