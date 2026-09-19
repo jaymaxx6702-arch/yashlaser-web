@@ -1,11 +1,23 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CART_EVENT, cartCount } from "@/lib/cart";
 import { Brand } from "./Brand";
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [count, setCount] = useState(0);
   const path = usePathname();
+  useEffect(() => {
+    const sync = () => setCount(cartCount());
+    sync();
+    window.addEventListener(CART_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(CART_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
   return (
     <>
       <div className="announcement">
@@ -43,6 +55,9 @@ export function SiteHeader() {
             </Link>
             <Link href="/#our-story">Our story</Link>
             <Link href="/contact">Contact</Link>
+            <Link href="/cart" aria-current={path === "/cart" ? "page" : undefined}>
+              Cart{count ? ` (${count})` : ""}
+            </Link>
             <Link href="/products" className="nav-cta">
               Explore products <span aria-hidden="true">↗</span>
             </Link>
