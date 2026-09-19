@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { findProduct } from "@/data/catalog";
 import { getSupabase, submissionEnabled } from "@/lib/supabase";
 import { commerceOrdersEnabled, createCommerceOrder } from "@/lib/commerce-server";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { consumeShopRateLimit } from "@/lib/rate-limit";
 
 type CartInput = {
   productId?: string;
@@ -20,7 +22,16 @@ export async function POST(request: Request) {
   if (!submissionEnabled())
     return NextResponse.json({ error: "Online checkout requests are temporarily unavailable." }, { status: 503 });
 
-  const body = await request.json().catch(() => null);
+  let body: any;
+  try {
+    body = await readJsonBody<any>(request, 64 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const requestId = text(body?.requestId, 36);
   const customer = body?.customer;
   const items = Array.isArray(body?.items) ? (body.items as CartInput[]) : [];
@@ -47,7 +58,21 @@ export async function POST(request: Request) {
   )
     return NextResponse.json({ error: "Please check your contact and delivery details." }, { status: 400 });
 
-  const canonical = items.map((raw) => {
+  const allowed = await consumeShopRateLimit(
+    "checkout",
+    phone.replace(/\D/g, ""),
+    10,
+    600,
+  );
+  if (!allowed)
+    return NextResponse.json(
+      { error: "Too many checkout attempts. Please try again later." },
+      { status: 429 },
+    );
+
+  let canonical;
+  try {
+    canonical = items.map((raw) => {
     const p = typeof raw.slug === "string" ? findProduct(raw.slug) : undefined;
     const qty = Number(raw.quantity);
     if (!p || p.id !== raw.productId || !Number.isInteger(qty) || qty < 1 || qty > 10000)
@@ -59,15 +84,21 @@ export async function POST(request: Request) {
       p.pricingMode === "quote_required"
         ? null
         : (variant?.effectivePriceMinor ?? p.effectivePriceMinor) || null;
-    return {
-      product: p,
-      variant,
-      quantity: qty,
-      unitPriceMinor: unit,
-      designId: text(raw.designId, 100),
-      notes: text(raw.notes, 500),
-    };
-  });
+      return {
+        product: p,
+        variant,
+        quantity: qty,
+        unitPriceMinor: unit,
+        designId: text(raw.designId, 100),
+        notes: text(raw.notes, 500),
+      };
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid cart." },
+      { status: 400 },
+    );
+  }
 
   if (commerceOrdersEnabled()) {
     try {

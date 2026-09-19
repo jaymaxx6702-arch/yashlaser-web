@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { consumeShopRateLimit } from "@/lib/rate-limit";
 
 const allowedTypes = new Set(["bulk", "event", "custom_acrylic"]);
 const clean = (value: unknown, max = 1000) =>
@@ -13,7 +15,16 @@ export async function POST(request: Request) {
       { status: 503 },
     );
 
-  const body = await request.json().catch(() => null);
+  let body: any;
+  try {
+    body = await readJsonBody<any>(request, 24 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const requestType = clean(body?.requestType, 40);
   const name = clean(body?.customer?.name, 80);
   const mobile = clean(body?.customer?.mobile, 20);
@@ -27,6 +38,18 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Please check your contact details." },
       { status: 400 },
+    );
+
+  const allowed = await consumeShopRateLimit(
+    "project_request",
+    mobile.replace(/\D/g, ""),
+    5,
+    600,
+  );
+  if (!allowed)
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
     );
 
   const token = newAccessToken();
