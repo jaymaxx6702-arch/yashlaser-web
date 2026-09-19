@@ -20,6 +20,7 @@ export default async function LocalizedCategoryPage({
       params={await searchParams}
       prefix={"/" + lang}
       copy={uiCopy[lang]}
+      lang={lang}
     />
   );
 }
