@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
+import { products } from "@/data/catalog";
 
 type Review = {
   id: string;
@@ -47,8 +48,17 @@ export default function ReviewsPage() {
 
       <form className="project-form" onSubmit={submit}>
         <label>
-          Product ID
-          <input name="productId" required />
+          Product
+          <select name="productId" defaultValue="" required>
+            <option value="" disabled>
+              Select a product
+            </option>
+            {products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           Your name
