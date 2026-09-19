@@ -4,6 +4,13 @@ import { getSupabase } from "@/lib/supabase";
 import { YashFlowSyncButton } from "@/components/YashFlowSyncButton";
 import { ShipmentEditor } from "@/components/ShipmentEditor";
 
+function safeError(value: string | null) {
+  if (!value) return null;
+  return value
+    .replace(/sb_secret_[A-Za-z0-9._\-\s]+/g, "sb_secret_[redacted]")
+    .replace(/eyJ[A-Za-z0-9._\-]{20,}/g, "[redacted token]");
+}
+
 export default async function ShopOrdersAdminPage() {
   await requireAdmin();
   const db = getSupabase();
@@ -32,7 +39,7 @@ export default async function ShopOrdersAdminPage() {
               <span>{order.customer_name} · {order.customer_mobile}</span>
               <span>Shop: {order.status} · Payment: {order.payment_status}</span>
               <span>YashFlow: {order.yashflow_sync_status}</span>
-              {order.yashflow_last_error && <small>{order.yashflow_last_error}</small>}
+              {order.yashflow_last_error && <small>{safeError(order.yashflow_last_error)}</small>}
               <YashFlowSyncButton orderId={order.id} />
               <ShipmentEditor orderId={order.id} />
             </article>
