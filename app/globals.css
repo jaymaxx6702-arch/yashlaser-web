@@ -1651,3 +1651,15 @@ del {
 }
 .proof-actions { display: grid; gap: 1rem; margin-top: 2rem; max-width: 760px; }
 .proof-actions label { display: grid; gap: .5rem; }
+
+.project-form { margin-top: 2rem; }
+.project-form > label { display: grid; gap: .5rem; margin: 1rem 0; }
+.request-success {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--line, #ddd6cb);
+}
+@media print {
+  .announcement, .site-header, .site-footer, .skip-link { display: none !important; }
+  .print-summary { max-width: none; padding: 0; }
+}
