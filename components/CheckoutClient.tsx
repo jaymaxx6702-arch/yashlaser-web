@@ -21,6 +21,7 @@ export function CheckoutClient() {
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
   const [trackingPath, setTrackingPath] = useState("");
+  const [shippingStatus, setShippingStatus] = useState("");
   const requestId = useRef("");
 
   useEffect(() => {
@@ -78,6 +79,30 @@ export function CheckoutClient() {
     () => items.reduce((n, x) => n + (x.lineTotalMinor || 0), 0),
     [items],
   );
+
+  async function checkPincode(value: string) {
+    const pincode = value.trim();
+    if (!/^\d{6}$/.test(pincode)) {
+      setShippingStatus("");
+      return;
+    }
+    setShippingStatus("Checking delivery…");
+    try {
+      const response = await fetch("/api/shipping/check", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pincode }),
+      });
+      const result = await response.json();
+      setShippingStatus(
+        response.ok
+          ? result.message || "Delivery will be confirmed before payment."
+          : result.error || "Unable to check delivery.",
+      );
+    } catch {
+      setShippingStatus("Delivery will be confirmed before payment.");
+    }
+  }
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -161,7 +186,19 @@ export function CheckoutClient() {
           <label>City<input name="city" maxLength={100} autoComplete="address-level2" required /></label>
           <label className="full">Delivery address<textarea name="address" rows={3} maxLength={500} autoComplete="street-address" required /></label>
           <label>State<input name="state" maxLength={100} autoComplete="address-level1" required /></label>
-          <label>Pincode<input name="pincode" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="postal-code" required /></label>
+          <label>
+            Pincode
+            <input
+              name="pincode"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              autoComplete="postal-code"
+              required
+              onBlur={(e) => void checkPincode(e.currentTarget.value)}
+            />
+            {shippingStatus && <small role="status">{shippingStatus}</small>}
+          </label>
           <label className="full">Notes (optional)<textarea name="notes" rows={3} maxLength={1000} /></label>
         </div>
         <label className="consent-row">
