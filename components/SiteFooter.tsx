@@ -60,6 +60,14 @@ export function SiteFooter() {
           <Link className="text-link" href="/support">
             Support ↗
           </Link>
+          <br />
+          <Link className="text-link" href="/reviews">
+            Customer reviews ↗
+          </Link>
+          <br />
+          <Link className="text-link" href="/track-order">
+            Track order ↗
+          </Link>
         </div>
       </div>
       <div className="container footer-bottom">
