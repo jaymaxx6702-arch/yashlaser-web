@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { categories, findProduct } from "@/data/catalog";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductOptions } from "@/components/ProductOptions";
-import { isUiLanguage, uiCopy } from "@/lib/i18n";
+import { categoryCopy, isUiLanguage, uiCopy } from "@/lib/i18n";
 import { ProductViewAnalytics } from "@/components/Analytics";
 import { languageAlternates } from "@/lib/seo";
 import type { Metadata } from "next";
@@ -48,7 +48,7 @@ export default async function LocalizedProductPage({
         <Link href={prefix + "/products"}>{copy.collection}</Link>
         <span>/</span>
         <Link href={prefix + "/categories/" + category.id}>
-          {category.shortName}
+          {categoryCopy[lang][category.id].shortName}
         </Link>
         <span>/</span>
         <span>{product.name}</span>
@@ -73,10 +73,25 @@ export default async function LocalizedProductPage({
             }}
           />
           <h2>{copy.sizesOptions}</h2>
-          <p>{product.variants.map((v) => v.name).join(" · ") || "Please confirm size."}</p>
+          <p>
+            {product.variants.map((v) => v.name).join(" · ") ||
+              (lang === "gu"
+                ? "સાઇઝ કન્ફર્મ કરો."
+                : lang === "hi"
+                  ? "साइज़ कन्फर्म करें।"
+                  : lang === "mr"
+                    ? "साइझ निश्चित करा."
+                    : "Please confirm size.")}
+          </p>
           <h2>{copy.customisation}</h2>
           <p>
-            Photo, name, message, logo and design options are confirmed before production.
+            {lang === "gu"
+              ? "ફોટો, નામ, મેસેજ, લોગો અને ડિઝાઇનના વિકલ્પો ઉત્પાદન પહેલાં કન્ફર્મ કરવામાં આવશે."
+              : lang === "hi"
+                ? "फोटो, नाम, संदेश, लोगो और डिज़ाइन विकल्प उत्पादन से पहले कन्फर्म किए जाएंगे।"
+                : lang === "mr"
+                  ? "फोटो, नाव, संदेश, लोगो आणि डिझाइन पर्याय उत्पादनापूर्वी निश्चित केले जातील."
+                  : "Photo, name, message, logo and design options are confirmed before production."}
           </p>
           <h2>{copy.productInfo}</h2>
           <p className="preserve-lines">{product.details || product.description}</p>
