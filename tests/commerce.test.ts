@@ -153,3 +153,44 @@ test("customer-facing write APIs retain persisted request rate limiting", () => 
   assert.match(migration, /consume_shop_rate_limit/);
   assert.match(migration, /pg_advisory_xact_lock/);
 });
+
+
+test("analytics covers the planned storefront conversion events without customer PII", () => {
+  const api = fs.readFileSync("app/api/analytics/route.ts", "utf8");
+  for (const eventName of [
+    "page_view",
+    "search",
+    "product_view",
+    "add_to_cart",
+    "begin_checkout",
+    "checkout_complete",
+  ]) {
+    assert.match(api, new RegExp('"' + eventName + '"'));
+  }
+
+  const analytics = fs.readFileSync("components/Analytics.tsx", "utf8");
+  assert.match(analytics, /eventName: "page_view"/);
+  assert.match(analytics, /eventName: "search"/);
+  assert.match(analytics, /eventName: "product_view"/);
+
+  const productOptions = fs.readFileSync("components/ProductOptions.tsx", "utf8");
+  assert.match(productOptions, /eventName: "add_to_cart"/);
+
+  const customization = fs.readFileSync("components/CustomizationForm.tsx", "utf8");
+  assert.match(customization, /eventName: "add_to_cart"/);
+
+  const checkout = fs.readFileSync("components/CheckoutClient.tsx", "utf8");
+  assert.match(checkout, /eventName: "begin_checkout"/);
+  assert.match(checkout, /eventName: "checkout_complete"/);
+
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609200012_analytics_checkout_complete.sql",
+    "utf8",
+  );
+  assert.match(migration, /checkout_complete/);
+
+  for (const source of [api, analytics, productOptions, customization, checkout]) {
+    assert.doesNotMatch(source, /metadata:\s*\{[^}]*phone/i);
+    assert.doesNotMatch(source, /metadata:\s*\{[^}]*email/i);
+  }
+});
