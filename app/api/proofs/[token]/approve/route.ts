@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ token: string }> },
 ) {
   const { token } = await context.params;
+  if (!(await consumeRequestRateLimit(request, "proof_action_ip", 20, 600)))
+    return rateLimitResponse(600);
+
   const body = await request.json().catch(() => ({}));
   const comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 1000) : "";
   const db = getSupabase();
