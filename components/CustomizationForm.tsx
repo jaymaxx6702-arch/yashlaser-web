@@ -325,6 +325,7 @@ export function CustomizationForm({
                 void editor.applyBackgroundRemoval(backgroundRemovalAdapter);
             }}
             onDownload={() => void prepare()}
+            lang={lang}
           />
           <div className="editor-bottom-actions">
             <a
@@ -361,6 +362,7 @@ export function CustomizationForm({
                     document={snapshot.document}
                     bitmap={editor.bitmap}
                     product={p}
+                    lang={lang}
                   />
                   <p className="muted">
                     Design {snapshot.designId} · indicative preview
