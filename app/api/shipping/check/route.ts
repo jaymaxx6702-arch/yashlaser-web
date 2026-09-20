@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "shipping_check_ip", 60, 600)))
+    return rateLimitResponse(600);
+
   const body = await request.json().catch(() => null);
   const pincode =
     typeof body?.pincode === "string" ? body.pincode.trim() : "";
