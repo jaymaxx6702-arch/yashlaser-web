@@ -87,7 +87,7 @@ export function SiteHeader() {
       </div>
       <header className="site-header">
         <div className="container header-inner">
-          <Brand />
+          <Brand href={localHref("/")} />
           <button
             className="menu-toggle"
             aria-expanded={open}
