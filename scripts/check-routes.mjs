@@ -16,6 +16,7 @@ const localizedUtility = [
   "/plan-my-event",
   "/custom-acrylic",
   "/support",
+  "/support/ticket",
   "/reviews",
   "/account",
   "/account/login",
@@ -79,7 +80,9 @@ async function worker() {
       const html = await response.text();
       if (
         path.startsWith("/customize/") ||
-        /^\/(gu|hi|mr)\/customize\//.test(path)
+        /^\/(gu|hi|mr)\/customize\//.test(path) ||
+        path === "/support/ticket" ||
+        /^\/(gu|hi|mr)\/support\/ticket$/.test(path)
       )
         assert.match(html, /noindex/);
       for (const m of html.matchAll(/href="(\/[^"#]*)"/g)) {
