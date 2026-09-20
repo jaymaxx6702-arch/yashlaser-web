@@ -121,6 +121,7 @@ test("customer-facing write APIs retain persisted request rate limiting", () => 
     "app/api/reviews/route.ts",
     "app/api/shipping/check/route.ts",
     "app/api/support/route.ts",
+    "app/api/support/[ticketNo]/route.ts",
   ];
 
   for (const path of directRoutes) {
@@ -193,4 +194,39 @@ test("analytics covers the planned storefront conversion events without customer
     assert.doesNotMatch(source, /metadata:\s*\{[^}]*phone/i);
     assert.doesNotMatch(source, /metadata:\s*\{[^}]*email/i);
   }
+});
+
+
+test("support workflow links verified orders and exposes secure admin responses", () => {
+  const createRoute = fs.readFileSync("app/api/support/route.ts", "utf8");
+  assert.match(createRoute, /orderNo/);
+  assert.match(createRoute, /orderToken/);
+  assert.match(createRoute, /access_token_hash/);
+  assert.match(createRoute, /order_id: orderId/);
+
+  const customerRoute = fs.readFileSync(
+    "app/api/support/[ticketNo]/route.ts",
+    "utf8",
+  );
+  assert.match(customerRoute, /tokenHash\(token\)/);
+  assert.match(customerRoute, /admin_response/);
+  assert.match(customerRoute, /Cache-Control/);
+
+  const adminRoute = fs.readFileSync(
+    "app/api/admin/support/[id]/route.ts",
+    "utf8",
+  );
+  assert.match(adminRoute, /requireAdmin/);
+  assert.match(adminRoute, /admin_response/);
+  assert.match(adminRoute, /responded_at/);
+
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609200013_support_workflow.sql",
+    "utf8",
+  );
+  assert.match(migration, /admin_response/);
+  assert.match(migration, /responded_at/);
+
+  const form = fs.readFileSync("components/SupportForm.tsx", "utf8");
+  assert.match(form, /support\/ticket\?ticket=/);
 });
