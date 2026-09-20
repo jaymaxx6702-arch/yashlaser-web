@@ -2,6 +2,11 @@ import { notFound } from "next/navigation";
 import { CheckoutClient } from "@/components/CheckoutClient";
 import { isUiLanguage } from "@/lib/i18n";
 
+export const metadata = {
+  title: "Checkout",
+  robots: { index: false, follow: false },
+};
+
 export default async function LocalizedCheckoutPage({
   params,
 }: {
