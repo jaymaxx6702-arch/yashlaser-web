@@ -13,6 +13,18 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+function money(value: number | null, currency = "INR") {
+  if (value == null) return "Price on request";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency,
+  }).format(Number(value) / 100);
+}
+
+function readable(value: string) {
+  return value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export default async function AccountPage() {
   if (!customerAccountsEnabled())
     return (
@@ -51,8 +63,8 @@ export default async function AccountPage() {
     <main id="main-content" className="container section">
       <div className="account-heading">
         <div>
-          <p className="eyebrow">Your Yash Laser orders</p>
-          <h1>Customer account.</h1>
+          <p className="eyebrow">Your Yash Laser account</p>
+          <h1>Orders, proofs and delivery in one place.</h1>
           <p>{user.email}</p>
         </div>
         <form action={customerLogout}>
@@ -60,28 +72,74 @@ export default async function AccountPage() {
         </form>
       </div>
 
+      <div className="hero-actions">
+        <Link className="button" href="/products">
+          Continue shopping ↗
+        </Link>
+        <Link className="text-link" href="/track-order">
+          Track a guest order ↗
+        </Link>
+        <Link className="text-link" href="/support">
+          Need help? ↗
+        </Link>
+      </div>
+
       {error ? (
         <p role="alert">
           Orders could not be loaded. Please try again later.
         </p>
       ) : (
-        <section>
-          <h2>Your orders</h2>
+        <section className="section">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">My orders</p>
+              <h2>Your order history</h2>
+            </div>
+            <p>
+              Open an order to view items, payment, proof, shipping and status
+              history.
+            </p>
+          </div>
           <div className="admin-list">
             {(orders || []).map((order) => (
               <article className="admin-card" key={order.id}>
-                <strong>{order.order_no}</strong>
-                <span>
-                  {order.status} · Payment {order.payment_status}
-                </span>
-                <small>
-                  {new Date(order.created_at).toLocaleString("en-IN", {
-                    timeZone: "Asia/Kolkata",
-                  })}
-                </small>
+                <div className="account-heading">
+                  <div>
+                    <strong>{order.order_no}</strong>
+                    <p>
+                      {readable(order.status)} · Payment{" "}
+                      {readable(order.payment_status)}
+                    </p>
+                    <small>
+                      {new Date(order.created_at).toLocaleString("en-IN", {
+                        timeZone: "Asia/Kolkata",
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </small>
+                  </div>
+                  <div>
+                    <strong>{money(order.total_minor, order.currency)}</strong>
+                    <br />
+                    <Link
+                      className="text-link"
+                      href={"/account/orders/" + order.id}
+                    >
+                      View order ↗
+                    </Link>
+                  </div>
+                </div>
               </article>
             ))}
-            {!orders?.length && <p>No linked orders yet.</p>}
+            {!orders?.length && (
+              <div className="admin-card">
+                <h3>No linked orders yet.</h3>
+                <p>
+                  New orders placed while signed in will appear here
+                  automatically. You can also add an older guest order below.
+                </p>
+              </div>
+            )}
           </div>
         </section>
       )}
