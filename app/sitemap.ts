@@ -19,6 +19,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/custom-acrylic",
     "/support",
     "/reviews",
+    "/about",
+    "/faq",
+    "/shipping-policy",
+    "/terms",
+    "/replacement-damage",
   ];
 
   const localized = [
@@ -31,6 +36,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/custom-acrylic",
     "/support",
     "/reviews",
+    "/about",
+    "/faq",
+    "/shipping-policy",
+    "/terms",
+    "/replacement-damage",
     ...categories.map((c) => categoryHref(c.id)),
     ...products.map(productHref),
   ];
