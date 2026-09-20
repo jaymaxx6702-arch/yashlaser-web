@@ -4,7 +4,7 @@ import { findProduct } from "@/data/catalog";
 import { getSupabase, submissionEnabled } from "@/lib/supabase";
 import { commerceOrdersEnabled, createCommerceOrder } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { consumeRequestRateLimit, consumeShopRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { customerUser } from "@/lib/customer-auth";
 
 type CheckoutCustomer = {
@@ -38,6 +38,9 @@ const text = (value: unknown, max: number) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "checkout_ip", 30, 600)))
+    return rateLimitResponse(600);
+
   if (!submissionEnabled())
     return NextResponse.json({ error: "Online checkout requests are temporarily unavailable." }, { status: 503 });
 
