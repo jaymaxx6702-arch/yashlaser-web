@@ -28,6 +28,11 @@ const localizedUtilityPaths = new Set([
   "/account",
   "/account/login",
   "/privacy",
+  "/about",
+  "/faq",
+  "/shipping-policy",
+  "/terms",
+  "/replacement-damage",
 ]);
 
 function isLocalizedPath(path: string) {
@@ -109,7 +114,7 @@ export function SiteHeader() {
             >
               {copy.collection}
             </Link>
-            <Link href={localHref("/") + "#our-story"}>{copy.story}</Link>
+            <Link href={localHref("/about")}>{copy.story}</Link>
             <Link href={localHref("/contact")}>{copy.contact}</Link>
             <Link
               href={localHref("/track-order")}
