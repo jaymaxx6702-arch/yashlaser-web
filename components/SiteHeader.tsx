@@ -25,6 +25,8 @@ const localizedUtilityPaths = new Set([
   "/custom-acrylic",
   "/support",
   "/reviews",
+  "/account",
+  "/account/login",
   "/privacy",
 ]);
 
@@ -32,7 +34,8 @@ function isLocalizedPath(path: string) {
   return (
     localizedUtilityPaths.has(path) ||
     path.startsWith("/products/") ||
-    path.startsWith("/categories/")
+    path.startsWith("/categories/") ||
+    path.startsWith("/account/orders/")
   );
 }
 
@@ -117,7 +120,15 @@ export function SiteHeader() {
             <Link href={localHref("/cart")} aria-current={path === localHref("/cart") ? "page" : undefined}>
               {copy.cart}{count ? ` (${count})` : ""}
             </Link>
-            <Link href="/account" aria-current={path.startsWith("/account") ? "page" : undefined}>
+            <Link
+              href={localHref("/account")}
+              aria-current={
+                path === localHref("/account") ||
+                path.startsWith(localHref("/account") + "/")
+                  ? "page"
+                  : undefined
+              }
+            >
               {copy.account}
             </Link>
             <Link href={localHref("/products")} className="nav-cta">
