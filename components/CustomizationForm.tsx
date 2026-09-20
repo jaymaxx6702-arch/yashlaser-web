@@ -23,6 +23,7 @@ import {
 } from "@/lib/customization/snapshot";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
 import { addCartItem } from "@/lib/cart";
+import { sendAnalyticsEvent } from "@/components/Analytics";
 import type { UiLanguage } from "@/lib/i18n";
 
 const formCopy = {
@@ -464,6 +465,15 @@ export function CustomizationForm({
       pricingMode: p.pricingMode,
       designId: snapshot.designId,
       notes: "Saved enquiry " + success.reference,
+    });
+    sendAnalyticsEvent({
+      eventName: "add_to_cart",
+      productId: p.id,
+      path: productPath,
+      metadata: {
+        quantity: snapshot.document.quantity,
+        savedDesign: true,
+      },
     });
     router.push(prefix + "/cart");
   }
