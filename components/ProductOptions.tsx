@@ -21,6 +21,9 @@ export function ProductOptions({
   const router = useRouter();
   const pathname = usePathname();
   const currentLang = pathname.split("/").filter(Boolean)[0] || "en";
+  const prefix = ["gu", "hi", "mr"].includes(currentLang)
+    ? "/" + currentLang
+    : "";
   const t =
     currentLang === "gu"
       ? {
@@ -123,7 +126,7 @@ export function ProductOptions({
   );
   return (
     <form
-      action={"/customize/" + p.slug}
+      action={prefix + "/customize/" + p.slug}
       method="get"
       className="product-options"
     >
@@ -210,7 +213,7 @@ export function ProductOptions({
               pricingMode: p.pricingMode,
               notes: "Added from product page; personalisation to confirm.",
             });
-            router.push("/cart");
+            router.push(prefix + "/cart");
           }}
         >
           {t.cart}
