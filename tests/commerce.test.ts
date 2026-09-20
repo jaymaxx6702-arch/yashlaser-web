@@ -113,6 +113,7 @@ test("customer-facing write APIs retain persisted request rate limiting", () => 
     "app/api/orders/track/route.ts",
     "app/api/payments/create/route.ts",
     "app/api/project-requests/route.ts",
+    "app/api/project-requests/[requestNo]/route.ts",
     "app/api/project-requests/[requestNo]/upload-session/route.ts",
     "app/api/project-requests/[requestNo]/files/route.ts",
     "app/api/proofs/[token]/approve/route.ts",
@@ -229,4 +230,33 @@ test("support workflow links verified orders and exposes secure admin responses"
 
   const form = fs.readFileSync("components/SupportForm.tsx", "utf8");
   assert.match(form, /support\/ticket\?ticket=/);
+});
+
+
+test("project request workflow exposes secure status and admin follow-up", () => {
+  const customerRoute = fs.readFileSync(
+    "app/api/project-requests/[requestNo]/route.ts",
+    "utf8",
+  );
+  assert.match(customerRoute, /tokenHash\(token\)/);
+  assert.match(customerRoute, /customer_message/);
+  assert.match(customerRoute, /Cache-Control/);
+
+  const adminRoute = fs.readFileSync(
+    "app/api/admin/projects/[id]/route.ts",
+    "utf8",
+  );
+  assert.match(adminRoute, /requireAdmin/);
+  assert.match(adminRoute, /customer_message/);
+  assert.match(adminRoute, /responded_at/);
+
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609200014_project_followup.sql",
+    "utf8",
+  );
+  assert.match(migration, /customer_message/);
+  assert.match(migration, /responded_at/);
+
+  const form = fs.readFileSync("components/ProjectRequestForm.tsx", "utf8");
+  assert.match(form, /project-request-status\?request=/);
 });
