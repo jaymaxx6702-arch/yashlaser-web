@@ -2,6 +2,11 @@ import { notFound } from "next/navigation";
 import { CartPageClient } from "@/components/CartPageClient";
 import { isUiLanguage } from "@/lib/i18n";
 
+export const metadata = {
+  title: "Cart",
+  robots: { index: false, follow: false },
+};
+
 export default async function LocalizedCartPage({
   params,
 }: {
