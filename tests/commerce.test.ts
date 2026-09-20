@@ -102,3 +102,54 @@ test("rollout-sensitive feature flags default to disabled in the environment tem
     assert.match(env, new RegExp("^" + flag + "=false$", "m"));
   }
 });
+
+
+test("customer-facing write APIs retain persisted request rate limiting", () => {
+  const directRoutes = [
+    "app/api/account/claim-order/route.ts",
+    "app/api/analytics/route.ts",
+    "app/api/cart/validate/route.ts",
+    "app/api/checkout/route.ts",
+    "app/api/orders/track/route.ts",
+    "app/api/payments/create/route.ts",
+    "app/api/project-requests/route.ts",
+    "app/api/project-requests/[requestNo]/upload-session/route.ts",
+    "app/api/project-requests/[requestNo]/files/route.ts",
+    "app/api/proofs/[token]/approve/route.ts",
+    "app/api/proofs/[token]/request-changes/route.ts",
+    "app/api/quotes/[token]/accept/route.ts",
+    "app/api/reviews/route.ts",
+    "app/api/shipping/check/route.ts",
+    "app/api/support/route.ts",
+  ];
+
+  for (const path of directRoutes) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(
+      source,
+      /consumeRequestRateLimit/,
+      path + " must retain endpoint request rate limiting",
+    );
+  }
+
+  for (const path of [
+    "app/api/enquiries/route.ts",
+    "app/api/enquiries/uploads/route.ts",
+  ]) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(source, /enquiryJson\(request\)/);
+  }
+
+  const enquiryServer = fs.readFileSync("lib/enquiry-server.ts", "utf8");
+  assert.match(
+    enquiryServer,
+    /consumeRequestRateLimit\(request, "enquiry_ip"/,
+  );
+
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609190010_rate_limits.sql",
+    "utf8",
+  );
+  assert.match(migration, /consume_shop_rate_limit/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+});
