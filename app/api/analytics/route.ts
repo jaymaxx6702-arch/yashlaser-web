@@ -18,6 +18,7 @@ const names = new Set([
   "product_view",
   "add_to_cart",
   "begin_checkout",
+  "checkout_complete",
 ]);
 
 function cleanPath(value: unknown) {
