@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { uploadPrivate } from "@/lib/direct-upload";
 import { business, whatsappUrl } from "@/data/business";
@@ -15,7 +16,7 @@ const copy = {
     notes: "Requirement / notes", file: "File (optional)", fileHelp: "PDF, Excel/CSV or image · max 20 MB",
     submitting: "Submitting…", submit: "Submit request →", saved: "Request saved.", savedFile: "Request and file saved.",
     unable: "Unable to save request.", uploadPrepare: "Unable to prepare file upload.", uploadConfirm: "Unable to confirm file.",
-    reference: "Reference", whatsapp: "Continue on WhatsApp ↗",
+    reference: "Reference", whatsapp: "Continue on WhatsApp ↗", track: "Track request ↗",
   },
   gu: {
     titles: { bulk: "બલ્ક ઓર્ડર રિક્વેસ્ટ", event: "મારો ઇવેન્ટ પ્લાન", custom_acrylic: "કસ્ટમ એક્રેલિક રિક્વેસ્ટ" },
@@ -25,7 +26,7 @@ const copy = {
     notes: "જરૂરિયાત / નોંધ", file: "ફાઇલ (વૈકલ્પિક)", fileHelp: "PDF, Excel/CSV અથવા image · મહત્તમ 20 MB",
     submitting: "સબમિટ થઈ રહ્યું છે…", submit: "રિક્વેસ્ટ સબમિટ કરો →", saved: "રિક્વેસ્ટ સેવ થઈ.", savedFile: "રિક્વેસ્ટ અને ફાઇલ સેવ થઈ.",
     unable: "રિક્વેસ્ટ સેવ થઈ શકી નથી.", uploadPrepare: "ફાઇલ અપલોડ તૈયાર થઈ શક્યો નથી.", uploadConfirm: "ફાઇલ કન્ફર્મ થઈ શકી નથી.",
-    reference: "રેફરન્સ", whatsapp: "WhatsApp પર આગળ વધો ↗",
+    reference: "રેફરન્સ", whatsapp: "WhatsApp પર આગળ વધો ↗", track: "રિક્વેસ્ટ ટ્રેક કરો ↗",
   },
   hi: {
     titles: { bulk: "बल्क ऑर्डर रिक्वेस्ट", event: "मेरा इवेंट प्लान", custom_acrylic: "कस्टम ऐक्रेलिक रिक्वेस्ट" },
@@ -35,7 +36,7 @@ const copy = {
     notes: "आवश्यकता / नोट्स", file: "फ़ाइल (वैकल्पिक)", fileHelp: "PDF, Excel/CSV या image · अधिकतम 20 MB",
     submitting: "सबमिट हो रहा है…", submit: "रिक्वेस्ट सबमिट करें →", saved: "रिक्वेस्ट सेव हुई.", savedFile: "रिक्वेस्ट और फ़ाइल सेव हुई.",
     unable: "रिक्वेस्ट सेव नहीं हो सकी.", uploadPrepare: "फ़ाइल अपलोड तैयार नहीं हो सका.", uploadConfirm: "फ़ाइल कन्फर्म नहीं हो सकी.",
-    reference: "रेफरेंस", whatsapp: "WhatsApp पर आगे बढ़ें ↗",
+    reference: "रेफरेंस", whatsapp: "WhatsApp पर आगे बढ़ें ↗", track: "रिक्वेस्ट ट्रैक करें ↗",
   },
   mr: {
     titles: { bulk: "बल्क ऑर्डर रिक्वेस्ट", event: "माझा इव्हेंट प्लॅन", custom_acrylic: "कस्टम अॅक्रिलिक रिक्वेस्ट" },
@@ -45,7 +46,7 @@ const copy = {
     notes: "गरज / नोट्स", file: "फाइल (पर्यायी)", fileHelp: "PDF, Excel/CSV किंवा image · कमाल 20 MB",
     submitting: "सबमिट होत आहे…", submit: "रिक्वेस्ट सबमिट करा →", saved: "रिक्वेस्ट सेव्ह झाली.", savedFile: "रिक्वेस्ट आणि फाइल सेव्ह झाली.",
     unable: "रिक्वेस्ट सेव्ह करता आली नाही.", uploadPrepare: "फाइल अपलोड तयार करता आला नाही.", uploadConfirm: "फाइल निश्चित करता आली नाही.",
-    reference: "रेफरन्स", whatsapp: "WhatsApp वर पुढे जा ↗",
+    reference: "रेफरन्स", whatsapp: "WhatsApp वर पुढे जा ↗", track: "रिक्वेस्ट ट्रॅक करा ↗",
   },
 } as const;
 
@@ -57,6 +58,7 @@ export function ProjectRequestForm({
   lang?: UiLanguage;
 }) {
   const t = copy[lang];
+  const prefix = lang === "en" ? "" : "/" + lang;
   const [result, setResult] = useState<{ requestNo: string; token: string } | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState("");
@@ -241,21 +243,35 @@ export function ProjectRequestForm({
           <p>
             {t.reference}: <strong>{result.requestNo}</strong>
           </p>
-          <a
-            className="text-link"
-            href={whatsappUrl(
-              "Hello Yash Laser, my " +
-                title +
-                " reference is " +
-                result.requestNo +
-                ". Please help me with the next step. " +
-                business.url,
-            )}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t.whatsapp}
-          </a>
+          <div className="hero-actions">
+            <Link
+              className="button button-secondary"
+              href={
+                prefix +
+                "/project-request-status?request=" +
+                encodeURIComponent(result.requestNo) +
+                "&token=" +
+                encodeURIComponent(result.token)
+              }
+            >
+              {t.track}
+            </Link>
+            <a
+              className="text-link"
+              href={whatsappUrl(
+                "Hello Yash Laser, my " +
+                  title +
+                  " reference is " +
+                  result.requestNo +
+                  ". Please help me with the next step. " +
+                  business.url,
+              )}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t.whatsapp}
+            </a>
+          </div>
         </div>
       )}
     </form>
