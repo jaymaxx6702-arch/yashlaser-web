@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { consumeRequestRateLimit, consumeShopRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { products } from "@/data/catalog";
 
 type ReviewBody = {
@@ -26,6 +26,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "review_ip", 20, 3600)))
+    return rateLimitResponse(3600);
+
   if (process.env.REVIEWS_ENABLED !== "true")
     return NextResponse.json(
       { error: "Reviews are not enabled yet." },
