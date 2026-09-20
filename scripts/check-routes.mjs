@@ -59,6 +59,9 @@ const paths = [
     "/gu/products/" + p.slug,
     "/hi/products/" + p.slug,
     "/mr/products/" + p.slug,
+    "/gu/customize/" + p.slug,
+    "/hi/customize/" + p.slug,
+    "/mr/customize/" + p.slug,
   ]),
   ...new Map(
     products.map((p) => [p.categoryId, "/customize/" + p.slug]),
@@ -74,7 +77,11 @@ async function worker() {
       const response = await fetch(base + path);
       assert.equal(response.status, 200, path);
       const html = await response.text();
-      if (path.startsWith("/customize/")) assert.match(html, /noindex/);
+      if (
+        path.startsWith("/customize/") ||
+        /^\/(gu|hi|mr)\/customize\//.test(path)
+      )
+        assert.match(html, /noindex/);
       for (const m of html.matchAll(/href="(\/[^"#]*)"/g)) {
         const link = m[1].replaceAll("&amp;", "&");
         if (!link.startsWith("/_next/") && !link.startsWith("//"))
