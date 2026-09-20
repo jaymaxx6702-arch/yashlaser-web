@@ -41,6 +41,11 @@ const copy = {
   },
 } as const;
 
+export const metadata = {
+  title: "Customer sign in",
+  robots: { index: false, follow: false },
+};
+
 export default async function LocalizedCustomerLoginPage({
   params,
   searchParams,
