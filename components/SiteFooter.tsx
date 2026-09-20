@@ -141,7 +141,7 @@ export function SiteFooter() {
             {t.track} ↗
           </Link>
           <br />
-          <Link className="text-link" href="/account">
+          <Link className="text-link" href={localHref("/account")}>
             {t.account} ↗
           </Link>
         </div>
