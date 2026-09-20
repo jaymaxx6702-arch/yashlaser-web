@@ -194,7 +194,13 @@ export function CheckoutClient({ lang = "en" }: { lang?: UiLanguage }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || t.submitError);
       setReference(result.reference);
-      setTrackingPath(typeof result.trackingPath === "string" ? result.trackingPath : "");
+      setTrackingPath(
+        typeof result.trackingPath === "string"
+          ? (prefix && result.trackingPath.startsWith("/track-order")
+              ? prefix + result.trackingPath
+              : result.trackingPath)
+          : "",
+      );
       clearCart();
     } catch (e) {
       setError(e instanceof Error ? e.message : t.submitError);
