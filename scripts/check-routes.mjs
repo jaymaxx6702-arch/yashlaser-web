@@ -17,6 +17,8 @@ const localizedUtility = [
   "/custom-acrylic",
   "/support",
   "/reviews",
+  "/account",
+  "/account/login",
   "/cart",
   "/checkout",
   "/track-order",
