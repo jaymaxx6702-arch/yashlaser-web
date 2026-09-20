@@ -16,6 +16,7 @@ const localizedUtility = [
   "/plan-my-event",
   "/custom-acrylic",
   "/support",
+  "/reviews",
   "/cart",
   "/checkout",
   "/track-order",
