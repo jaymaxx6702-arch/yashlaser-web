@@ -133,7 +133,7 @@ export function SiteFooter() {
             {t.support} ↗
           </Link>
           <br />
-          <Link className="text-link" href="/reviews">
+          <Link className="text-link" href={localHref("/reviews")}>
             {t.reviews} ↗
           </Link>
           <br />
