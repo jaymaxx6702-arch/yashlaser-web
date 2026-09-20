@@ -10,9 +10,9 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.0 |
-| Last Updated | 19 September 2026 |
-| Current Active Task | **YL-093 - Latest `main` production deployment અને verification** |
+| Master File Version | 1.1 |
+| Last Updated | 20 September 2026 |
+| Current Active Task | **YL-083 - Public endpoints પર rate limits enable અને verify કરવું** |
 | Overall State | Planning locked; implementation અને launch-readiness ચાલુ |
 
 ---
@@ -170,6 +170,17 @@ Latest known application health:
 
 `commerce=true | yashflow=true | payments=false | analytics=false`
 
+20 September 2026 connection verification:
+
+- GitHub repository `jaymaxx6702-arch/yashlaser-web`, branch `main`, read/write connection verified.
+- Latest `main` commit માટે Vercel status `success` verified.
+- `shop.yashlaser.in` Vercel પર live છે અને HTTPS/security headers સાથે respond કરે છે.
+- Homepage, Products, Gujarati, Hindi, Marathi, Cart, Checkout, Track Order, Admin, Sitemap અને Robots routes `200 OK` આપે છે.
+- `/api/health` live છે અને expected feature-flag state આપે છે.
+- Supabase-backed `/api/reviews` read request `200 OK` આપે છે; Supabase server connection configured છે.
+- Pincode API valid input માટે manual-confirmation response અને invalid input માટે `400` validation આપે છે.
+- Current work scope website-only છે; YashFlow appના code/featuresમાં અત્યારે ફેરફાર કરવાના નથી.
+
 Known completed foundation:
 
 - Shop commerce/order foundation codeમાં ઉપલબ્ધ છે.
@@ -193,21 +204,19 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 25 |
-| In Progress | 12 |
+| Completed | 27 |
+| In Progress | 11 |
 | Blocked | 4 |
-| Pending | 59 |
+| Pending | 58 |
 | **Total** | **100** |
 
 ### Immediate execution order
 
-1. **YL-093** - latest `main` deploy/redeploy.
-2. **YL-094** - live smoke test.
-3. **YL-083, YL-084** - rate limits અને analytics enable/test.
-4. **YL-048, YL-049, YL-050, YL-082** - bulk/event/custom/support flows enable/test.
-5. **YL-081, YL-057, YL-058, YL-059** - reviews અને customer accounts.
-6. Catalogue data, legal pages, SEO, performance અને full QA.
-7. Payment અને courier credentials મળ્યા પછી blocked tasks.
+1. **YL-083, YL-084** - rate limits અને analytics enable/test.
+2. **YL-048, YL-049, YL-050, YL-082** - bulk/event/custom/support flows enable/test.
+3. **YL-081, YL-057, YL-058, YL-059** - reviews અને customer accounts.
+4. Catalogue data, legal pages, SEO, performance અને full QA.
+5. Payment અને courier credentials મળ્યા પછી blocked tasks.
 
 ### Reference base
 
@@ -341,8 +350,8 @@ Known completed foundation:
 
 ### I. Deployment, Launch and Monitoring - YL-093 to YL-100
 
-- [ ] [IN PROGRESS] **YL-093** Latest GitHub `main` commit productionમાં deploy/redeploy કરીને deployment success verify કરવું.
-- [ ] **YL-094** Deploy પછી homepage, products, product detail, cart, checkout અને ચાર languages smoke test કરવી.
+- [x] **YL-093** Latest GitHub `main` commit productionમાં deploy/redeploy કરીને deployment success verify કરવું.
+- [x] **YL-094** Deploy પછી homepage, products, product detail, cart, checkout અને ચાર languages smoke test કરવી.
 - [ ] **YL-095** Complete end-to-end QA: product -> order -> proof -> YashFlow -> production -> dispatch ચલાવવું.
 - [ ] **YL-096** Controlled seed real orderથી payment વગર/manual-confirmation launch flow verify કરવો.
 - [ ] **YL-097** First 10 real orders owner/admin દ્વારા manually review કરવા.
@@ -411,6 +420,15 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 1.1 - 20 September 2026
+
+- GitHub `main` read/write connection અને latest commit verified.
+- Vercel deployment success તથા live custom domain verified.
+- Main website routes, multilingual routes, health API, Supabase read અને pincode validation smoke-tested.
+- YL-093 અને YL-094 complete mark કર્યા; dashboard counts update કર્યા.
+- Current Active Task YL-083 set કર્યો.
+- Website-only scope confirmed; YashFlow app changes paused રાખ્યા.
+
 ### Version 1.0 - 19 September 2026
 
 - Previous Yash Laser website planningને એક editable project fileમાં consolidate કર્યું.
@@ -426,16 +444,17 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 નવી chat શરૂ કરતી વખતે આ Master File attach/mention કરીને નીચેનું લખાણ મોકલવું:
 
-> **YashLaser Website continue. `YASHLASER_MASTER_PROJECT.md` ને Source of Truth માનો. પહેલાં Current Active Task, Dashboard અને છેલ્લો Change Log વાંચો. હાલ YL-093થી આગળ કામ ચાલુ કરો. કોઈ task verify થયા વગર Done mark ન કરો. કામ પૂર્ણ થયા પછી checklist, counts, active task અને change log update કરીને આ જ fileની નવી version save કરો.**
+> **YashLaser Website continue. `YASHLASER_MASTER_PROJECT.md` ને Source of Truth માનો. પહેલાં Current Active Task, Dashboard અને છેલ્લો Change Log વાંચો. હાલ YL-083થી આગળ website-only કામ ચાલુ કરો. YashFlow appમાં અત્યારે changes ન કરો. કોઈ task verify થયા વગર Done mark ન કરો. કામ પૂર્ણ થયા પછી checklist, counts, active task અને change log update કરીને આ જ fileની નવી version save કરો.**
 
 ### Current handoff
 
-- Active: **YL-093 - Latest `main` production deployment verify કરવું.**
-- Next: **YL-094 - Live smoke test.**
+- Active: **YL-083 - Public endpoints પર rate limits enable/test કરવું.**
+- Next: **YL-084 - Production analytics enable/test કરવું.**
 - Payments: OFF રાખવા.
 - Analytics: હજી enable/test કરવાનું બાકી.
 - YashFlow: manual Sync / Retry current safe method.
 - Current known mapping: 350 active mapped products; unsupported products auto-route ન કરવા.
+- Current scope: Websiteના બાકી બધા કામ પૂર્ણ કરવા; YashFlow appના changes અત્યારે નહીં.
 
 ---
 
