@@ -21,6 +21,11 @@ const copy = {
     track: "Track order",
     account: "Customer account",
     privacy: "Privacy & customer artwork",
+    about: "About",
+    faq: "FAQ",
+    shippingPolicy: "Shipping policy",
+    terms: "Terms",
+    replacement: "Replacement & damage",
     whatsapp: "Hello Yash Laser, I would like to discuss a customised product.",
   },
   gu: {
@@ -37,6 +42,11 @@ const copy = {
     track: "ઓર્ડર ટ્રેક કરો",
     account: "ગ્રાહક એકાઉન્ટ",
     privacy: "ગોપનીયતા અને ગ્રાહક આર્ટવર્ક",
+    about: "અમારા વિશે",
+    faq: "FAQ",
+    shippingPolicy: "શિપિંગ પોલિસી",
+    terms: "શરતો",
+    replacement: "રિપ્લેસમેન્ટ અને ડેમેજ",
     whatsapp: "નમસ્તે Yash Laser, મને કસ્ટમ પ્રોડક્ટ અંગે વાત કરવી છે.",
   },
   hi: {
@@ -53,6 +63,11 @@ const copy = {
     track: "ऑर्डर ट्रैक करें",
     account: "ग्राहक अकाउंट",
     privacy: "गोपनीयता और ग्राहक आर्टवर्क",
+    about: "हमारे बारे में",
+    faq: "FAQ",
+    shippingPolicy: "शिपिंग पॉलिसी",
+    terms: "शर्तें",
+    replacement: "रिप्लेसमेंट और डैमेज",
     whatsapp: "नमस्ते Yash Laser, मुझे कस्टम प्रोडक्ट के बारे में बात करनी है.",
   },
   mr: {
@@ -69,6 +84,11 @@ const copy = {
     track: "ऑर्डर ट्रॅक करा",
     account: "ग्राहक अकाउंट",
     privacy: "गोपनीयता आणि ग्राहक आर्टवर्क",
+    about: "आमच्याबद्दल",
+    faq: "FAQ",
+    shippingPolicy: "शिपिंग पॉलिसी",
+    terms: "अटी",
+    replacement: "रिप्लेसमेंट आणि डॅमेज",
     whatsapp: "नमस्कार Yash Laser, मला कस्टम प्रॉडक्टबद्दल चर्चा करायची आहे.",
   },
 } as const;
@@ -148,7 +168,14 @@ export function SiteFooter() {
       </div>
       <div className="container footer-bottom">
         <span>© {new Date().getFullYear()} Yash Laser</span>
-        <Link href={localHref("/privacy")}>{t.privacy}</Link>
+        <span>
+          <Link href={localHref("/about")}>{t.about}</Link>{" · "}
+          <Link href={localHref("/faq")}>{t.faq}</Link>{" · "}
+          <Link href={localHref("/shipping-policy")}>{t.shippingPolicy}</Link>{" · "}
+          <Link href={localHref("/replacement-damage")}>{t.replacement}</Link>{" · "}
+          <Link href={localHref("/terms")}>{t.terms}</Link>{" · "}
+          <Link href={localHref("/privacy")}>{t.privacy}</Link>
+        </span>
       </div>
     </footer>
   );
