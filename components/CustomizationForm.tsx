@@ -486,15 +486,13 @@ export function CustomizationForm({
       else downloadBlob(snapshot.png, file.name);
     } catch (e) {
       if (!(e instanceof DOMException && e.name === "AbortError"))
-        editor.setError(
-          "Sharing is unavailable. Use Download preview and attach it in WhatsApp.",
-        );
+        editor.setError(t.shareError);
     }
   }
   if (!editor.ready)
     return (
       <p className="editor-status" role="status">
-        Preparing your customization editor…
+        {t.preparingEditor}
       </p>
     );
   const locked = busy || editor.processing;
@@ -507,7 +505,7 @@ export function CustomizationForm({
           disabled={locked}
           onClick={() => setStep("design")}
         >
-          1. Design
+          {t.designStep}
         </button>
         <span>→</span>
         <button
@@ -516,7 +514,7 @@ export function CustomizationForm({
           disabled={locked}
           onClick={() => void prepare(true)}
         >
-          2. Review & enquire
+          {t.reviewStep}
         </button>
       </nav>
       <p className="muted" role="status">
@@ -533,7 +531,7 @@ export function CustomizationForm({
               target="_blank"
               rel="noreferrer"
             >
-              Continue enquiry on WhatsApp ↗
+              {t.whatsappContinue}
             </a>
           )}
         </p>
@@ -578,11 +576,11 @@ export function CustomizationForm({
                 if (await editor.flush()) router.push(productPath);
                 else
                   editor.setError(
-                    "Download a preview before leaving: this browser could not save the draft.",
+                    t.saveDraftError,
                   );
               }}
             >
-              ← Back to product
+              {t.backProduct}
             </a>
             <button
               type="button"
@@ -590,7 +588,7 @@ export function CustomizationForm({
               disabled={locked || overflow}
               onClick={() => void prepare(true)}
             >
-              Review & enquire →
+              {t.reviewButton}
             </button>
           </div>
         </>
@@ -619,7 +617,7 @@ export function CustomizationForm({
                         )
                       }
                     >
-                      Download preview
+                      {t.downloadPreview}
                     </button>
                     <button
                       type="button"
@@ -630,10 +628,10 @@ export function CustomizationForm({
                         )
                       }
                     >
-                      Download design settings
+                      {t.downloadSettings}
                     </button>
                     <button type="button" onClick={() => void share()}>
-                      Share preview…
+                      {t.sharePreview}
                     </button>
                   </div>
                 </>
@@ -664,7 +662,7 @@ export function CustomizationForm({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Continue on WhatsApp ↗
+                    {t.whatsapp}
                   </a>
                   {success.saved && (
                     <button
@@ -672,7 +670,7 @@ export function CustomizationForm({
                       type="button"
                       onClick={addSavedDesignToCart}
                     >
-                      Add saved design to cart →
+                      {t.addCart}
                     </button>
                   )}
                 </div>
@@ -684,7 +682,7 @@ export function CustomizationForm({
                   className="text-link"
                   onClick={() => setStep("design")}
                 >
-                  Edit this design
+                  {t.editDesign}
                 </button>
               </section>
             ) : (
