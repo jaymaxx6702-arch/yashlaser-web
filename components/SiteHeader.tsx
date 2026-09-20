@@ -25,6 +25,7 @@ const localizedUtilityPaths = new Set([
   "/custom-acrylic",
   "/support",
   "/support/ticket",
+  "/project-request-status",
   "/reviews",
   "/account",
   "/account/login",
