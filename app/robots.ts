@@ -10,6 +10,7 @@ const privatePaths = [
   "/account",
   "/track-order",
   "/support/ticket",
+  "/project-request-status",
   "/proof/",
   "/quote/",
   "/order-summary/",
@@ -17,7 +18,7 @@ const privatePaths = [
 
 export default function robots(): MetadataRoute.Robots {
   const localizedPrivate = ["gu", "hi", "mr"].flatMap((lang) =>
-    ["/cart", "/checkout", "/track-order", "/support/ticket", "/account", "/customize"].map(
+    ["/cart", "/checkout", "/track-order", "/support/ticket", "/project-request-status", "/account", "/customize"].map(
       (path) => "/" + lang + path,
     ),
   );
