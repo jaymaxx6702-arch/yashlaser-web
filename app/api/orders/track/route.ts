@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { commerceOrdersEnabled, trackCommerceOrder } from "@/lib/commerce-server";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   if (!commerceOrdersEnabled())
@@ -7,6 +8,10 @@ export async function POST(request: Request) {
       { error: "Order tracking is not enabled yet." },
       { status: 503 },
     );
+
+  if (!(await consumeRequestRateLimit(request, "order_track_ip", 30, 600)))
+    return rateLimitResponse(600);
+
   const body = await request.json().catch(() => null);
   const orderNo = typeof body?.orderNo === "string" ? body.orderNo.trim().slice(0, 40) : "";
   const token = typeof body?.token === "string" ? body.token.trim().slice(0, 100) : "";
