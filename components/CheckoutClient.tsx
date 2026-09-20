@@ -194,6 +194,14 @@ export function CheckoutClient({ lang = "en" }: { lang?: UiLanguage }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || t.submitError);
       setReference(result.reference);
+      sendAnalyticsEvent({
+        eventName: "checkout_complete",
+        path: prefix + "/checkout",
+        metadata: {
+          orderCreated: result.order === true,
+          idempotent: result.idempotent === true,
+        },
+      });
       setTrackingPath(
         typeof result.trackingPath === "string"
           ? (prefix && result.trackingPath.startsWith("/track-order")
