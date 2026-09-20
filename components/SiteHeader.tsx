@@ -40,6 +40,7 @@ function isLocalizedPath(path: string) {
     localizedUtilityPaths.has(path) ||
     path.startsWith("/products/") ||
     path.startsWith("/categories/") ||
+    path.startsWith("/customize/") ||
     path.startsWith("/account/orders/")
   );
 }
