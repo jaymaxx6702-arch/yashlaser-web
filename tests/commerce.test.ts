@@ -175,11 +175,14 @@ test("analytics covers the planned storefront conversion events without customer
   assert.match(analytics, /eventName: "search"/);
   assert.match(analytics, /eventName: "product_view"/);
 
+  const cart = fs.readFileSync("lib/cart.ts", "utf8");
+  assert.match(cart, /eventName: "add_to_cart"/);
+
   const productOptions = fs.readFileSync("components/ProductOptions.tsx", "utf8");
-  assert.match(productOptions, /eventName: "add_to_cart"/);
+  assert.doesNotMatch(productOptions, /eventName: "add_to_cart"/);
 
   const customization = fs.readFileSync("components/CustomizationForm.tsx", "utf8");
-  assert.match(customization, /eventName: "add_to_cart"/);
+  assert.doesNotMatch(customization, /eventName: "add_to_cart"/);
 
   const checkout = fs.readFileSync("components/CheckoutClient.tsx", "utf8");
   assert.match(checkout, /eventName: "begin_checkout"/);
@@ -191,7 +194,7 @@ test("analytics covers the planned storefront conversion events without customer
   );
   assert.match(migration, /checkout_complete/);
 
-  for (const source of [api, analytics, productOptions, customization, checkout]) {
+  for (const source of [api, analytics, cart, checkout]) {
     assert.doesNotMatch(source, /metadata:\s*\{[^}]*phone/i);
     assert.doesNotMatch(source, /metadata:\s*\{[^}]*email/i);
   }
