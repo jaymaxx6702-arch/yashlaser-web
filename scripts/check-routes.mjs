@@ -7,6 +7,19 @@ const products = JSON.parse(
   redirects = JSON.parse(
     fs.readFileSync("data/generated/redirects.json", "utf8"),
   );
+const localizedUtility = [
+  "",
+  "/products",
+  "/contact",
+  "/privacy",
+  "/bulk-orders",
+  "/plan-my-event",
+  "/custom-acrylic",
+  "/support",
+  "/cart",
+  "/checkout",
+  "/track-order",
+];
 const paths = [
   "/",
   "/products",
@@ -21,9 +34,9 @@ const paths = [
   "/checkout",
   "/track-order",
   "/account",
-  "/gu/products",
-  "/hi/products",
-  "/mr/products",
+  ...["gu", "hi", "mr"].flatMap((lang) =>
+    localizedUtility.map((path) => "/" + lang + path),
+  ),
   "/api/health",
   "/sitemap.xml",
   "/robots.txt",
