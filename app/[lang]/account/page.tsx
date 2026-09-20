@@ -122,6 +122,11 @@ function money(
   }).format(Number(value) / 100);
 }
 
+export const metadata = {
+  title: "Customer account",
+  robots: { index: false, follow: false },
+};
+
 export default async function LocalizedAccountPage({
   params,
 }: {
