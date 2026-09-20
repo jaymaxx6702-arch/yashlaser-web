@@ -3,6 +3,11 @@ import { Suspense } from "react";
 import { TrackOrderClient } from "@/components/TrackOrderClient";
 import { isUiLanguage } from "@/lib/i18n";
 
+export const metadata = {
+  title: "Track order",
+  robots: { index: false, follow: false },
+};
+
 export default async function LocalizedTrackOrderPage({
   params,
 }: {
