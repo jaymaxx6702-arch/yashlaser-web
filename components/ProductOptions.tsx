@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { loadSelection } from "@/lib/customization/persistence";
 import { business, whatsappUrl } from "@/data/business";
 import { addCartItem } from "@/lib/cart";
-import { sendAnalyticsEvent } from "@/components/Analytics";
 import {
   resolveSelection,
   type CustomizationProduct,
@@ -213,12 +212,6 @@ export function ProductOptions({
               unitPriceMinor: priced ? unitPrice : null,
               pricingMode: p.pricingMode,
               notes: "Added from product page; personalisation to confirm.",
-            });
-            sendAnalyticsEvent({
-              eventName: "add_to_cart",
-              productId: p.id,
-              path: pathname,
-              metadata: { quantity: count, savedDesign: false },
             });
             router.push(prefix + "/cart");
           }}
