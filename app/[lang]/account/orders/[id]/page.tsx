@@ -121,6 +121,11 @@ function addressText(value: unknown, fallback: string) {
   return parts.length ? parts.join(", ") : fallback;
 }
 
+export const metadata = {
+  title: "Order details",
+  robots: { index: false, follow: false },
+};
+
 export default async function LocalizedAccountOrderPage({
   params,
 }: {
