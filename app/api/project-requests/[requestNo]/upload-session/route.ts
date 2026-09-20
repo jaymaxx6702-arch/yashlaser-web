@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const allowed = new Set([
   "application/pdf",
@@ -18,6 +19,9 @@ export async function POST(
   context: { params: Promise<{ requestNo: string }> },
 ) {
   const { requestNo } = await context.params;
+  if (!(await consumeRequestRateLimit(request, "project_upload_ip", 30, 600)))
+    return rateLimitResponse(600);
+
   const body = await request.json().catch(() => null);
   const token = typeof body?.token === "string" ? body.token : "";
   const fileName =
