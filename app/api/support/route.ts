@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { consumeRequestRateLimit, consumeShopRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 type SupportBody = {
   name?: unknown;
@@ -14,6 +14,9 @@ type SupportBody = {
 };
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "support_ip", 20, 600)))
+    return rateLimitResponse(600);
+
   if (process.env.SUPPORT_ENABLED !== "true")
     return NextResponse.json(
       { error: "Online support tickets are not enabled yet." },
