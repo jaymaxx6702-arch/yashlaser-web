@@ -30,6 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/plan-my-event",
     "/custom-acrylic",
     "/support",
+    "/reviews",
     ...categories.map((c) => categoryHref(c.id)),
     ...products.map(productHref),
   ];
