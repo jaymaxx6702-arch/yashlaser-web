@@ -105,7 +105,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <Brand />
+          <Brand href={localHref("/")} />
           <p>{t.intro}</p>
           <span className="eyebrow">{t.established}</span>
         </div>
