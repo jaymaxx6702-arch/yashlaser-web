@@ -810,7 +810,7 @@ export function CustomizationForm({
                   disabled={locked}
                   onClick={() => setStep("design")}
                 >
-                  ← Back to design
+                  {t.backDesign}
                 </button>
               </form>
             )}
