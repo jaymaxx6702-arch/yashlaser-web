@@ -23,6 +23,7 @@ import {
 } from "@/lib/customization/snapshot";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
 import { addCartItem } from "@/lib/cart";
+import type { UiLanguage } from "@/lib/i18n";
 const emptyCustomer = {
   customerName: "",
   phone: "",
@@ -37,13 +38,17 @@ export function CustomizationForm({
   initialSelection,
   selectionOverrides = {},
   backgroundRemovalAdapter,
+  lang = "en",
 }: {
   product: CustomizationProduct;
   onlineSubmission: boolean;
   initialSelection?: { variantId: string; quantity: number };
   selectionOverrides?: { variantId?: string; quantity?: number };
   backgroundRemovalAdapter?: BackgroundRemovalAdapter;
+  lang?: UiLanguage;
 }) {
+  const prefix = lang === "en" ? "" : "/" + lang;
+  const productPath = prefix + "/products/" + p.slug;
   const editor = useCustomization(
     p,
     initialSelection ?? resolveSelection(p),
@@ -179,7 +184,7 @@ export function CustomizationForm({
         "Email: " + (customer.email || "Not provided"),
         "Location: " + customer.city,
         "Notes: " + (customer.notes || "None"),
-        business.url + "/products/" + p.slug,
+        business.url + productPath,
         saved
           ? "My artwork, design settings and indicative preview are saved with this enquiry."
           : "I will attach the downloaded design preview and original artwork in this conversation.",
@@ -215,7 +220,7 @@ export function CustomizationForm({
       designId: snapshot.designId,
       notes: "Saved enquiry " + success.reference,
     });
-    router.push("/cart");
+    router.push(prefix + "/cart");
   }
 
   async function share() {
@@ -280,7 +285,7 @@ export function CustomizationForm({
           {step === "enquiry" && (
             <a
               href={whatsappUrl(
-                `Hello Yash Laser, please help with my enquiry for ${p.name}. Design: ${snapshot?.designId || "not generated"}. Size: ${p.variants.find((v) => v.id === editor.document.variantId)?.name || "To confirm"}. Quantity: ${editor.document.quantity}. I will attach my preview and artwork. ${business.url}/products/${p.slug}`,
+                `Hello Yash Laser, please help with my enquiry for ${p.name}. Design: ${snapshot?.designId || "not generated"}. Size: ${p.variants.find((v) => v.id === editor.document.variantId)?.name || "To confirm"}. Quantity: ${editor.document.quantity}. I will attach my preview and artwork. ${business.url}${productPath}`,
               )}
               target="_blank"
               rel="noreferrer"
@@ -324,10 +329,10 @@ export function CustomizationForm({
           <div className="editor-bottom-actions">
             <a
               className="text-link"
-              href={"/products/" + p.slug}
+              href={productPath}
               onClick={async (e) => {
                 e.preventDefault();
-                if (await editor.flush()) router.push("/products/" + p.slug);
+                if (await editor.flush()) router.push(productPath);
                 else
                   editor.setError(
                     "Download a preview before leaving: this browser could not save the draft.",
@@ -544,7 +549,7 @@ export function CustomizationForm({
                     <span>
                       I have permission to use this artwork and agree to be
                       contacted about this enquiry.{" "}
-                      <Link href="/privacy">Artwork & privacy</Link>
+                      <Link href={prefix + "/privacy"}>Artwork & privacy</Link>
                     </span>
                   </label>
                 </fieldset>
