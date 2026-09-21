@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { commerceOrdersEnabled, trackCommerceOrder } from "@/lib/commerce-server";
 import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 export async function POST(request: Request) {
   if (!commerceOrdersEnabled())
@@ -12,7 +13,19 @@ export async function POST(request: Request) {
   if (!(await consumeRequestRateLimit(request, "order_track_ip", 30, 600)))
     return rateLimitResponse(600);
 
-  const body = await request.json().catch(() => null);
+  let body: { orderNo?: unknown; token?: unknown } | null;
+  try {
+    body = await readJsonBody<{ orderNo?: unknown; token?: unknown }>(
+      request,
+      4 * 1024,
+    );
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const orderNo = typeof body?.orderNo === "string" ? body.orderNo.trim().slice(0, 40) : "";
   const token = typeof body?.token === "string" ? body.token.trim().slice(0, 100) : "";
   if (!orderNo || token.length < 20)
