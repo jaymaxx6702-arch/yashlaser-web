@@ -94,7 +94,7 @@ export async function POST(request: Request) {
 
   if (error || !data)
     return NextResponse.json(
-      { error: error?.message || "Unable to save request." },
+      { error: "Unable to save request." },
       { status: 500 },
     );
 
