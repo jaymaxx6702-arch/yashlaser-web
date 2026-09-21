@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from "react";
 import type { CustomizationProduct } from "@/lib/customization";
+import type { UiLanguage } from "@/lib/i18n";
 import {
   createDocument,
   validateDocument,
@@ -24,11 +25,76 @@ import {
   removeBackground,
   type BackgroundRemovalAdapter,
 } from "@/lib/customization/background-removal";
+const statusCopy = {
+  en: {
+    loading: "Loading your draft…",
+    mismatch: t.mismatch,
+    unavailable: t.unavailable,
+    restored: "Draft restored on this browser.",
+    saves: "Draft saves on this browser for 24 hours.",
+    restoreFailed: t.restoreFailed,
+    draftUnavailable: "Draft unavailable.",
+    saved: "Draft saved on this browser for 24 hours.",
+    storageFull: t.storageFull,
+    storageUnavailable: t.storageUnavailable,
+    readImage: "Unable to read image.",
+    clearFailed: t.clearFailed,
+    backgroundFailed: "Background removal failed.",
+  },
+  gu: {
+    loading: "તમારો draft લોડ થઈ રહ્યો છે…",
+    mismatch: "સેવ કરેલું artwork મેળ ખાતું નથી. કૃપા કરીને ફરી upload કરો.",
+    unavailable: "સેવ કરેલું artwork ઉપલબ્ધ નથી. કૃપા કરીને ફરી upload કરો.",
+    restored: "આ browserમાં draft restore થયો.",
+    saves: "Draft આ browserમાં 24 કલાક માટે save થાય છે.",
+    restoreFailed: "Local draft restore થઈ શક્યો નથી. તમે હજી પણ customise કરીને snapshot download કરી શકો છો.",
+    draftUnavailable: "Draft ઉપલબ્ધ નથી.",
+    saved: "Draft આ browserમાં 24 કલાક માટે save થયો.",
+    storageFull: "Browser storage ઉપલબ્ધ નથી અથવા ભરાઈ ગયું છે. બહાર જતાં પહેલાં snapshot download કરો.",
+    storageUnavailable: "Browser storage ઉપલબ્ધ નથી. બહાર જતાં પહેલાં snapshot download કરો.",
+    readImage: "Image વાંચી શકાયું નથી.",
+    clearFailed: "Saved draft clear થઈ શક્યો નથી. Shared device હોય તો આ siteનું browser data clear કરો.",
+    backgroundFailed: "Background removal નિષ્ફળ થયું.",
+  },
+  hi: {
+    loading: "आपका draft लोड हो रहा है…",
+    mismatch: "सेव किया गया artwork मेल नहीं खाता. कृपया फिर से upload करें.",
+    unavailable: "सेव किया गया artwork उपलब्ध नहीं है. कृपया फिर से upload करें.",
+    restored: "इस browser में draft restore हो गया.",
+    saves: "Draft इस browser में 24 घंटे तक save रहता है.",
+    restoreFailed: "Local draft restore नहीं हो सका. आप फिर भी customise करके snapshot download कर सकते हैं.",
+    draftUnavailable: "Draft उपलब्ध नहीं है.",
+    saved: "Draft इस browser में 24 घंटे के लिए save हुआ.",
+    storageFull: "Browser storage उपलब्ध नहीं है या भर गया है. बाहर जाने से पहले snapshot download करें.",
+    storageUnavailable: "Browser storage उपलब्ध नहीं है. बाहर जाने से पहले snapshot download करें.",
+    readImage: "Image पढ़ा नहीं जा सका.",
+    clearFailed: "Saved draft clear नहीं हो सका. Shared device पर इस site का browser data clear करें.",
+    backgroundFailed: "Background removal असफल हुआ.",
+  },
+  mr: {
+    loading: "तुमचा draft लोड होत आहे…",
+    mismatch: "सेव्ह केलेले artwork जुळत नाही. कृपया पुन्हा upload करा.",
+    unavailable: "सेव्ह केलेले artwork उपलब्ध नाही. कृपया पुन्हा upload करा.",
+    restored: "या browserमध्ये draft restore झाला.",
+    saves: "Draft या browserमध्ये 24 तास save राहतो.",
+    restoreFailed: "Local draft restore करता आला नाही. तरीही तुम्ही customise करून snapshot download करू शकता.",
+    draftUnavailable: "Draft उपलब्ध नाही.",
+    saved: "Draft या browserमध्ये 24 तासांसाठी save झाला.",
+    storageFull: "Browser storage उपलब्ध नाही किंवा भरले आहे. बाहेर जाण्यापूर्वी snapshot download करा.",
+    storageUnavailable: "Browser storage उपलब्ध नाही. बाहेर जाण्यापूर्वी snapshot download करा.",
+    readImage: "Image वाचता आला नाही.",
+    clearFailed: "Saved draft clear करता आला नाही. Shared device असल्यास या siteचे browser data clear करा.",
+    backgroundFailed: "Background removal अयशस्वी झाले.",
+  },
+} as const;
+
 export function useCustomization(
   product: CustomizationProduct,
   selection: { variantId: string; quantity: number },
   overrides: { variantId?: string; quantity?: number },
+  lang: UiLanguage = "en",
 ) {
+  const t = statusCopy[lang];
   const [document, setDocumentState] = useState(() =>
     createDocument(product, selection),
   );
@@ -36,7 +102,7 @@ export function useCustomization(
     [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
   const [ready, setReady] = useState(false),
     [processing, setProcessing] = useState(false),
-    [storageMessage, setStorageMessage] = useState("Loading your draft…"),
+    [storageMessage, setStorageMessage] = useState(t.loading),
     [error, setError] = useState("");
   const current = useRef({ document, artwork });
   const activeBitmap = useRef<ImageBitmap | null>(null),
@@ -61,7 +127,10 @@ export function useCustomization(
         /* IndexedDB remains the fallback. */
       }
       const url = new URL(window.location.href);
-      if (url.pathname.startsWith("/customize/")) {
+      if (
+        url.pathname.startsWith("/customize/") ||
+        /^\/(gu|hi|mr)\/customize\//.test(url.pathname)
+      ) {
         if (next.variantId) url.searchParams.set("variant", next.variantId);
         else url.searchParams.delete("variant");
         url.searchParams.set("quantity", String(next.quantity));
@@ -117,13 +186,13 @@ export function useCustomization(
               "Saved artwork is unavailable. Please upload it again.",
             );
           setDocument(checked);
-          setStorageMessage("Draft restored on this browser.");
-        } else setStorageMessage("Draft saves on this browser for 24 hours.");
+          setStorageMessage(t.restored);
+        } else setStorageMessage(t.saves);
       } catch (e) {
         setStorageMessage(
           "Local draft could not be restored. You can still customise and download a snapshot.",
         );
-        setError(e instanceof Error ? e.message : "Draft unavailable.");
+        setError(e instanceof Error ? e.message : t.draftUnavailable);
       } finally {
         if (!cancelled) setReady(true);
       }
@@ -133,7 +202,7 @@ export function useCustomization(
       cancelled = true;
       invalidate();
     };
-  }, [product.id, replaceBitmap, setDocument]);
+  }, [product.id, replaceBitmap, setDocument, t]);
   const flush = useCallback(async () => {
     if (timer.current) clearTimeout(timer.current);
     const latest = current.current;
@@ -145,7 +214,7 @@ export function useCustomization(
         /* Artwork draft can still be saved when localStorage is disabled. */
       }
       await saveDraft(product.id, { ...latest, updatedAt: Date.now() });
-      setStorageMessage("Draft saved on this browser for 24 hours.");
+      setStorageMessage(t.saved);
       return true;
     } catch {
       setStorageMessage(
@@ -153,7 +222,7 @@ export function useCustomization(
       );
       return false;
     }
-  }, [product.id]);
+  }, [product.id, t]);
   useEffect(() => {
     if (!ready) return;
     timer.current = setTimeout(() => {
@@ -219,7 +288,7 @@ export function useCustomization(
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
-        setError(e instanceof Error ? e.message : "Unable to read image.");
+        setError(e instanceof Error ? e.message : t.readImage);
     } finally {
       if (token === operation.current) setProcessing(false);
     }
@@ -267,7 +336,7 @@ export function useCustomization(
       );
     } catch (e) {
       if (!controller.signal.aborted)
-        setError(e instanceof Error ? e.message : "Background removal failed.");
+        setError(e instanceof Error ? e.message : t.backgroundFailed);
     } finally {
       if (!controller.signal.aborted) setProcessing(false);
     }
