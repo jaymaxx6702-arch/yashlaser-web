@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
 import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 export async function POST(
   request: Request,
@@ -11,7 +12,16 @@ export async function POST(
   if (!(await consumeRequestRateLimit(request, "proof_action_ip", 20, 600)))
     return rateLimitResponse(600);
 
-  const body = await request.json().catch(() => ({}));
+  let body: { comment?: unknown } | null;
+  try {
+    body = await readJsonBody<{ comment?: unknown }>(request, 4 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 1000) : "";
   const db = getSupabase();
   const { data: proof } = await db
