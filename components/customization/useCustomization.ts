@@ -119,7 +119,7 @@ export function useCustomization(
     [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
   const [ready, setReady] = useState(false),
     [processing, setProcessing] = useState(false),
-    [storageMessage, setStorageMessage] = useState(t.loading),
+    [storageMessage, setStorageMessage] = useState<string>(t.loading),
     [error, setError] = useState("");
 
   const current = useRef({ document, artwork });
