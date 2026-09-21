@@ -39,11 +39,14 @@ const paths = [
   "/plan-my-event",
   "/custom-acrylic",
   "/support",
+  "/support/ticket",
+  "/project-request-status",
   "/reviews",
   "/cart",
   "/checkout",
   "/track-order",
   "/account",
+  "/account/login",
   "/about",
   "/faq",
   "/shipping-policy",
@@ -69,6 +72,20 @@ const paths = [
     products.map((p) => [p.categoryId, "/customize/" + p.slug]),
   ).values(),
 ];
+function isPrivateCustomerRoute(path) {
+  const normalized = path.replace(/^\/(gu|hi|mr)(?=\/|$)/, "");
+  return (
+    normalized === "/cart" ||
+    normalized === "/checkout" ||
+    normalized === "/track-order" ||
+    normalized === "/support/ticket" ||
+    normalized === "/project-request-status" ||
+    normalized === "/account" ||
+    normalized === "/account/login" ||
+    normalized.startsWith("/customize/")
+  );
+}
+
 let cursor = 0;
 const failures = [],
   links = new Set();
@@ -79,15 +96,12 @@ async function worker() {
       const response = await fetch(base + path);
       assert.equal(response.status, 200, path);
       const html = await response.text();
-      if (
-        path.startsWith("/customize/") ||
-        /^\/(gu|hi|mr)\/customize\//.test(path) ||
-        path === "/support/ticket" ||
-        /^\/(gu|hi|mr)\/support\/ticket$/.test(path) ||
-        path === "/project-request-status" ||
-        /^\/(gu|hi|mr)\/project-request-status$/.test(path)
-      )
+      if (isPrivateCustomerRoute(path)) {
         assert.match(html, /noindex/);
+        assert.match(response.headers.get("x-robots-tag") || "", /noindex/);
+        assert.match(response.headers.get("cache-control") || "", /no-store/);
+        assert.match(response.headers.get("referrer-policy") || "", /no-referrer/);
+      }
       for (const m of html.matchAll(/href="(\/[^"#]*)"/g)) {
         const link = m[1].replaceAll("&amp;", "&");
         if (!link.startsWith("/_next/") && !link.startsWith("//"))
