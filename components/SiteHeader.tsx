@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { CART_EVENT, cartCount } from "@/lib/cart";
 import { isUiLanguage, uiCopy } from "@/lib/i18n";
 import { Brand } from "./Brand";
@@ -47,6 +47,49 @@ function isLocalizedPath(path: string) {
   );
 }
 
+function languagePath(path: string, target: string) {
+  const segments = path.split("/").filter(Boolean);
+  const bare = isUiLanguage(segments[0] || "")
+    ? "/" + segments.slice(1).join("/")
+    : path;
+  const normalized = bare === "" ? "/" : bare;
+
+  if (!isLocalizedPath(normalized))
+    return target === "en" ? "/products" : "/" + target + "/products";
+
+  if (target === "en") return normalized;
+  return normalized === "/" ? "/" + target : "/" + target + normalized;
+}
+
+function LanguageLinks({ path }: { path: string }) {
+  const searchParams = useSearchParams();
+  const query = searchParams.toString();
+  const href = (target: string) => {
+    const base = languagePath(path, target);
+    return query ? base + "?" + query : base;
+  };
+
+  return (
+    <div className="language-links" aria-label="Language">
+      <Link href={href("en")}>EN</Link>
+      <Link href={href("gu")}>ગુજરાતી</Link>
+      <Link href={href("hi")}>हिन्दी</Link>
+      <Link href={href("mr")}>मराठी</Link>
+    </div>
+  );
+}
+
+function LanguageLinksFallback({ path }: { path: string }) {
+  return (
+    <div className="language-links" aria-label="Language">
+      <Link href={languagePath(path, "en")}>EN</Link>
+      <Link href={languagePath(path, "gu")}>ગુજરાતી</Link>
+      <Link href={languagePath(path, "hi")}>हिन्दी</Link>
+      <Link href={languagePath(path, "mr")}>मराठी</Link>
+    </div>
+  );
+}
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
@@ -57,20 +100,6 @@ export function SiteHeader() {
   const extra = announcementCopy[lang];
   const prefix = isUiLanguage(firstSegment) ? "/" + lang : "";
   const localHref = (value: string) => (lang === "en" ? value : prefix + value);
-
-  const languageHref = (target: string) => {
-    const segments = path.split("/").filter(Boolean);
-    const bare = isUiLanguage(segments[0] || "")
-      ? "/" + segments.slice(1).join("/")
-      : path;
-
-    const normalized = bare === "" ? "/" : bare;
-    if (!isLocalizedPath(normalized))
-      return target === "en" ? "/products" : "/" + target + "/products";
-
-    if (target === "en") return normalized;
-    return normalized === "/" ? "/" + target : "/" + target + normalized;
-  };
 
   useEffect(() => {
     const sync = () => setCount(cartCount());
@@ -142,12 +171,9 @@ export function SiteHeader() {
             <Link href={localHref("/products")} className="nav-cta">
               {copy.explore} <span aria-hidden="true">↗</span>
             </Link>
-            <div className="language-links" aria-label="Language">
-              <Link href={languageHref("en")}>EN</Link>
-              <Link href={languageHref("gu")}>ગુજરાતી</Link>
-              <Link href={languageHref("hi")}>हिन्दी</Link>
-              <Link href={languageHref("mr")}>मराठी</Link>
-            </div>
+            <Suspense fallback={<LanguageLinksFallback path={path} />}>
+              <LanguageLinks path={path} />
+            </Suspense>
           </nav>
         </div>
       </header>
