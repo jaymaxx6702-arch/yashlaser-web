@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - commerce-stage9
+      - stage19-multilingual
   pull_request:
 
 permissions:
