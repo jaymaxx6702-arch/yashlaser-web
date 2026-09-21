@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ token: string }> },
 ) {
   const { token } = await context.params;
-  const body = await request.json().catch(() => null);
+  if (!(await consumeRequestRateLimit(request, "proof_action_ip", 20, 600)))
+    return rateLimitResponse(600);
+
+  let body: { comment?: unknown } | null;
+  try {
+    body = await readJsonBody<{ comment?: unknown }>(request, 8 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 2000) : "";
   if (!comment) return NextResponse.json({ error: "Please describe the required change." }, { status: 400 });
   const db = getSupabase();
@@ -28,7 +42,24 @@ export async function POST(
   if (!latest || latest.id !== proof.id || proof.status !== "ready")
     return NextResponse.json({ error: "A newer proof is available or this proof is no longer actionable." }, { status: 409 });
 
-  await db.from("shop_proofs").update({ status: "changes_requested" }).eq("id", proof.id);
+  const { data: updated, error: updateError } = await db
+    .from("shop_proofs")
+    .update({ status: "changes_requested" })
+    .eq("id", proof.id)
+    .eq("status", "ready")
+    .select("id")
+    .maybeSingle();
+  if (updateError)
+    return NextResponse.json(
+      { error: "Unable to request proof changes." },
+      { status: 500 },
+    );
+  if (!updated)
+    return NextResponse.json(
+      { error: "This proof is no longer actionable. Refresh and review the latest status." },
+      { status: 409 },
+    );
+
   await db.from("shop_proof_actions").insert({
     proof_id: proof.id,
     action: "changes_requested",

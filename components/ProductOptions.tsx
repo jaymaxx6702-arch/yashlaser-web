@@ -21,6 +21,9 @@ export function ProductOptions({
   const router = useRouter();
   const pathname = usePathname();
   const currentLang = pathname.split("/").filter(Boolean)[0] || "en";
+  const prefix = ["gu", "hi", "mr"].includes(currentLang)
+    ? "/" + currentLang
+    : "";
   const t =
     currentLang === "gu"
       ? {
@@ -36,6 +39,7 @@ export function ProductOptions({
           personalise: "પ્રોડક્ટ કસ્ટમાઇઝ કરો ↗",
           cart: "કાર્ટમાં ઉમેરો →",
           whatsapp: "WhatsApp પર પૂછો ↗",
+          items: "નંગ",
         }
       : currentLang === "hi"
         ? {
@@ -51,6 +55,7 @@ export function ProductOptions({
             personalise: "प्रोडक्ट कस्टमाइज़ करें ↗",
             cart: "कार्ट में जोड़ें →",
             whatsapp: "WhatsApp पर पूछें ↗",
+            items: "आइटम",
           }
         : currentLang === "mr"
           ? {
@@ -66,6 +71,7 @@ export function ProductOptions({
               personalise: "प्रॉडक्ट कस्टमाइझ करा ↗",
               cart: "कार्टमध्ये जोडा →",
               whatsapp: "WhatsApp वर विचारा ↗",
+              items: "नग",
             }
           : {
               size: "Size / variant",
@@ -80,6 +86,7 @@ export function ProductOptions({
               personalise: "Personalise product ↗",
               cart: "Add to cart →",
               whatsapp: "Ask on WhatsApp ↗",
+              items: "items",
             };
   const [variantId, setVariantId] = useState(resolveSelection(p).variantId);
   const [quantity, setQuantity] = useState("1");
@@ -123,7 +130,7 @@ export function ProductOptions({
   );
   return (
     <form
-      action={"/customize/" + p.slug}
+      action={prefix + "/customize/" + p.slug}
       method="get"
       className="product-options"
     >
@@ -176,8 +183,7 @@ export function ProductOptions({
         </p>
         {priced && validQuantity && count > 1 && (
           <p>
-            {t.estimate}: <strong>{money(unitPrice * count)}</strong> for{" "}
-            {count} items
+            {t.estimate}: <strong>{money(unitPrice * count)}</strong> · {count} {t.items}
           </p>
         )}
       </div>
@@ -210,7 +216,7 @@ export function ProductOptions({
               pricingMode: p.pricingMode,
               notes: "Added from product page; personalisation to confirm.",
             });
-            router.push("/cart");
+            router.push(prefix + "/cart");
           }}
         >
           {t.cart}

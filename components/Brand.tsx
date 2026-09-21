@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-export function Brand() {
+
+export function Brand({ href = "/" }: { href?: string }) {
   return (
-    <Link href="/" className="brand" aria-label="Yash Laser home">
+    <Link href={href} className="brand" aria-label="Yash Laser home">
       <Image
         className="brand-logo"
         src="/brand/yash-laser-logo.jpg"

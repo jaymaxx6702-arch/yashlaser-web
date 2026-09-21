@@ -11,6 +11,7 @@ export async function GET() {
       payments: process.env.PAYMENTS_ENABLED === "true",
       yashflow: process.env.YASHFLOW_SYNC_ENABLED === "true",
       analytics: process.env.ANALYTICS_ENABLED === "true",
+      rateLimits: process.env.RATE_LIMITS_ENABLED === "true",
       time: new Date().toISOString(),
     },
     {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 type AnalyticsBody = {
   eventName?: unknown;
@@ -17,6 +18,7 @@ const names = new Set([
   "product_view",
   "add_to_cart",
   "begin_checkout",
+  "checkout_complete",
 ]);
 
 function cleanPath(value: unknown) {
@@ -40,6 +42,9 @@ function cleanSearch(value: unknown) {
 export async function POST(request: Request) {
   if (process.env.ANALYTICS_ENABLED !== "true")
     return new NextResponse(null, { status: 204 });
+
+  if (!(await consumeRequestRateLimit(request, "analytics_ip", 300, 600)))
+    return rateLimitResponse(600);
 
   let body: AnalyticsBody | null;
   try {

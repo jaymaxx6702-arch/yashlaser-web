@@ -19,10 +19,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/custom-acrylic",
     "/support",
     "/reviews",
+    "/about",
+    "/faq",
+    "/shipping-policy",
+    "/terms",
+    "/replacement-damage",
   ];
 
   const localized = [
+    "",
     "/products",
+    "/contact",
+    "/privacy",
+    "/bulk-orders",
+    "/plan-my-event",
+    "/custom-acrylic",
+    "/support",
+    "/reviews",
+    "/about",
+    "/faq",
+    "/shipping-policy",
+    "/terms",
+    "/replacement-damage",
     ...categories.map((c) => categoryHref(c.id)),
     ...products.map(productHref),
   ];
@@ -31,23 +49,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: business.url + path,
     changeFrequency: path === "" ? "weekly" : "monthly",
     priority: path === "" ? 1 : 0.7,
+    ...(localized.includes(path)
+      ? { alternates: { languages: languageAlternates(path || "/") } }
+      : {}),
   }));
-
-  for (const path of localized) {
-    rows.push({
-      url: business.url + path,
-      changeFrequency: "weekly",
-      priority: path.startsWith("/products/") ? 0.8 : 0.7,
-      alternates: { languages: languageAlternates(path) },
-    });
-  }
 
   for (const lang of ["gu", "hi", "mr"]) {
     for (const path of localized) {
       rows.push({
-        url: business.url + "/" + lang + path,
-        changeFrequency: "weekly",
-        priority: path.startsWith("/products/") ? 0.75 : 0.65,
+        url: business.url + "/" + lang + (path === "" ? "" : path),
+        changeFrequency:
+          path === "" || path === "/products" || path.startsWith("/products/")
+            ? "weekly"
+            : "monthly",
+        priority:
+          path === ""
+            ? 0.9
+            : path.startsWith("/products/")
+              ? 0.75
+              : 0.65,
       });
     }
   }

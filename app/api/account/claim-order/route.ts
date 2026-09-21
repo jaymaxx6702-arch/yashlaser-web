@@ -3,7 +3,7 @@ import { customerUser } from "@/lib/customer-auth";
 import { getSupabase } from "@/lib/supabase";
 import { trackCommerceOrder } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { consumeRequestRateLimit, consumeShopRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 type ClaimBody = {
   orderNo?: unknown;
@@ -11,6 +11,9 @@ type ClaimBody = {
 };
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "claim_order_ip", 30, 3600)))
+    return rateLimitResponse(3600);
+
   const user = await customerUser();
   if (!user)
     return NextResponse.json(

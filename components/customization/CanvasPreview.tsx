@@ -12,6 +12,31 @@ import {
   type RenderResult,
 } from "@/lib/customization/render";
 import type { CustomizationProduct } from "@/lib/customization";
+import type { UiLanguage } from "@/lib/i18n";
+
+const ariaCopy = {
+  en: {
+    crop: "Crop photograph. Drag corners or use crop controls.",
+    preview: "Live indicative preview. Drag the photograph or use position controls.",
+    fallback: "Your browser must support canvas to display the live preview.",
+  },
+  gu: {
+    crop: "ફોટો ક્રોપ કરો. Corners drag કરો અથવા crop controls વાપરો.",
+    preview: "લાઇવ અંદાજિત પ્રિવ્યૂ. ફોટો drag કરો અથવા position controls વાપરો.",
+    fallback: "લાઇવ પ્રિવ્યૂ જોવા તમારા browserમાં canvas support જરૂરી છે.",
+  },
+  hi: {
+    crop: "फोटो क्रॉप करें. Corners drag करें या crop controls उपयोग करें.",
+    preview: "लाइव अनुमानित प्रीव्यू. फोटो drag करें या position controls उपयोग करें.",
+    fallback: "लाइव प्रीव्यू दिखाने के लिए browser में canvas support आवश्यक है.",
+  },
+  mr: {
+    crop: "फोटो क्रॉप करा. Corners drag करा किंवा crop controls वापरा.",
+    preview: "लाइव्ह अंदाजे प्रीव्ह्यू. फोटो drag करा किंवा position controls वापरा.",
+    fallback: "लाइव्ह प्रीव्ह्यू दाखवण्यासाठी browserमध्ये canvas support आवश्यक आहे.",
+  },
+} as const;
+
 export function CanvasPreview({
   document: doc,
   bitmap,
@@ -19,6 +44,7 @@ export function CanvasPreview({
   cropMode = false,
   onChange,
   onOverflow,
+  lang = "en",
 }: {
   document: CustomizationDocument;
   bitmap: ImageBitmap | null;
@@ -26,7 +52,9 @@ export function CanvasPreview({
   cropMode?: boolean;
   onChange?: (doc: CustomizationDocument) => void;
   onOverflow?: (overflow: boolean) => void;
+  lang?: UiLanguage;
 }) {
+  const t = ariaCopy[lang];
   const canvas = useRef<HTMLCanvasElement>(null),
     geometry = useRef<RenderResult | null>(null);
   const drag = useRef<{
@@ -36,6 +64,7 @@ export function CanvasPreview({
     mode: string;
     pointer: number;
   } | null>(null);
+
   useEffect(() => {
     const node = canvas.current,
       ctx = node?.getContext("2d");
@@ -53,6 +82,7 @@ export function CanvasPreview({
     });
     return () => cancelAnimationFrame(frame);
   }, [doc, bitmap, product, cropMode, onOverflow]);
+
   const point = (e: PointerEvent<HTMLCanvasElement>) => {
     const box = e.currentTarget.getBoundingClientRect();
     return {
@@ -60,6 +90,7 @@ export function CanvasPreview({
       y: ((e.clientY - box.top) * 1000) / box.height,
     };
   };
+
   function down(e: PointerEvent<HTMLCanvasElement>) {
     if (!onChange || !bitmap || !geometry.current || drag.current) return;
     const p = point(e),
@@ -98,6 +129,7 @@ export function CanvasPreview({
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.current = { ...p, doc, mode, pointer: e.pointerId };
   }
+
   function move(e: PointerEvent<HTMLCanvasElement>) {
     const start = drag.current,
       g = geometry.current;
@@ -142,6 +174,7 @@ export function CanvasPreview({
       });
     }
   }
+
   function end(e: PointerEvent<HTMLCanvasElement>) {
     if (drag.current?.pointer === e.pointerId) {
       drag.current = null;
@@ -149,6 +182,7 @@ export function CanvasPreview({
         e.currentTarget.releasePointerCapture(e.pointerId);
     }
   }
+
   function key(e: KeyboardEvent<HTMLCanvasElement>) {
     if (
       !onChange ||
@@ -172,17 +206,14 @@ export function CanvasPreview({
           },
     });
   }
+
   return (
     <canvas
       ref={canvas}
       width={1000}
       height={1000}
       className={"editor-canvas" + (onChange ? " is-interactive" : "")}
-      aria-label={
-        cropMode
-          ? "Crop photograph. Drag corners or use crop controls."
-          : "Live indicative preview. Drag the photograph or use position controls."
-      }
+      aria-label={cropMode ? t.crop : t.preview}
       role="img"
       tabIndex={onChange ? 0 : undefined}
       onPointerDown={down}
@@ -194,7 +225,7 @@ export function CanvasPreview({
       }}
       onKeyDown={key}
     >
-      Your browser must support canvas to display the live preview.
+      {t.fallback}
     </canvas>
   );
 }

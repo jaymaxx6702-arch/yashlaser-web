@@ -10,8 +10,8 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.1 |
-| Last Updated | 20 September 2026 |
+| Master File Version | 1.2 |
+| Last Updated | 21 September 2026 |
 | Current Active Task | **YL-083 - Public endpoints પર rate limits enable અને verify કરવું** |
 | Overall State | Planning locked; implementation અને launch-readiness ચાલુ |
 
@@ -204,10 +204,10 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 27 |
+| Completed | 28 |
 | In Progress | 11 |
 | Blocked | 4 |
-| Pending | 58 |
+| Pending | 57 |
 | **Total** | **100** |
 
 ### Immediate execution order
@@ -242,7 +242,7 @@ Known completed foundation:
 - [x] **YL-006** Live health response દ્વારા commerce/YashFlow/payment/analytics state બતાવવી.
 - [x] **YL-007** Commerce feature foundation enable કરવી.
 - [x] **YL-008** YashFlow integration feature foundation enable કરવી.
-- [ ] **YL-009** Environment variablesનું documented register બનાવવું; secrets fileમાં લખવા નહીં.
+- [x] **YL-009** Environment variablesનું documented register બનાવવું; secrets fileમાં લખવા નહીં.
 - [ ] **YL-010** Release checklist, version tag અને rollback procedure final કરવી.
 
 ### B. Catalogue, Product Master and Business Data - YL-011 to YL-025
@@ -419,6 +419,15 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 ---
 
 ## 13. Change Log
+
+### Version 1.2 - 21 September 2026
+
+- `docs/ENVIRONMENT.md` canonical environment register ઉમેર્યું અને YL-009 complete verify કર્યું; કોઈ secret values repositoryમાં ઉમેર્યા નથી.
+- `stage19-multilingual` branch પર multilingual Header/Footer, utility pages, customer account routes, customizer routing/status copy અને public About/FAQ/Policy pagesનું code work આગળ વધાર્યું.
+- Private customer/customizer routes માટે noindex સાથે `private, no-store` headers harden કર્યા.
+- Provider-neutral payment foundationમાં secure order-token validation, server-derived outstanding balance અને adapter contract ઉમેર્યાં; real payment provider/webhook હજી blocked છે અને `PAYMENTS_ENABLED=false` જ રાખવાનું છે.
+- Latest code validationમાં lint, production build અને offline route/security verification green થયા; final branch deploy/live verification Vercel availability પછી કરવાનું છે.
+- YL-031/032/033/034, legal publish tasks અને payment/courier blocked tasksને production/business verification વગર Done mark કર્યા નથી.
 
 ### Version 1.1 - 20 September 2026
 

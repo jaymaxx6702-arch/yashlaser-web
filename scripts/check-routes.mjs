@@ -7,6 +7,29 @@ const products = JSON.parse(
   redirects = JSON.parse(
     fs.readFileSync("data/generated/redirects.json", "utf8"),
   );
+const localizedUtility = [
+  "",
+  "/products",
+  "/contact",
+  "/privacy",
+  "/bulk-orders",
+  "/plan-my-event",
+  "/custom-acrylic",
+  "/support",
+  "/support/ticket",
+  "/project-request-status",
+  "/reviews",
+  "/account",
+  "/account/login",
+  "/about",
+  "/faq",
+  "/shipping-policy",
+  "/terms",
+  "/replacement-damage",
+  "/cart",
+  "/checkout",
+  "/track-order",
+];
 const paths = [
   "/",
   "/products",
@@ -16,14 +39,22 @@ const paths = [
   "/plan-my-event",
   "/custom-acrylic",
   "/support",
+  "/support/ticket",
+  "/project-request-status",
   "/reviews",
   "/cart",
   "/checkout",
   "/track-order",
   "/account",
-  "/gu/products",
-  "/hi/products",
-  "/mr/products",
+  "/account/login",
+  "/about",
+  "/faq",
+  "/shipping-policy",
+  "/terms",
+  "/replacement-damage",
+  ...["gu", "hi", "mr"].flatMap((lang) =>
+    localizedUtility.map((path) => "/" + lang + path),
+  ),
   "/api/health",
   "/sitemap.xml",
   "/robots.txt",
@@ -33,11 +64,28 @@ const paths = [
     "/gu/products/" + p.slug,
     "/hi/products/" + p.slug,
     "/mr/products/" + p.slug,
+    "/gu/customize/" + p.slug,
+    "/hi/customize/" + p.slug,
+    "/mr/customize/" + p.slug,
   ]),
   ...new Map(
     products.map((p) => [p.categoryId, "/customize/" + p.slug]),
   ).values(),
 ];
+function isPrivateCustomerRoute(path) {
+  const normalized = path.replace(/^\/(gu|hi|mr)(?=\/|$)/, "");
+  return (
+    normalized === "/cart" ||
+    normalized === "/checkout" ||
+    normalized === "/track-order" ||
+    normalized === "/support/ticket" ||
+    normalized === "/project-request-status" ||
+    normalized === "/account" ||
+    normalized === "/account/login" ||
+    normalized.startsWith("/customize/")
+  );
+}
+
 let cursor = 0;
 const failures = [],
   links = new Set();
@@ -48,7 +96,12 @@ async function worker() {
       const response = await fetch(base + path);
       assert.equal(response.status, 200, path);
       const html = await response.text();
-      if (path.startsWith("/customize/")) assert.match(html, /noindex/);
+      if (isPrivateCustomerRoute(path)) {
+        assert.match(html, /noindex/);
+        assert.match(response.headers.get("x-robots-tag") || "", /noindex/);
+        assert.match(response.headers.get("cache-control") || "", /no-store/);
+        assert.match(response.headers.get("referrer-policy") || "", /no-referrer/);
+      }
       for (const m of html.matchAll(/href="(\/[^"#]*)"/g)) {
         const link = m[1].replaceAll("&amp;", "&");
         if (!link.startsWith("/_next/") && !link.startsWith("//"))
@@ -105,6 +158,18 @@ if (![400, 503].includes(api.status))
     api: "Missing form must be rejected whether backend is configured or disabled",
     status: api.status,
   });
+
+const paymentInvalid = await fetch(base + "/api/payments/create", {
+  method: "POST",
+  headers: { origin: base, "content-type": "application/json" },
+  body: "{}",
+});
+if (paymentInvalid.status !== 400)
+  failures.push({
+    api: "Payment creation must reject missing secure order details",
+    status: paymentInvalid.status,
+  });
+await paymentInvalid.arrayBuffer();
 
 const crossSite = await fetch(base + "/api/analytics", {
   method: "POST",

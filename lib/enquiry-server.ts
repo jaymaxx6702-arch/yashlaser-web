@@ -4,6 +4,7 @@ import { products } from "@/data/catalog";
 import { requireReadyDocument } from "@/lib/customization/model";
 import { MAX_ENQUIRY_BYTES } from "./enquiry-limits";
 import { getSupabase, submissionEnabled } from "./supabase";
+import { consumeRequestRateLimit } from "@/lib/rate-limit";
 export class EnquiryError extends Error {
   constructor(
     message: string,
@@ -32,6 +33,12 @@ export async function enquiryJson(request: Request) {
       .startsWith("application/json")
   )
     throw new EnquiryError("Send enquiry metadata as JSON.", 415);
+  if (!(await consumeRequestRateLimit(request, "enquiry_ip", 60, 600)))
+    throw new EnquiryError(
+      "Too many attempts. Please wait or contact us on WhatsApp.",
+      429,
+    );
+
   const ip = process.env.VERCEL
     ? request.headers.get("x-real-ip") || "unknown"
     : "local";

@@ -1,5 +1,5 @@
 "use server";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
@@ -27,11 +27,10 @@ export async function login(form: FormData) {
   });
   if (error || !data.user || !data.session || !allowedAdmin(data.user.id))
     redirect("/admin/login?error=1");
-  const origin = (await headers()).get("origin") || "";
   (await cookies()).set(ADMIN_COOKIE, data.session.access_token, {
     httpOnly: true,
     sameSite: "strict",
-    secure: origin.startsWith("https://"),
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: Math.min(data.session.expires_in, 3600),
   });
@@ -44,6 +43,7 @@ export async function logout() {
     path: "/",
     httpOnly: true,
     sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 0,
   });
   // Also expire the legacy /admin-scoped cookie from older deployments.
@@ -51,6 +51,7 @@ export async function logout() {
     path: "/admin",
     httpOnly: true,
     sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 0,
   });
   redirect("/admin/login");

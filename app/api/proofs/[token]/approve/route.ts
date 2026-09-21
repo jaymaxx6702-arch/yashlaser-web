@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ token: string }> },
 ) {
   const { token } = await context.params;
-  const body = await request.json().catch(() => ({}));
+  if (!(await consumeRequestRateLimit(request, "proof_action_ip", 20, 600)))
+    return rateLimitResponse(600);
+
+  let body: { comment?: unknown } | null;
+  try {
+    body = await readJsonBody<{ comment?: unknown }>(request, 4 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 1000) : "";
   const db = getSupabase();
   const { data: proof } = await db
@@ -28,12 +42,23 @@ export async function POST(
     return NextResponse.json({ error: "A newer proof is available. Please review the latest version." }, { status: 409 });
 
   const now = new Date().toISOString();
-  const { error } = await db
+  const { data: updated, error } = await db
     .from("shop_proofs")
     .update({ status: "approved", approved_at: now })
     .eq("id", proof.id)
-    .eq("status", "ready");
-  if (error) return NextResponse.json({ error: "Unable to approve proof." }, { status: 500 });
+    .eq("status", "ready")
+    .select("id")
+    .maybeSingle();
+  if (error)
+    return NextResponse.json(
+      { error: "Unable to approve proof." },
+      { status: 500 },
+    );
+  if (!updated)
+    return NextResponse.json(
+      { error: "This proof is no longer actionable. Refresh and review the latest status." },
+      { status: 409 },
+    );
 
   await db.from("shop_proof_actions").insert({
     proof_id: proof.id,

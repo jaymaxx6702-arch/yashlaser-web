@@ -36,8 +36,10 @@ export async function customerUser(): Promise<User | null> {
   }
 }
 
-export async function requireCustomer() {
+export async function requireCustomer(
+  loginPath = "/account/login",
+) {
   const user = await customerUser();
-  if (!user) redirect("/account/login");
+  if (!user) redirect(loginPath);
   return user;
 }

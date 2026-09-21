@@ -1,11 +1,64 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { uploadPrivate } from "@/lib/direct-upload";
 import { business, whatsappUrl } from "@/data/business";
+import type { UiLanguage } from "@/lib/i18n";
 
 type Kind = "bulk" | "event" | "custom_acrylic";
 
-export function ProjectRequestForm({ kind }: { kind: Kind }) {
+const copy = {
+  en: {
+    titles: { bulk: "Bulk order request", event: "Plan my event", custom_acrylic: "Custom acrylic request" },
+    name: "Your name", phone: "WhatsApp / phone", email: "Email (optional)", product: "Product / requirement",
+    quantity: "Quantity", requiredDate: "Required date", eventType: "Event type", eventDate: "Event date",
+    participants: "Approx. participants / quantity", budget: "Budget (optional)", size: "Approx. size",
+    notes: "Requirement / notes", file: "File (optional)", fileHelp: "PDF, Excel/CSV or image · max 20 MB",
+    submitting: "Submitting…", submit: "Submit request →", saved: "Request saved.", savedFile: "Request and file saved.",
+    unable: "Unable to save request.", uploadPrepare: "Unable to prepare file upload.", uploadConfirm: "Unable to confirm file.",
+    reference: "Reference", whatsapp: "Continue on WhatsApp ↗", track: "Track request ↗",
+  },
+  gu: {
+    titles: { bulk: "બલ્ક ઓર્ડર રિક્વેસ્ટ", event: "મારો ઇવેન્ટ પ્લાન", custom_acrylic: "કસ્ટમ એક્રેલિક રિક્વેસ્ટ" },
+    name: "તમારું નામ", phone: "WhatsApp / ફોન", email: "ઈમેલ (વૈકલ્પિક)", product: "પ્રોડક્ટ / જરૂરિયાત",
+    quantity: "જથ્થો", requiredDate: "જરૂરી તારીખ", eventType: "ઇવેન્ટ પ્રકાર", eventDate: "ઇવેન્ટ તારીખ",
+    participants: "અંદાજિત લોકો / જથ્થો", budget: "બજેટ (વૈકલ્પિક)", size: "અંદાજિત સાઇઝ",
+    notes: "જરૂરિયાત / નોંધ", file: "ફાઇલ (વૈકલ્પિક)", fileHelp: "PDF, Excel/CSV અથવા image · મહત્તમ 20 MB",
+    submitting: "સબમિટ થઈ રહ્યું છે…", submit: "રિક્વેસ્ટ સબમિટ કરો →", saved: "રિક્વેસ્ટ સેવ થઈ.", savedFile: "રિક્વેસ્ટ અને ફાઇલ સેવ થઈ.",
+    unable: "રિક્વેસ્ટ સેવ થઈ શકી નથી.", uploadPrepare: "ફાઇલ અપલોડ તૈયાર થઈ શક્યો નથી.", uploadConfirm: "ફાઇલ કન્ફર્મ થઈ શકી નથી.",
+    reference: "રેફરન્સ", whatsapp: "WhatsApp પર આગળ વધો ↗", track: "રિક્વેસ્ટ ટ્રેક કરો ↗",
+  },
+  hi: {
+    titles: { bulk: "बल्क ऑर्डर रिक्वेस्ट", event: "मेरा इवेंट प्लान", custom_acrylic: "कस्टम ऐक्रेलिक रिक्वेस्ट" },
+    name: "आपका नाम", phone: "WhatsApp / फोन", email: "ईमेल (वैकल्पिक)", product: "प्रोडक्ट / आवश्यकता",
+    quantity: "मात्रा", requiredDate: "आवश्यक तारीख", eventType: "इवेंट प्रकार", eventDate: "इवेंट तारीख",
+    participants: "अनुमानित लोग / मात्रा", budget: "बजट (वैकल्पिक)", size: "अनुमानित साइज़",
+    notes: "आवश्यकता / नोट्स", file: "फ़ाइल (वैकल्पिक)", fileHelp: "PDF, Excel/CSV या image · अधिकतम 20 MB",
+    submitting: "सबमिट हो रहा है…", submit: "रिक्वेस्ट सबमिट करें →", saved: "रिक्वेस्ट सेव हुई.", savedFile: "रिक्वेस्ट और फ़ाइल सेव हुई.",
+    unable: "रिक्वेस्ट सेव नहीं हो सकी.", uploadPrepare: "फ़ाइल अपलोड तैयार नहीं हो सका.", uploadConfirm: "फ़ाइल कन्फर्म नहीं हो सकी.",
+    reference: "रेफरेंस", whatsapp: "WhatsApp पर आगे बढ़ें ↗", track: "रिक्वेस्ट ट्रैक करें ↗",
+  },
+  mr: {
+    titles: { bulk: "बल्क ऑर्डर रिक्वेस्ट", event: "माझा इव्हेंट प्लॅन", custom_acrylic: "कस्टम अॅक्रिलिक रिक्वेस्ट" },
+    name: "तुमचे नाव", phone: "WhatsApp / फोन", email: "ईमेल (पर्यायी)", product: "प्रॉडक्ट / गरज",
+    quantity: "प्रमाण", requiredDate: "आवश्यक तारीख", eventType: "इव्हेंट प्रकार", eventDate: "इव्हेंट तारीख",
+    participants: "अंदाजे लोक / प्रमाण", budget: "बजेट (पर्यायी)", size: "अंदाजे साइझ",
+    notes: "गरज / नोट्स", file: "फाइल (पर्यायी)", fileHelp: "PDF, Excel/CSV किंवा image · कमाल 20 MB",
+    submitting: "सबमिट होत आहे…", submit: "रिक्वेस्ट सबमिट करा →", saved: "रिक्वेस्ट सेव्ह झाली.", savedFile: "रिक्वेस्ट आणि फाइल सेव्ह झाली.",
+    unable: "रिक्वेस्ट सेव्ह करता आली नाही.", uploadPrepare: "फाइल अपलोड तयार करता आला नाही.", uploadConfirm: "फाइल निश्चित करता आली नाही.",
+    reference: "रेफरन्स", whatsapp: "WhatsApp वर पुढे जा ↗", track: "रिक्वेस्ट ट्रॅक करा ↗",
+  },
+} as const;
+
+export function ProjectRequestForm({
+  kind,
+  lang = "en",
+}: {
+  kind: Kind;
+  lang?: UiLanguage;
+}) {
+  const t = copy[lang];
+  const prefix = lang === "en" ? "" : "/" + lang;
   const [result, setResult] = useState<{ requestNo: string; token: string } | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState("");
@@ -34,9 +87,9 @@ export function ProjectRequestForm({ kind }: { kind: Kind }) {
         body: JSON.stringify({ requestType: kind, customer, payload }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to save request.");
+      if (!response.ok) throw new Error(data.error || t.unable);
       setResult(data);
-      setStatus("Request saved.");
+      setStatus(t.saved);
 
       if (file) {
         const sessionResponse = await fetch(
@@ -54,7 +107,7 @@ export function ProjectRequestForm({ kind }: { kind: Kind }) {
         );
         const session = await sessionResponse.json();
         if (!sessionResponse.ok)
-          throw new Error(session.error || "Unable to prepare file upload.");
+          throw new Error(session.error || t.uploadPrepare);
 
         await uploadPrivate({ path: session.path, url: session.url }, file);
 
@@ -74,54 +127,47 @@ export function ProjectRequestForm({ kind }: { kind: Kind }) {
         );
         const confirmed = await confirm.json();
         if (!confirm.ok)
-          throw new Error(confirmed.error || "Unable to confirm file.");
-        setStatus("Request and file saved.");
+          throw new Error(confirmed.error || t.uploadConfirm);
+        setStatus(t.savedFile);
       }
     } catch (error) {
-      setStatus(
-        error instanceof Error ? error.message : "Unable to save request.",
-      );
+      setStatus(error instanceof Error ? error.message : t.unable);
     } finally {
       setBusy(false);
     }
   }
 
-  const title =
-    kind === "bulk"
-      ? "Bulk order request"
-      : kind === "event"
-        ? "Plan my event"
-        : "Custom acrylic request";
+  const title = t.titles[kind];
 
   return (
     <form className="project-form" onSubmit={submit}>
       <h2>{title}</h2>
       <div className="checkout-fields">
         <label>
-          Your name
+          {t.name}
           <input name="name" required minLength={2} maxLength={80} />
         </label>
         <label>
-          WhatsApp / phone
+          {t.phone}
           <input name="mobile" required minLength={10} maxLength={20} />
         </label>
         <label>
-          Email (optional)
+          {t.email}
           <input name="email" type="email" maxLength={160} />
         </label>
 
         {kind === "bulk" && (
           <>
             <label>
-              Product / requirement
+              {t.product}
               <input name="product" required maxLength={160} />
             </label>
             <label>
-              Quantity
+              {t.quantity}
               <input name="quantity" type="number" min={1} max={100000} required />
             </label>
             <label>
-              Required date
+              {t.requiredDate}
               <input name="requiredDate" type="date" />
             </label>
           </>
@@ -130,19 +176,19 @@ export function ProjectRequestForm({ kind }: { kind: Kind }) {
         {kind === "event" && (
           <>
             <label>
-              Event type
+              {t.eventType}
               <input name="eventType" required maxLength={120} />
             </label>
             <label>
-              Event date
+              {t.eventDate}
               <input name="eventDate" type="date" required />
             </label>
             <label>
-              Approx. participants / quantity
+              {t.participants}
               <input name="quantity" type="number" min={1} max={100000} />
             </label>
             <label>
-              Budget (optional)
+              {t.budget}
               <input name="budget" inputMode="numeric" maxLength={20} />
             </label>
           </>
@@ -151,43 +197,43 @@ export function ProjectRequestForm({ kind }: { kind: Kind }) {
         {kind === "custom_acrylic" && (
           <>
             <label>
-              Approx. size
+              {t.size}
               <input name="size" maxLength={120} />
             </label>
             <label>
-              Quantity
+              {t.quantity}
               <input name="quantity" type="number" min={1} max={10000} required />
             </label>
             <label>
-              Required date
+              {t.requiredDate}
               <input name="requiredDate" type="date" />
             </label>
             <label>
-              Budget (optional)
+              {t.budget}
               <input name="budget" inputMode="numeric" maxLength={20} />
             </label>
           </>
         )}
 
         <label className="full">
-          Requirement / notes
+          {t.notes}
           <textarea name="notes" rows={5} required maxLength={3000} />
         </label>
 
         <label className="full">
-          File (optional)
+          {t.file}
           <input
             name="file"
             type="file"
             accept=".pdf,.csv,.xls,.xlsx,image/jpeg,image/png,image/webp"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
-          <small>PDF, Excel/CSV or image · max 20 MB</small>
+          <small>{t.fileHelp}</small>
         </label>
       </div>
 
       <button className="button" disabled={busy}>
-        {busy ? "Submitting…" : "Submit request →"}
+        {busy ? t.submitting : t.submit}
       </button>
 
       {status && <p role="status">{status}</p>}
@@ -195,23 +241,37 @@ export function ProjectRequestForm({ kind }: { kind: Kind }) {
       {result && (
         <div className="request-success">
           <p>
-            Reference: <strong>{result.requestNo}</strong>
+            {t.reference}: <strong>{result.requestNo}</strong>
           </p>
-          <a
-            className="text-link"
-            href={whatsappUrl(
-              "Hello Yash Laser, my " +
-                title +
-                " reference is " +
-                result.requestNo +
-                ". Please help me with the next step. " +
-                business.url,
-            )}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Continue on WhatsApp ↗
-          </a>
+          <div className="hero-actions">
+            <Link
+              className="button button-secondary"
+              href={
+                prefix +
+                "/project-request-status?request=" +
+                encodeURIComponent(result.requestNo) +
+                "&token=" +
+                encodeURIComponent(result.token)
+              }
+            >
+              {t.track}
+            </Link>
+            <a
+              className="text-link"
+              href={whatsappUrl(
+                "Hello Yash Laser, my " +
+                  title +
+                  " reference is " +
+                  result.requestNo +
+                  ". Please help me with the next step. " +
+                  business.url,
+              )}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t.whatsapp}
+            </a>
+          </div>
         </div>
       )}
     </form>

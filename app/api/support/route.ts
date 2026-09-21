@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { consumeRequestRateLimit, consumeShopRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 type SupportBody = {
   name?: unknown;
@@ -11,9 +11,14 @@ type SupportBody = {
   subject?: unknown;
   message?: unknown;
   category?: unknown;
+  orderNo?: unknown;
+  orderToken?: unknown;
 };
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "support_ip", 20, 600)))
+    return rateLimitResponse(600);
+
   if (process.env.SUPPORT_ENABLED !== "true")
     return NextResponse.json(
       { error: "Online support tickets are not enabled yet." },
@@ -52,6 +57,12 @@ export async function POST(request: Request) {
     typeof body?.category === "string"
       ? body.category.trim().slice(0, 60)
       : "general";
+  const orderNo =
+    typeof body?.orderNo === "string" ? body.orderNo.trim().slice(0, 40) : "";
+  const orderToken =
+    typeof body?.orderToken === "string"
+      ? body.orderToken.trim().slice(0, 100)
+      : "";
 
   if (
     name.length < 2 ||
@@ -78,6 +89,31 @@ export async function POST(request: Request) {
 
   const token = newAccessToken();
   const db = getSupabase();
+  let orderId: string | null = null;
+
+  if (orderNo || orderToken) {
+    if (!orderNo || orderToken.length < 20)
+      return NextResponse.json(
+        { error: "Enter both the order number and secure tracking token." },
+        { status: 400 },
+      );
+
+    const { data: linkedOrder } = await db
+      .from("shop_orders")
+      .select("id")
+      .eq("order_no", orderNo)
+      .eq("access_token_hash", tokenHash(orderToken))
+      .maybeSingle();
+
+    if (!linkedOrder)
+      return NextResponse.json(
+        { error: "Order details could not be verified." },
+        { status: 400 },
+      );
+
+    orderId = linkedOrder.id;
+  }
+
   const { data, error } = await db
     .from("shop_support_tickets")
     .insert({
@@ -88,13 +124,14 @@ export async function POST(request: Request) {
       category,
       subject,
       message,
+      order_id: orderId,
     })
     .select("ticket_no")
     .single();
 
   if (error || !data)
     return NextResponse.json(
-      { error: error?.message || "Unable to create ticket." },
+      { error: "Unable to create ticket." },
       { status: 500 },
     );
 

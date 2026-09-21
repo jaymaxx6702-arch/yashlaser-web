@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { findProduct } from "@/data/catalog";
+import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 type InputItem = {
   id?: string;
@@ -10,7 +12,19 @@ type InputItem = {
 };
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null);
+  if (!(await consumeRequestRateLimit(request, "cart_validate_ip", 120, 600)))
+    return rateLimitResponse(600);
+
+  let body: { items?: unknown } | null;
+  try {
+    body = await readJsonBody<{ items?: unknown }>(request, 32 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   if (!body || !Array.isArray(body.items) || body.items.length > 100)
     return NextResponse.json({ error: "Invalid cart." }, { status: 400 });
 

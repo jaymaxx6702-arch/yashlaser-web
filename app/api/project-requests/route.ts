@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { consumeShopRateLimit } from "@/lib/rate-limit";
+import { consumeRequestRateLimit, consumeShopRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 type ProjectRequestBody = {
   requestType?: unknown;
@@ -21,6 +21,9 @@ const clean = (value: unknown, max = 1000) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
 
 export async function POST(request: Request) {
+  if (!(await consumeRequestRateLimit(request, "project_request_ip", 20, 600)))
+    return rateLimitResponse(600);
+
   if (process.env.PROJECT_REQUESTS_ENABLED !== "true")
     return NextResponse.json(
       { error: "Online project requests are not enabled yet." },
@@ -91,7 +94,7 @@ export async function POST(request: Request) {
 
   if (error || !data)
     return NextResponse.json(
-      { error: error?.message || "Unable to save request." },
+      { error: "Unable to save request." },
       { status: 500 },
     );
 
