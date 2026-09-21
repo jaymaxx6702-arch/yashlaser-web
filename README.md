@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yash Laser Shop
 
-## Getting Started
+Customer-facing personalised acrylic commerce platform for **Yash Laser (est. 1997)**.
 
-First, run the development server:
+- Production shop: `shop.yashlaser.in`
+- Stack: Next.js + Supabase + Vercel
+- Internal production integration: YashFlow
+- UI languages: English, Gujarati, Hindi and Marathi
+
+## Local development
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For production-equivalent verification:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run build
+npm run start -- --port 3101
+npm run check:routes -- http://localhost:3101
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Configuration
 
-## Learn More
+Copy `.env.example` to `.env.local` for local work and add private values locally. Never commit real credentials.
 
-To learn more about Next.js, take a look at the following resources:
+Canonical configuration documentation:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `docs/ENVIRONMENT.md` — environment variable register and safe rollout order
+- `docs/SETUP.md` — Supabase/private upload setup
+- `docs/VERCEL.md` — production deployment/security notes
+- `docs/commerce-rollout.md` — commerce feature enablement and rollback
+- `docs/ADMIN.md` — admin workflow
+- `docs/CUSTOMIZATION.md` — customisation engine
+- `docs/YASHLASER_MASTER_PROJECT.md` — project source of truth and 100-task checklist
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Safety defaults
 
-## Deploy on Vercel
+Provider-dependent features remain disabled until verified:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- online payments
+- automated courier/rates
+- optional YashFlow sync automation
+- customer/account feature flags that have not completed production auth checks
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Do not guess prices, dimensions, shipping promises or provider credentials. Server-side order totals remain the source for future payment creation.
