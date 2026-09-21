@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { getSupabase } from "@/lib/supabase";
 
 export type CommerceItemInput = {
@@ -25,6 +25,45 @@ export function newAccessToken() {
   return randomBytes(32).toString("base64url");
 }
 
+function commerceOrderToken(input: {
+  requestId: string;
+  customer: { name: string; phone: string; email?: string };
+  shipping: Record<string, unknown>;
+  items: CommerceItemInput[];
+}) {
+  const secret =
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("Commerce token secret is unavailable.");
+
+  const fingerprint = JSON.stringify({
+    requestId: input.requestId,
+    customer: {
+      name: input.customer.name,
+      phone: input.customer.phone,
+      email: input.customer.email || "",
+    },
+    shipping: input.shipping,
+    items: input.items.map((item) => ({
+      productId: item.productId,
+      productSlug: item.productSlug,
+      productName: item.productName,
+      variantId: item.variantId,
+      variantName: item.variantName,
+      quantity: item.quantity,
+      unitPriceMinor: item.unitPriceMinor,
+      pricingMode: item.pricingMode,
+      designId: item.designId || null,
+      configuration: item.configuration || {},
+    })),
+  });
+
+  return createHmac("sha256", secret)
+    .update("shop-order-v1\0")
+    .update(fingerprint)
+    .digest("base64url");
+}
+
 export async function createCommerceOrder(input: {
   requestId: string;
   customer: {
@@ -37,7 +76,7 @@ export async function createCommerceOrder(input: {
   items: CommerceItemInput[];
 }) {
   const db = getSupabase();
-  const token = newAccessToken();
+  const token = commerceOrderToken(input);
   const subtotal = input.items.reduce(
     (sum, item) =>
       sum + (item.unitPriceMinor ? item.unitPriceMinor * item.quantity : 0),
@@ -61,7 +100,10 @@ export async function createCommerceOrder(input: {
     return {
       id: existing.id as string,
       orderNo: existing.order_no as string,
-      accessToken: null as string | null,
+      accessToken:
+        tokenHash(token) === existing.access_token_hash
+          ? token
+          : (null as string | null),
       idempotent: true,
     };
   }
