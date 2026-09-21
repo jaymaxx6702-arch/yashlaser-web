@@ -131,7 +131,7 @@ export async function POST(request: Request) {
 
   if (error || !data)
     return NextResponse.json(
-      { error: error?.message || "Unable to create ticket." },
+      { error: "Unable to create ticket." },
       { status: 500 },
     );
 
