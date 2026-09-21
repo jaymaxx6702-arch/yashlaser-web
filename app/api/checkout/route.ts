@@ -61,7 +61,14 @@ export async function POST(request: Request) {
       : null;
   const items = Array.isArray(body?.items) ? (body.items as CartInput[]) : [];
 
-  if (!/^[0-9a-f-]{36}$/i.test(requestId) || !customer || !items.length || items.length > 100)
+  if (
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
+      requestId,
+    ) ||
+    !customer ||
+    !items.length ||
+    items.length > 100
+  )
     return NextResponse.json({ error: "Invalid checkout request." }, { status: 400 });
 
   const name = text(customer.name, 80);
@@ -74,7 +81,9 @@ export async function POST(request: Request) {
   const notes = text(customer.notes, 1000);
   if (
     name.length < 2 ||
+    !/^\+?[0-9 ()-]{10,20}$/.test(phone) ||
     phone.replace(/\D/g, "").length < 10 ||
+    (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) ||
     !city ||
     !address ||
     !state ||
@@ -161,7 +170,7 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Unable to create order." },
+        { error: "Unable to create order." },
         { status: 500 },
       );
     }
@@ -176,7 +185,11 @@ export async function POST(request: Request) {
   if (existing) return NextResponse.json({ reference: existing.reference, idempotent: true });
 
   const phoneHash = createHash("sha256")
-    .update(phone.replace(/\D/g, ""))
+    .update(
+      (process.env.SUPABASE_SECRET_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        "") + phone.replace(/\D/g, ""),
+    )
     .digest("hex");
   const { data: enquiry, error: enquiryError } = await db
     .from("enquiries")
