@@ -102,7 +102,7 @@ export function SiteFooter() {
   const localHref = (value: string) => prefix + value;
 
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" lang={lang}>
       <div className="container footer-grid">
         <div>
           <Brand href={localHref("/")} />
