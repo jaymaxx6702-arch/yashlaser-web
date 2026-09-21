@@ -145,6 +145,18 @@ if (![400, 503].includes(api.status))
     status: api.status,
   });
 
+const paymentInvalid = await fetch(base + "/api/payments/create", {
+  method: "POST",
+  headers: { origin: base, "content-type": "application/json" },
+  body: "{}",
+});
+if (paymentInvalid.status !== 400)
+  failures.push({
+    api: "Payment creation must reject missing secure order details",
+    status: paymentInvalid.status,
+  });
+await paymentInvalid.arrayBuffer();
+
 const crossSite = await fetch(base + "/api/analytics", {
   method: "POST",
   headers: {
