@@ -86,8 +86,11 @@ test("catalogue identifiers remain unique and commerce quantities cannot rely on
   );
 });
 
-test("rollout-sensitive feature flags default to disabled in the environment template", () => {
+test("environment template is parseable and rollout-sensitive flags default disabled", () => {
   const env = fs.readFileSync(".env.example", "utf8");
+  assert.doesNotMatch(env, /\\n/);
+  assert.match(env, /^NEXT_PUBLIC_SUPABASE_URL=$/m);
+  assert.match(env, /^NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$/m);
   for (const flag of [
     "COMMERCE_ORDERS_ENABLED",
     "PAYMENTS_ENABLED",
@@ -262,4 +265,34 @@ test("project request workflow exposes secure status and admin follow-up", () =>
 
   const form = fs.readFileSync("components/ProjectRequestForm.tsx", "utf8");
   assert.match(form, /project-request-status\?request=/);
+});
+
+
+test("public JSON write APIs use bounded body readers", () => {
+  const routes = [
+    "app/api/account/claim-order/route.ts",
+    "app/api/analytics/route.ts",
+    "app/api/cart/validate/route.ts",
+    "app/api/checkout/route.ts",
+    "app/api/orders/track/route.ts",
+    "app/api/payments/create/route.ts",
+    "app/api/project-requests/route.ts",
+    "app/api/project-requests/[requestNo]/upload-session/route.ts",
+    "app/api/project-requests/[requestNo]/files/route.ts",
+    "app/api/proofs/[token]/approve/route.ts",
+    "app/api/proofs/[token]/request-changes/route.ts",
+    "app/api/reviews/route.ts",
+    "app/api/shipping/check/route.ts",
+    "app/api/support/route.ts",
+  ];
+
+  for (const path of routes) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(source, /readJsonBody/, path + " must bound JSON request bodies");
+    assert.doesNotMatch(
+      source,
+      /request\.json\(/,
+      path + " must not use unbounded request.json()",
+    );
+  }
 });
