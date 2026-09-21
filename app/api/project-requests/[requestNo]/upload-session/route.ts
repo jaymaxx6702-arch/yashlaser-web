@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
 import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 
 const allowed = new Set([
   "application/pdf",
@@ -22,8 +23,20 @@ export async function POST(
   if (!(await consumeRequestRateLimit(request, "project_upload_ip", 30, 600)))
     return rateLimitResponse(600);
 
-  const body = await request.json().catch(() => null);
-  const token = typeof body?.token === "string" ? body.token : "";
+  let body:
+    | { token?: unknown; fileName?: unknown; mimeType?: unknown; size?: unknown }
+    | null;
+  try {
+    body = await readJsonBody(request, 8 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
+  const token =
+    typeof body?.token === "string" ? body.token.trim().slice(0, 100) : "";
   const fileName =
     typeof body?.fileName === "string" ? body.fileName.slice(0, 160) : "";
   const mimeType = typeof body?.mimeType === "string" ? body.mimeType : "";
@@ -80,7 +93,7 @@ export async function POST(
 
   if (error || !data)
     return NextResponse.json(
-      { error: error?.message || "Unable to prepare upload." },
+      { error: "Unable to prepare upload." },
       { status: 500 },
     );
 
