@@ -1,5 +1,5 @@
 "use server";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   CUSTOMER_COOKIE,
@@ -25,11 +25,10 @@ function safeAccountPath(
 }
 
 async function setCustomerCookie(accessToken: string, expiresIn: number) {
-  const origin = (await headers()).get("origin") || "";
   (await cookies()).set(CUSTOMER_COOKIE, accessToken, {
     httpOnly: true,
     sameSite: "lax",
-    secure: origin.startsWith("https://"),
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: Math.min(expiresIn, 3600),
   });
@@ -99,6 +98,7 @@ export async function customerLogout(form: FormData) {
   (await cookies()).set(CUSTOMER_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 0,
   });
