@@ -42,7 +42,24 @@ export async function POST(
   if (!latest || latest.id !== proof.id || proof.status !== "ready")
     return NextResponse.json({ error: "A newer proof is available or this proof is no longer actionable." }, { status: 409 });
 
-  await db.from("shop_proofs").update({ status: "changes_requested" }).eq("id", proof.id);
+  const { data: updated, error: updateError } = await db
+    .from("shop_proofs")
+    .update({ status: "changes_requested" })
+    .eq("id", proof.id)
+    .eq("status", "ready")
+    .select("id")
+    .maybeSingle();
+  if (updateError)
+    return NextResponse.json(
+      { error: "Unable to request proof changes." },
+      { status: 500 },
+    );
+  if (!updated)
+    return NextResponse.json(
+      { error: "This proof is no longer actionable. Refresh and review the latest status." },
+      { status: 409 },
+    );
+
   await db.from("shop_proof_actions").insert({
     proof_id: proof.id,
     action: "changes_requested",
