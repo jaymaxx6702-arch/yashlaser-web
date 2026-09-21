@@ -298,6 +298,7 @@ export function CustomizationForm({
     p,
     initialSelection ?? resolveSelection(p),
     selectionOverrides,
+    lang,
   );
   const router = useRouter();
   const [step, setStep] = useState<"design" | "enquiry" | "success">("design");
