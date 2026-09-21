@@ -114,10 +114,10 @@ export function SiteHeader() {
 
   return (
     <>
-      <div className="announcement">
+      <div className="announcement" lang={lang}>
         {extra.line} <span>{extra.established}</span>
       </div>
-      <header className="site-header">
+      <header className="site-header" lang={lang}>
         <div className="container header-inner">
           <Brand href={localHref("/")} />
           <button
