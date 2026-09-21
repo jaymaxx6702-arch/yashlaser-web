@@ -42,12 +42,23 @@ export async function POST(
     return NextResponse.json({ error: "A newer proof is available. Please review the latest version." }, { status: 409 });
 
   const now = new Date().toISOString();
-  const { error } = await db
+  const { data: updated, error } = await db
     .from("shop_proofs")
     .update({ status: "approved", approved_at: now })
     .eq("id", proof.id)
-    .eq("status", "ready");
-  if (error) return NextResponse.json({ error: "Unable to approve proof." }, { status: 500 });
+    .eq("status", "ready")
+    .select("id")
+    .maybeSingle();
+  if (error)
+    return NextResponse.json(
+      { error: "Unable to approve proof." },
+      { status: 500 },
+    );
+  if (!updated)
+    return NextResponse.json(
+      { error: "This proof is no longer actionable. Refresh and review the latest status." },
+      { status: 409 },
+    );
 
   await db.from("shop_proof_actions").insert({
     proof_id: proof.id,
