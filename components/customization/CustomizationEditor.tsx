@@ -12,6 +12,7 @@ import { cropPreset } from "@/lib/customization/geometry";
 import { CanvasPreview } from "./CanvasPreview";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
 import type { UiLanguage } from "@/lib/i18n";
+import type { ImageQualityReport } from "@/lib/customization/image-provider";
 
 const copy = {
   en: {
@@ -35,6 +36,10 @@ const copy = {
     fileHelp: "JPG, PNG or WebP · up to 8 MB / 25 megapixels.",
     selected: "Selected:",
     noPhoto: "No photograph selected.",
+    qualityGood: "Photo quality looks suitable for editing.",
+    qualityWarning: "Photo quality warning:",
+    qualityProduction: "Final print quality will be confirmed after size/DPI review.",
+    issueLabels: { "low-resolution": "low resolution", blur: "possible blur", underexposed: "too dark", overexposed: "too bright", "low-contrast": "low contrast" },
     removeBackground: "Remove background",
     onDevice: "on this device",
     selfHosted: "self-hosted",
@@ -87,6 +92,10 @@ const copy = {
     fileHelp: "JPG, PNG અથવા WebP · વધુમાં વધુ 8 MB / 25 megapixels.",
     selected: "પસંદ કરેલ:",
     noPhoto: "કોઈ ફોટો પસંદ નથી.",
+    qualityGood: "ફોટોની quality editing માટે યોગ્ય લાગે છે.",
+    qualityWarning: "ફોટો quality warning:",
+    qualityProduction: "Final print quality size/DPI review પછી confirm થશે.",
+    issueLabels: { "low-resolution": "ઓછું resolution", blur: "શક્ય blur", underexposed: "ઘણો dark", overexposed: "ઘણો bright", "low-contrast": "ઓછો contrast" },
     removeBackground: "બેકગ્રાઉન્ડ દૂર કરો",
     onDevice: "આ ડિવાઇસ પર",
     selfHosted: "સેલ્ફ-હોસ્ટેડ",
@@ -139,6 +148,10 @@ const copy = {
     fileHelp: "JPG, PNG या WebP · अधिकतम 8 MB / 25 megapixels.",
     selected: "चुना गया:",
     noPhoto: "कोई फोटो नहीं चुनी गई.",
+    qualityGood: "फोटो की quality editing के लिए ठीक लगती है.",
+    qualityWarning: "फोटो quality warning:",
+    qualityProduction: "Final print quality size/DPI review के बाद confirm होगी.",
+    issueLabels: { "low-resolution": "कम resolution", blur: "संभावित blur", underexposed: "बहुत dark", overexposed: "बहुत bright", "low-contrast": "कम contrast" },
     removeBackground: "बैकग्राउंड हटाएँ",
     onDevice: "इस डिवाइस पर",
     selfHosted: "सेल्फ-होस्टेड",
@@ -191,6 +204,10 @@ const copy = {
     fileHelp: "JPG, PNG किंवा WebP · कमाल 8 MB / 25 megapixels.",
     selected: "निवडलेले:",
     noPhoto: "कोणताही फोटो निवडलेला नाही.",
+    qualityGood: "फोटो quality editing साठी योग्य दिसते.",
+    qualityWarning: "फोटो quality warning:",
+    qualityProduction: "Final print quality size/DPI review नंतर confirm होईल.",
+    issueLabels: { "low-resolution": "कमी resolution", blur: "संभाव्य blur", underexposed: "खूप dark", overexposed: "खूप bright", "low-contrast": "कमी contrast" },
     removeBackground: "बॅकग्राउंड काढा",
     onDevice: "या डिवाइसवर",
     selfHosted: "सेल्फ-होस्टेड",
@@ -227,6 +244,7 @@ const copy = {
 export function CustomizationEditor({
   document: doc,
   bitmap,
+  qualityReport,
   product,
   onChange,
   onUpload,
@@ -240,6 +258,7 @@ export function CustomizationEditor({
 }: {
   document: CustomizationDocument;
   bitmap: ImageBitmap | null;
+  qualityReport: ImageQualityReport | null;
   product: CustomizationProduct;
   onChange: (d: CustomizationDocument) => void;
   onUpload: (file: File) => void;
@@ -402,6 +421,23 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
+          {qualityReport && (
+            <div className={qualityReport.issues.length ? "form-error" : "muted"} role="status">
+              <strong>
+                {qualityReport.issues.length ? t.qualityWarning : t.qualityGood}
+              </strong>{" "}
+              {qualityReport.issues.length
+                ? qualityReport.issues
+                    .map((issue) => t.issueLabels[issue])
+                    .join(", ")
+                : ""}
+              <div>
+                {qualityReport.width} × {qualityReport.height} ·{" "}
+                {qualityReport.megapixels.toFixed(1)} MP
+              </div>
+              <small>{t.qualityProduction}</small>
+            </div>
+          )}
           {adapter && (
             <button
               type="button"
