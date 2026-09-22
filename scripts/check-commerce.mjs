@@ -24,6 +24,12 @@ const requiredFiles = [
   "app/admin/reviews/page.tsx",
   "app/[lang]/products/page.tsx",
   "app/[lang]/products/[slug]/page.tsx",
+  "lib/customization/rules.ts",
+  "lib/customization/assets.ts",
+  "lib/customization/ai.ts",
+  "lib/customization/ai-runner.ts",
+  "lib/customization/quality.ts",
+  "data/seed-products.ts",
 ];
 
 for (const file of requiredFiles)
@@ -37,6 +43,11 @@ const migrations = [
   "supabase/migrations/202609190009_analytics.sql",
   "supabase/migrations/202609190010_rate_limits.sql",
   "supabase/migrations/202609190011_customer_accounts.sql",
+  "supabase/migrations/202609200012_analytics_checkout_complete.sql",
+  "supabase/migrations/202609200013_support_workflow.sql",
+  "supabase/migrations/202609200014_project_followup.sql",
+  "supabase/migrations/202609220015_design_assets.sql",
+  "supabase/migrations/202609220016_original_artwork_lineage.sql",
 ];
 
 for (const file of migrations)
@@ -47,10 +58,25 @@ for (const file of [
   migrations[3],
   migrations[4],
   migrations[5],
+  migrations[10],
 ]) {
   const sql = fs.readFileSync(file, "utf8").toLowerCase();
   assert.match(sql, /enable row level security/, "RLS missing: " + file);
 }
+
+const lineage = fs.readFileSync(
+  "supabase/migrations/202609220016_original_artwork_lineage.sql",
+  "utf8",
+).toLowerCase();
+assert.match(lineage, /source_artwork_path/);
+assert.match(lineage, /enquiry_id/);
+
+const assetMigration = fs.readFileSync(
+  "supabase/migrations/202609220015_design_assets.sql",
+  "utf8",
+).toLowerCase();
+assert.match(assetMigration, /stage in \('original','processed','preview','proof','production'\)/);
+assert.match(assetMigration, /revoke all on public\.shop_design_assets from anon, authenticated/);
 
 const proxy = fs.readFileSync("proxy.ts", "utf8");
 assert.match(proxy, /sec-fetch-site/);
@@ -78,7 +104,7 @@ const report = {
   passed: true,
   requiredFiles: requiredFiles.length,
   migrations: migrations.length,
-  rlsChecked: 4,
+  rlsChecked: 5,
 };
 
 fs.mkdirSync("migration/reports", { recursive: true });
