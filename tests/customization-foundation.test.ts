@@ -343,3 +343,19 @@ test("three verified seed products cover standee, award and name-plate customisa
     );
   }
 });
+
+
+test("Photo Standee browser background-removal provider is pinned and does not send customer media off-device", () => {
+  const providerSource = fs.readFileSync(
+    "lib/customization/providers/modnet-browser.ts",
+    "utf8",
+  );
+  const workerSource = fs.readFileSync("public/ai/modnet-worker.js", "utf8");
+  assert.match(providerSource, /sendsCustomerMediaOffDevice:\s*false/);
+  assert.match(providerSource, /capabilities:\s*\["background-removal"\]/);
+  assert.match(workerSource, /@huggingface\/transformers@4\.3\.0/);
+  assert.match(workerSource, /Xenova\/modnet/);
+  assert.match(workerSource, /MODEL_REVISION = "fa2fa54"/);
+  assert.match(workerSource, /dtype: "q8"/);
+  assert.match(workerSource, /URL\.createObjectURL\(blob\)/);
+});

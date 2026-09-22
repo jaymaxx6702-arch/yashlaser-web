@@ -47,3 +47,20 @@ npm run lint
 npm run build
 npm run verify:offline
 ```
+
+
+## Photo Standee browser background removal pilot
+
+The first working background-removal provider is intentionally limited to the
+Photo Standee category. It runs portrait matting in a same-origin module worker.
+The worker imports the Apache-2.0 Transformers.js runtime at the exact
+`4.3.0` npm version and loads the Apache-2.0 `Xenova/modnet` model at the
+pinned `fa2fa54` revision using q8 weights. The customer photo is passed to
+the worker as a local Blob/object URL; the provider descriptor explicitly marks
+customer media as not sent off-device.
+
+The external runtime/model downloads are lazy: nothing is downloaded until the
+customer presses Remove background. If loading/inference fails, the original
+photo and manual customizer remain available. This pilot must be browser/device
+tested before production rollout, and a future self-hosted runtime/model mirror
+can replace the provider without changing the customizer contract.

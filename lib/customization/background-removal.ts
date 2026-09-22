@@ -1,4 +1,5 @@
 import type { AiMediaAdapter } from "./ai";
+import { runAiImageOperation } from "./ai-runner";
 export interface BackgroundRemovalAdapter {
   readonly id: string;
   readonly execution: "browser" | "self-hosted";
@@ -31,9 +32,22 @@ export function backgroundRemovalAdapterFromAi(
     id: adapter.descriptor.id,
     execution:
       adapter.descriptor.execution === "browser" ? "browser" : "self-hosted",
-    removeBackground: (source, options) =>
-      adapter.removeBackground!(source, {
-        signal: options.signal,
-      }),
+    removeBackground: async (source, options) =>
+      (
+        await runAiImageOperation(
+          adapter,
+          "background-removal",
+          source,
+          {
+            signal: options.signal,
+            policy: {
+              timeoutMs: 120_000,
+              maxAttempts: 1,
+              retainProcessedMs: 24 * 60 * 60 * 1000,
+              allowRemoteMediaProcessing: false,
+            },
+          },
+        )
+      ).output,
   };
 }

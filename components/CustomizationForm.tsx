@@ -21,7 +21,11 @@ import {
   downloadBlob,
   type CustomizationSnapshot,
 } from "@/lib/customization/snapshot";
-import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
+import {
+  backgroundRemovalAdapterFromAi,
+  type BackgroundRemovalAdapter,
+} from "@/lib/customization/background-removal";
+import { modnetBrowserAdapter } from "@/lib/customization/providers/modnet-browser";
 import { addCartItem } from "@/lib/cart";
 import type { UiLanguage } from "@/lib/i18n";
 
@@ -292,6 +296,12 @@ export function CustomizationForm({
   lang?: UiLanguage;
 }) {
   const t = formCopy[lang];
+  const builtInBackgroundRemoval =
+    p.categoryId === "standees"
+      ? backgroundRemovalAdapterFromAi(modnetBrowserAdapter) ?? undefined
+      : undefined;
+  const activeBackgroundRemoval =
+    backgroundRemovalAdapter ?? builtInBackgroundRemoval;
   const prefix = lang === "en" ? "" : "/" + lang;
   const productPath = prefix + "/products/" + p.slug;
   const editor = useCustomization(
@@ -568,10 +578,10 @@ export function CustomizationForm({
             onOverflow={setOverflow}
             processing={locked}
             qualityIssues={editor.qualityIssues}
-            adapter={backgroundRemovalAdapter}
+            adapter={activeBackgroundRemoval}
             onRemoveBackground={() => {
-              if (backgroundRemovalAdapter)
-                void editor.applyBackgroundRemoval(backgroundRemovalAdapter);
+              if (activeBackgroundRemoval)
+                void editor.applyBackgroundRemoval(activeBackgroundRemoval);
             }}
             onDownload={() => void prepare()}
             lang={lang}
