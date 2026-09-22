@@ -201,3 +201,18 @@ test("print PPI calculation is deterministic once physical size is verified", ()
   assert.equal(printPpiForSize(3000, 3000, 254, 254), 300);
   assert.throws(() => printPpiForSize(0, 3000, 254, 254));
 });
+
+
+test("design asset migration is additive, private and enforces immutable production state", () => {
+  const sql = fs.readFileSync(
+    "supabase/migrations/202609220015_design_assets.sql",
+    "utf8",
+  ).toLowerCase();
+  assert.match(sql, /create table if not exists public\.shop_design_assets/);
+  assert.match(sql, /stage in \('original','processed','preview','proof','production'\)/);
+  assert.match(sql, /source_asset_id uuid references public\.shop_design_assets/);
+  assert.match(sql, /stage <> 'production'/);
+  assert.match(sql, /approved_at is not null and locked = true/);
+  assert.match(sql, /enable row level security/);
+  assert.match(sql, /revoke all on public\.shop_design_assets from anon, authenticated/);
+});
