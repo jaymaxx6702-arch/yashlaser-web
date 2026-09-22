@@ -560,6 +560,7 @@ export function CustomizationForm({
             }}
             onOverflow={setOverflow}
             processing={locked}
+            qualityIssues={editor.qualityIssues}
             adapter={backgroundRemovalAdapter}
             onRemoveBackground={() => {
               if (backgroundRemovalAdapter)

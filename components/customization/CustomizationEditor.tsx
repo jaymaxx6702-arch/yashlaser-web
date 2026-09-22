@@ -233,6 +233,7 @@ export function CustomizationEditor({
   onReset,
   onOverflow,
   processing,
+  qualityIssues,
   adapter,
   onRemoveBackground,
   onDownload,
@@ -246,6 +247,7 @@ export function CustomizationEditor({
   onReset: () => void;
   onOverflow: (v: boolean) => void;
   processing: boolean;
+  qualityIssues: string[];
   adapter?: BackgroundRemovalAdapter;
   onRemoveBackground: () => void;
   onDownload: () => void;
@@ -404,6 +406,13 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
+          {qualityIssues.length > 0 && (
+            <ul className="muted" aria-live="polite">
+              {qualityIssues.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          )}
           {adapter && rule.image.allowBackgroundRemoval && (
             <button
               type="button"
