@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { fieldLabels, type CustomizationProduct } from "@/lib/customization";
+import type { CustomizationProduct } from "@/lib/customization";
+import { customizationRules } from "@/lib/customization/rules";
 import {
-  categoryTemplates,
   clamp,
   type CustomizationDocument,
   type Crop,
@@ -252,6 +252,8 @@ export function CustomizationEditor({
   lang?: UiLanguage;
 }) {
   const t = copy[lang];
+  const rules = customizationRules(product);
+  const textRules = rules.fields.filter((field) => field.kind === "text");
   const [cropMode, setCropMode] = useState(false),
     [fileKey, setFileKey] = useState(0);
   const image = (patch: Partial<CustomizationDocument["image"]>) =>
@@ -355,7 +357,7 @@ export function CustomizationEditor({
                 " " +
                 t.productEstimate}
           </p>
-          {categoryTemplates[product.categoryId].length > 1 && (
+          {rules.templates.length > 1 && (
             <label>
               {t.previewTemplate}
               <select
@@ -368,7 +370,7 @@ export function CustomizationEditor({
                   })
                 }
               >
-                {categoryTemplates[product.categoryId].map((templateId) => (
+                {rules.templates.map((templateId) => (
                   <option key={templateId} value={templateId}>
                     {templates[templateId].name}
                   </option>
@@ -566,11 +568,11 @@ export function CustomizationEditor({
             <div className="text-layer-controls" key={i}>
               <label>
                 {lang === "en"
-                  ? fieldLabels[product.categoryId][i]
+                  ? textRules[i]?.label ?? t.textLine + " " + (i + 1)
                   : t.textLine + " " + (i + 1)}
                 <textarea
                   rows={2}
-                  maxLength={i === 0 ? 120 : 180}
+                  maxLength={textRules[i]?.maxLength ?? (i === 0 ? 120 : 180)}
                   value={layer.text}
                   onChange={(e) =>
                     onChange({
