@@ -250,3 +250,38 @@ test("admin-facing rule parser accepts safe rule JSON and rejects unsafe or inco
     }),
   );
 });
+
+
+test("AI image runner applies privacy, capability, retry and output validation centrally", async () => {
+  const { runAiImageOperation } = await import("../lib/customization/ai-runner");
+  let calls = 0;
+  const adapter = {
+    descriptor: {
+      id: "runner-test",
+      execution: "browser" as const,
+      capabilities: ["background-removal", "enhancement"] as const,
+      sendsCustomerMediaOffDevice: false,
+    },
+    removeBackground: async () => {
+      calls++;
+      if (calls === 1) throw new Error("temporary failure");
+      return new Blob(["transparent"], { type: "image/png" });
+    },
+    enhance: async () => new Blob(["enhanced"], { type: "image/webp" }),
+  };
+  const result = await runAiImageOperation(
+    adapter,
+    "background-removal",
+    new Blob(["source"], { type: "image/jpeg" }),
+    {
+      policy: {
+        ...defaultAiProcessingPolicy,
+        maxAttempts: 2,
+        timeoutMs: 1000,
+      },
+    },
+  );
+  assert.equal(result.attempt, 2);
+  assert.equal(result.output.type, "image/png");
+  assert.equal(result.providerId, "runner-test");
+});
