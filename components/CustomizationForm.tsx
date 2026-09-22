@@ -22,6 +22,7 @@ import {
   type CustomizationSnapshot,
 } from "@/lib/customization/snapshot";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
+import { sameOriginBackgroundRemovalAdapter } from "@/lib/customization/background-removal-client";
 import { addCartItem } from "@/lib/cart";
 import type { UiLanguage } from "@/lib/i18n";
 
@@ -281,17 +282,22 @@ export function CustomizationForm({
   onlineSubmission,
   initialSelection,
   selectionOverrides = {},
-  backgroundRemovalAdapter,
+  backgroundRemovalEnabled = false,
+  backgroundRemovalAdapter: injectedBackgroundRemovalAdapter,
   lang = "en",
 }: {
   product: CustomizationProduct;
   onlineSubmission: boolean;
   initialSelection?: { variantId: string; quantity: number };
   selectionOverrides?: { variantId?: string; quantity?: number };
+  backgroundRemovalEnabled?: boolean;
   backgroundRemovalAdapter?: BackgroundRemovalAdapter;
   lang?: UiLanguage;
 }) {
   const t = formCopy[lang];
+  const backgroundRemovalAdapter =
+    injectedBackgroundRemovalAdapter ??
+    (backgroundRemovalEnabled ? sameOriginBackgroundRemovalAdapter : undefined);
   const prefix = lang === "en" ? "" : "/" + lang;
   const productPath = prefix + "/products/" + p.slug;
   const editor = useCustomization(

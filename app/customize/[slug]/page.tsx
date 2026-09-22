@@ -5,6 +5,7 @@ import { findProduct } from "@/data/catalog";
 import { CustomizationForm } from "@/components/CustomizationForm";
 import { submissionEnabled } from "@/lib/supabase";
 import { resolveSelection } from "@/lib/customization";
+import { aiImageToolsEnabled } from "@/lib/ai-image-server";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Personalise & enquire",
@@ -68,6 +69,7 @@ export default async function CustomizePage({
           priceMinor,
         }}
         onlineSubmission={submissionEnabled()}
+        backgroundRemovalEnabled={aiImageToolsEnabled()}
       />
     </main>
   );
