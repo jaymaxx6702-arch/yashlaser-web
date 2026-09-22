@@ -26,7 +26,11 @@ import {
   type BackgroundRemovalAdapter,
 } from "@/lib/customization/background-removal";
 import { customizationRuleFor } from "@/lib/customization/rules";
-import { assessImageQuality, type ImageQualityIssueCode } from "@/lib/customization/quality";
+import {
+  analyzeBitmapQuality,
+  assessImageQuality,
+  type ImageQualityIssueCode,
+} from "@/lib/customization/quality";
 
 const qualityCopy: Record<UiLanguage, Record<ImageQualityIssueCode, string>> = {
   en: {
@@ -331,10 +335,12 @@ export function useCustomization(
         return;
       }
 
+      const localSignals = await analyzeBitmapQuality(next.bitmap).catch(() => ({}));
       const quality = assessImageQuality(
         {
           width: next.metadata.width,
           height: next.metadata.height,
+          ...localSignals,
         },
         customizationRuleFor(productRef.current),
       );

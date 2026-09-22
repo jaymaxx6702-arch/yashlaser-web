@@ -20,6 +20,7 @@ import {
   providerSupports,
 } from "../lib/customization/ai";
 import {
+  analyzePixelBuffer,
   assessImageQuality,
   printPpiForSize,
 } from "../lib/customization/quality";
@@ -284,4 +285,36 @@ test("AI image runner applies privacy, capability, retry and output validation c
   assert.equal(result.attempt, 2);
   assert.equal(result.output.type, "image/png");
   assert.equal(result.providerId, "runner-test");
+});
+
+
+test("local pixel analysis produces bounded blur/exposure/contrast signals without uploading media", () => {
+  const width = 8;
+  const height = 8;
+  const flatDark = new Uint8ClampedArray(width * height * 4);
+  for (let i = 0; i < flatDark.length; i += 4) {
+    flatDark[i] = 20;
+    flatDark[i + 1] = 20;
+    flatDark[i + 2] = 20;
+    flatDark[i + 3] = 255;
+  }
+  const dark = analyzePixelBuffer(flatDark, width, height);
+  assert.equal(dark.exposure, "low");
+  assert.ok((dark.blurScore ?? 0) >= 0 && (dark.blurScore ?? 0) <= 1);
+  assert.ok((dark.contrastScore ?? 0) >= 0 && (dark.contrastScore ?? 0) <= 1);
+
+  const checker = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const value = (x + y) % 2 ? 255 : 0;
+      checker[i] = value;
+      checker[i + 1] = value;
+      checker[i + 2] = value;
+      checker[i + 3] = 255;
+    }
+  const sharp = analyzePixelBuffer(checker, width, height);
+  assert.equal(sharp.exposure, "ok");
+  assert.ok((sharp.blurScore ?? 1) < (dark.blurScore ?? 0));
+  assert.ok((sharp.contrastScore ?? 0) > (dark.contrastScore ?? 0));
 });
