@@ -25,6 +25,11 @@ import {
   printPpiForSize,
 } from "../lib/customization/quality";
 
+import {
+  customizationSeedExpectations,
+  customizationSeedProductIds,
+} from "../data/seed-products";
+
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
 ) as CustomizationProduct[];
@@ -317,4 +322,24 @@ test("local pixel analysis produces bounded blur/exposure/contrast signals witho
   assert.equal(sharp.exposure, "ok");
   assert.ok((sharp.blurScore ?? 1) < (dark.blurScore ?? 0));
   assert.ok((sharp.contrastScore ?? 0) > (dark.contrastScore ?? 0));
+});
+
+
+test("three verified seed products cover standee, award and name-plate customisation before mass rollout", () => {
+  for (const id of customizationSeedProductIds) {
+    const product = products.find((candidate) => candidate.id === id);
+    assert.ok(product, "Missing seed product " + id);
+    const expectation = customizationSeedExpectations[id];
+    assert.equal(product.categoryId, expectation.categoryId);
+    assert.ok(
+      product.pricingMode === "quote_required" ||
+        product.variants.some((variant) => variant.effectivePriceMinor > 0) ||
+        product.effectivePriceMinor > 0,
+      "Seed product must have a valid commercial pricing path: " + id,
+    );
+    assert.equal(
+      customizationRuleFor(product).image.required,
+      expectation.requiresImage,
+    );
+  }
 });
