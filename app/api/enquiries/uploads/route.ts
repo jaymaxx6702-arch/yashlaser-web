@@ -32,6 +32,10 @@ export async function POST(request: Request) {
     const artworkPath = artwork
       ? `${prefix}/artwork.${artwork.mimeType === "image/jpeg" ? "jpg" : artwork.mimeType === "image/png" ? "png" : "webp"}`
       : null;
+    const sourceArtwork = input.sourceArtwork;
+    const sourceArtworkPath = sourceArtwork
+      ? `${prefix}/source-artwork.${sourceArtwork.mimeType === "image/jpeg" ? "jpg" : sourceArtwork.mimeType === "image/png" ? "png" : "webp"}`
+      : null;
     const previewPath = `${prefix}/preview.png`;
     const db = getSupabase();
     const sign = async (path: string) => {
@@ -42,16 +46,19 @@ export async function POST(request: Request) {
       return { path, url: r.data.signedUrl };
     };
     const expiresAt = Date.now() + 30 * 60 * 1000;
-    const [artworkTarget, previewTarget] = await Promise.all([
-      artworkPath ? sign(artworkPath) : null,
-      sign(previewPath),
-    ]);
+    const [artworkTarget, sourceArtworkTarget, previewTarget] =
+      await Promise.all([
+        artworkPath ? sign(artworkPath) : null,
+        sourceArtworkPath ? sign(sourceArtworkPath) : null,
+        sign(previewPath),
+      ]);
     const receipt = signTicket(
       {
         version: 1,
         requestId: input.requestId,
         payloadHash: input.payloadHash,
         artworkPath,
+        sourceArtworkPath,
         previewPath,
         previewBytes: preview.bytes!,
         previewHash: preview.sha256!,
@@ -60,7 +67,13 @@ export async function POST(request: Request) {
       serverSecret(),
     );
     return Response.json(
-      { receipt, expiresAt, artwork: artworkTarget, preview: previewTarget },
+      {
+        receipt,
+        expiresAt,
+        artwork: artworkTarget,
+        sourceArtwork: sourceArtworkTarget,
+        preview: previewTarget,
+      },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

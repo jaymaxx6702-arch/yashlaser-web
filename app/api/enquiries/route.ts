@@ -36,7 +36,8 @@ export async function POST(request: Request) {
     if (
       ticket.requestId !== input.requestId ||
       ticket.payloadHash !== input.payloadHash ||
-      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork)
+      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork) ||
+      Boolean(ticket.sourceArtworkPath) !== Boolean(input.sourceArtwork)
     )
       throw new EnquiryError(
         "Uploads do not match this enquiry. Please retry.",
@@ -91,6 +92,43 @@ export async function POST(request: Request) {
         );
       }
     }
+    const sourceArtwork = input.sourceArtwork;
+    if (sourceArtwork && ticket.sourceArtworkPath) {
+      const buffer = await download(
+        ticket.sourceArtworkPath,
+        sourceArtwork.bytes,
+        sourceArtwork.sha256,
+      );
+      try {
+        const meta = await sharp(buffer, {
+          limitInputPixels: CUSTOMIZATION_ARTWORK_POLICY.maxPixels,
+        }).metadata();
+        const mime =
+          meta.format === "jpeg" ? "image/jpeg" : `image/${meta.format}`;
+        if (
+          !CUSTOMIZATION_ARTWORK_POLICY.mimeTypes.includes(
+            mime as (typeof CUSTOMIZATION_ARTWORK_POLICY.mimeTypes)[number],
+          ) ||
+          mime !== sourceArtwork.mimeType ||
+          (meta.pages || 1) !== 1 ||
+          !meta.width ||
+          !meta.height
+        )
+          throw new Error();
+        await sharp(buffer, {
+          limitInputPixels: CUSTOMIZATION_ARTWORK_POLICY.maxPixels,
+        })
+          .rotate()
+          .resize(1, 1)
+          .png()
+          .toBuffer();
+      } catch {
+        throw new EnquiryError(
+          "The original photograph is invalid. Choose a valid JPG, PNG or WebP image.",
+        );
+      }
+    }
+
     const preview = await download(
       ticket.previewPath,
       ticket.previewBytes,
@@ -145,6 +183,7 @@ export async function POST(request: Request) {
             ? null
             : (variant?.effectivePriceMinor ?? product.effectivePriceMinor),
         artwork_path: ticket.artworkPath,
+        source_artwork_path: ticket.sourceArtworkPath ?? null,
         preview_path: ticket.previewPath,
         customization: design,
         design_id: input.designId,
