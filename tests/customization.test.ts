@@ -21,7 +21,7 @@ import {
 } from "../lib/customization/templates";
 import { removeBackground } from "../lib/customization/background-removal";
 import { customizationRules, validateCustomizationRules } from "../lib/customization/rules";
-import { CUSTOMIZATION_ARTWORK_POLICY, artworkWithinPolicy } from "../lib/customization/file-policy";
+import { CUSTOMIZATION_ARTWORK_POLICY, CUSTOMIZATION_PREVIEW_POLICY, artworkWithinPolicy } from "../lib/customization/file-policy";
 import { canTransitionDesignAsset, validateDesignAssetRef } from "../lib/customization/assets";
 import { providerSupports, type ImageProcessingProvider } from "../lib/customization/image-provider";
 import { analyzeQualitySample } from "../lib/customization/quality";
@@ -369,4 +369,12 @@ test("image correction remains bounded and non-destructive", () => {
       p,
     ),
   );
+});
+
+
+test("preview policy stays aligned with the exported canvas contract", () => {
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.width, 1000);
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.height, 1000);
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.mimeType, "image/png");
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.maxBytes, 4 * 1024 * 1024);
 });

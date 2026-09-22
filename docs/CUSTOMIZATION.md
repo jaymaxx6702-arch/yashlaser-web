@@ -54,3 +54,8 @@ so the change is backward compatible. Rendering applies corrections only to the
 preview/canvas; the original uploaded artwork remains unchanged. Future AI
 enhancement can therefore produce suggestions or a derived processed asset without
 replacing the customer's source file.
+
+
+Browser export and server verification now consume the same artwork/preview policy.
+Changing size, MIME or pixel limits therefore requires one contract update plus tests,
+instead of separate client/server edits.
