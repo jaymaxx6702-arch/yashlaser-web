@@ -457,6 +457,17 @@ export function useCustomization(
     await upload(source, metadata.name, null, true);
   }
 
+  async function applyRefinedArtwork(result: Blob) {
+    const processor =
+      current.current.document.backgroundRemoval.adapter || "manual-cutout";
+    await upload(
+      result,
+      "refined-cutout.png",
+      ("manual-refine:" + processor).slice(0, 80),
+      true,
+    );
+  }
+
   async function applyBackgroundRemoval(adapter: BackgroundRemovalAdapter) {
     if (!artwork) return;
     abort.current?.abort();
@@ -491,6 +502,7 @@ export function useCustomization(
     artwork,
     sourceArtwork,
     restoreOriginalArtwork,
+    applyRefinedArtwork,
     bitmap,
     ready,
     processing,

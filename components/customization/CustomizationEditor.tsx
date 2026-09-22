@@ -37,6 +37,7 @@ const copy = {
     noPhoto: "No photograph selected.",
     removeBackground: "Remove background",
     useOriginal: "Use original photo",
+    refineCutout: "Refine cutout",
     onDevice: "on this device",
     selfHosted: "self-hosted",
     resetPosition: "Reset position",
@@ -95,6 +96,7 @@ const copy = {
     noPhoto: "કોઈ ફોટો પસંદ નથી.",
     removeBackground: "બેકગ્રાઉન્ડ દૂર કરો",
     useOriginal: "મૂળ ફોટો વાપરો",
+    refineCutout: "કટઆઉટ સુધારો",
     onDevice: "આ ડિવાઇસ પર",
     selfHosted: "સેલ્ફ-હોસ્ટેડ",
     resetPosition: "સ્થાન રીસેટ કરો",
@@ -153,6 +155,7 @@ const copy = {
     noPhoto: "कोई फोटो नहीं चुनी गई.",
     removeBackground: "बैकग्राउंड हटाएँ",
     useOriginal: "मूल फोटो उपयोग करें",
+    refineCutout: "कटआउट सुधारें",
     onDevice: "इस डिवाइस पर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थिति रीसेट करें",
@@ -211,6 +214,7 @@ const copy = {
     noPhoto: "कोणताही फोटो निवडलेला नाही.",
     removeBackground: "बॅकग्राउंड काढा",
     useOriginal: "मूळ फोटो वापरा",
+    refineCutout: "कटआउट सुधारा",
     onDevice: "या डिवाइसवर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थान रीसेट करा",
@@ -261,6 +265,7 @@ export function CustomizationEditor({
   adapter,
   onRemoveBackground,
   onRestoreOriginal,
+  onRefineCutout,
   onDownload,
   lang = "en",
 }: {
@@ -276,6 +281,7 @@ export function CustomizationEditor({
   adapter?: BackgroundRemovalAdapter;
   onRemoveBackground: () => void;
   onRestoreOriginal: () => void;
+  onRefineCutout: () => void;
   onDownload: () => void;
   lang?: UiLanguage;
 }) {
@@ -460,6 +466,18 @@ export function CustomizationEditor({
                 onClick={onRestoreOriginal}
               >
                 {t.useOriginal}
+              </button>
+            )}
+          {doc.artwork &&
+            doc.sourceArtwork &&
+            doc.artwork.sha256 !== doc.sourceArtwork.sha256 && (
+              <button
+                type="button"
+                className="text-link"
+                disabled={processing}
+                onClick={onRefineCutout}
+              >
+                {t.refineCutout}
               </button>
             )}
           {bitmap && (

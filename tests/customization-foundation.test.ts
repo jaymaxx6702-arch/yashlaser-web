@@ -359,3 +359,36 @@ test("Photo Standee browser background-removal provider is pinned and does not s
   assert.match(workerSource, /dtype: "q8"/);
   assert.match(workerSource, /URL\.createObjectURL\(blob\)/);
 });
+
+
+test("manual cutout refinement validates normalized reversible brush strokes", async () => {
+  const { validateRefinementStrokes } = await import(
+    "../lib/customization/refinement"
+  );
+  const strokes = validateRefinementStrokes([
+    {
+      mode: "erase",
+      radius: 0.03,
+      points: [
+        { x: 0.1, y: 0.2 },
+        { x: 0.2, y: 0.3 },
+      ],
+    },
+    {
+      mode: "restore",
+      radius: 0.04,
+      points: [{ x: 0.5, y: 0.5 }],
+    },
+  ]);
+  assert.equal(strokes.length, 2);
+  assert.throws(() =>
+    validateRefinementStrokes([
+      { mode: "erase", radius: 1, points: [{ x: 0.5, y: 0.5 }] },
+    ]),
+  );
+  assert.throws(() =>
+    validateRefinementStrokes([
+      { mode: "restore", radius: 0.03, points: [{ x: -1, y: 0.5 }] },
+    ]),
+  );
+});

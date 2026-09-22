@@ -15,6 +15,7 @@ import {
 } from "@/lib/direct-upload";
 import { CustomizationEditor } from "@/components/customization/CustomizationEditor";
 import { CanvasPreview } from "@/components/customization/CanvasPreview";
+import { CutoutRefinement } from "@/components/customization/CutoutRefinement";
 import { useCustomization } from "@/components/customization/useCustomization";
 import {
   createSnapshot,
@@ -327,6 +328,7 @@ export function CustomizationForm({
     session: UploadSession;
   } | null>(null);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [refineOpen, setRefineOpen] = useState(false);
   async function prepare(review = false) {
     editor.setError("");
     setBusy(true);
@@ -563,6 +565,18 @@ export function CustomizationForm({
       )}
       {step === "design" ? (
         <>
+          {refineOpen && editor.artwork && editor.sourceArtwork && (
+            <CutoutRefinement
+              processed={editor.artwork}
+              original={editor.sourceArtwork}
+              lang={lang}
+              onCancel={() => setRefineOpen(false)}
+              onApply={async (blob) => {
+                await editor.applyRefinedArtwork(blob);
+                setRefineOpen(false);
+              }}
+            />
+          )}
           <CustomizationEditor
             document={editor.document}
             bitmap={editor.bitmap}
@@ -571,6 +585,7 @@ export function CustomizationForm({
             onUpload={(f) => void editor.upload(f, f.name)}
             onReset={() => {
               editor.reset();
+              setRefineOpen(false);
               setSnapshot(null);
               setSuccess(null);
               requestKey.current = { fingerprint: "", id: "" };
@@ -583,7 +598,11 @@ export function CustomizationForm({
               if (activeBackgroundRemoval)
                 void editor.applyBackgroundRemoval(activeBackgroundRemoval);
             }}
-            onRestoreOriginal={() => void editor.restoreOriginalArtwork()}
+            onRestoreOriginal={() => {
+              setRefineOpen(false);
+              void editor.restoreOriginalArtwork();
+            }}
+            onRefineCutout={() => setRefineOpen(true)}
             onDownload={() => void prepare()}
             lang={lang}
           />
