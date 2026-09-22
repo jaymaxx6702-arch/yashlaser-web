@@ -84,3 +84,17 @@ npm run check:routes -- http://localhost:3101
 ```
 
 After deployment, verify `/api/health` and the relevant customer/admin flow without exposing secret values in screenshots, logs or chat.
+
+
+## AI image processing
+
+| Variable | Exposure | Default | Meaning |
+|---|---|---:|---|
+| `AI_IMAGE_TOOLS_ENABLED` | Server only | `false` | Enables customer-facing AI image tools only after the provider/service is verified. |
+| `AI_BACKGROUND_REMOVE_URL` | Server only | empty | Full HTTPS endpoint for the approved/self-hosted background-removal service. Browser code never sees this URL. |
+| `AI_IMAGE_API_SECRET` | **Secret** | empty | Optional bearer secret for the image service. Never use a `NEXT_PUBLIC_` prefix. |
+
+The Shop calls the provider only through a same-origin API route. This keeps provider
+credentials out of the browser and allows the model/runtime to change without
+rewriting the customizer. Keep the feature flag false until privacy, licence,
+latency, output quality and mobile behaviour have been verified.

@@ -59,3 +59,15 @@ replacing the customer's source file.
 Browser export and server verification now consume the same artwork/preview policy.
 Changing size, MIME or pixel limits therefore requires one contract update plus tests,
 instead of separate client/server edits.
+
+
+## Provider-neutral background removal boundary
+
+The browser uses a same-origin adapter at
+`/api/image-tools/background-remove`. The API validates and rate-limits the raw
+image, then forwards it to an approved/self-hosted image service using server-only
+configuration. The client never receives the provider URL or secret.
+
+`AI_IMAGE_TOOLS_ENABLED=false` remains the safe default. A concrete model/service
+can be changed later without changing the customizer document, UI contract or
+customer upload flow.

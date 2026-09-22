@@ -171,6 +171,18 @@ if (paymentInvalid.status !== 400)
   });
 await paymentInvalid.arrayBuffer();
 
+const aiDisabled = await fetch(base + "/api/image-tools/background-remove", {
+  method: "POST",
+  headers: { origin: base, "content-type": "image/png" },
+  body: new Uint8Array([1]),
+});
+if (![400, 503].includes(aiDisabled.status))
+  failures.push({
+    api: "AI background removal must stay safely disabled or reject invalid input",
+    status: aiDisabled.status,
+  });
+await aiDisabled.arrayBuffer();
+
 const crossSite = await fetch(base + "/api/analytics", {
   method: "POST",
   headers: {
