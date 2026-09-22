@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         notes: text(raw.notes, 500),
       };
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Invalid cart." },
       { status: 400 },
@@ -168,7 +168,7 @@ export async function POST(request: Request) {
         trackingPath,
         idempotent: created.idempotent,
       });
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Unable to create order." },
         { status: 500 },
