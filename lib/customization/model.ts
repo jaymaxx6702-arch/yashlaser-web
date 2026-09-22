@@ -204,11 +204,9 @@ export function validateDocument(
   }) as [TextLayer, TextLayer];
   const artwork = artworkValue(d.artwork);
   const sourceArtwork =
-    d.sourceArtwork === undefined
+    d.sourceArtwork == null
       ? artwork
       : artworkValue(d.sourceArtwork);
-  if (artwork && !sourceArtwork)
-    throw new Error("Original artwork metadata is required.");
   const removal = record(d.backgroundRemoval);
   const adapter = removal.adapter === null ? null : string(removal.adapter, 80);
   return {
