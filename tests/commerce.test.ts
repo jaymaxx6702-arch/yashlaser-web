@@ -345,3 +345,28 @@ test("AI image service remains server-only and disabled by default", () => {
   assert.match(client, /\/api\/image-tools\/background-remove/);
   assert.doesNotMatch(client, /AI_IMAGE_API_SECRET|AI_BACKGROUND_REMOVE_URL/);
 });
+
+
+test("processed enquiries preserve original source artwork separately", () => {
+  const uploadRoute = fs.readFileSync(
+    "app/api/enquiries/uploads/route.ts",
+    "utf8",
+  );
+  const submitRoute = fs.readFileSync("app/api/enquiries/route.ts", "utf8");
+  const parser = fs.readFileSync("lib/enquiry-server.ts", "utf8");
+  const adminArtwork = fs.readFileSync(
+    "app/admin/artwork/[id]/route.ts",
+    "utf8",
+  );
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609220015_enquiry_source_artwork.sql",
+    "utf8",
+  );
+
+  assert.match(uploadRoute, /sourceArtworkPath/);
+  assert.match(submitRoute, /source_artwork_path/);
+  assert.match(parser, /Original artwork is required for processed designs/);
+  assert.match(adminArtwork, /source_artwork_path/);
+  assert.match(migration, /add column if not exists source_artwork_path text/);
+  assert.match(migration, /source_artwork_path/);
+});

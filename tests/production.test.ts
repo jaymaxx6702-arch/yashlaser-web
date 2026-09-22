@@ -44,3 +44,26 @@ test("upload receipt binds immutable paths and cannot be forged, expired or re-s
 });
 test("customer links target the shop domain", () =>
   assert.equal(business.url, "https://shop.yashlaser.in"));
+
+
+test("upload receipt accepts a signed original source-artwork path and rejects traversal", () => {
+  const sourceTicket = {
+    ...ticket,
+    sourceArtworkPath: folder + "/source-artwork.jpg",
+  };
+  const signed = signTicket(sourceTicket, "test-only-secret");
+  assert.deepEqual(
+    verifyTicket(signed, "test-only-secret", 1000),
+    sourceTicket,
+  );
+  assert.throws(() =>
+    verifyTicket(
+      signTicket(
+        { ...sourceTicket, sourceArtworkPath: "../../source-artwork.jpg" },
+        "test-only-secret",
+      ),
+      "test-only-secret",
+      1000,
+    ),
+  );
+});
