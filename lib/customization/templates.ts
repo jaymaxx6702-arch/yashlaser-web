@@ -1,4 +1,4 @@
-import type { TemplateId } from "./model";
+import type { TemplateId } from "./rules";
 export type Box = { x: number; y: number; width: number; height: number };
 export type Template = {
   id: TemplateId;
