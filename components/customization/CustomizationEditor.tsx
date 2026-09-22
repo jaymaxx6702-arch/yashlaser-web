@@ -36,6 +36,7 @@ const copy = {
     selected: "Selected:",
     noPhoto: "No photograph selected.",
     removeBackground: "Remove background",
+    useOriginal: "Use original photo",
     onDevice: "on this device",
     selfHosted: "self-hosted",
     resetPosition: "Reset position",
@@ -93,6 +94,7 @@ const copy = {
     selected: "પસંદ કરેલ:",
     noPhoto: "કોઈ ફોટો પસંદ નથી.",
     removeBackground: "બેકગ્રાઉન્ડ દૂર કરો",
+    useOriginal: "મૂળ ફોટો વાપરો",
     onDevice: "આ ડિવાઇસ પર",
     selfHosted: "સેલ્ફ-હોસ્ટેડ",
     resetPosition: "સ્થાન રીસેટ કરો",
@@ -150,6 +152,7 @@ const copy = {
     selected: "चुना गया:",
     noPhoto: "कोई फोटो नहीं चुनी गई.",
     removeBackground: "बैकग्राउंड हटाएँ",
+    useOriginal: "मूल फोटो उपयोग करें",
     onDevice: "इस डिवाइस पर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थिति रीसेट करें",
@@ -207,6 +210,7 @@ const copy = {
     selected: "निवडलेले:",
     noPhoto: "कोणताही फोटो निवडलेला नाही.",
     removeBackground: "बॅकग्राउंड काढा",
+    useOriginal: "मूळ फोटो वापरा",
     onDevice: "या डिवाइसवर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थान रीसेट करा",
@@ -256,6 +260,7 @@ export function CustomizationEditor({
   qualityIssues,
   adapter,
   onRemoveBackground,
+  onRestoreOriginal,
   onDownload,
   lang = "en",
 }: {
@@ -270,6 +275,7 @@ export function CustomizationEditor({
   qualityIssues: string[];
   adapter?: BackgroundRemovalAdapter;
   onRemoveBackground: () => void;
+  onRestoreOriginal: () => void;
   onDownload: () => void;
   lang?: UiLanguage;
 }) {
@@ -444,6 +450,18 @@ export function CustomizationEditor({
               {adapter.execution === "browser" ? t.onDevice : t.selfHosted})
             </button>
           )}
+          {doc.artwork &&
+            doc.sourceArtwork &&
+            doc.artwork.sha256 !== doc.sourceArtwork.sha256 && (
+              <button
+                type="button"
+                className="text-link"
+                disabled={processing}
+                onClick={onRestoreOriginal}
+              >
+                {t.useOriginal}
+              </button>
+            )}
           {bitmap && (
             <>
               <div className="editor-toolbar">

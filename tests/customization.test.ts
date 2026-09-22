@@ -328,3 +328,37 @@ test("processed artwork keeps original source metadata while legacy designs rema
   );
   assert.equal(legacy.sourceArtwork?.sha256, original.sha256);
 });
+
+
+test("original artwork remains the stable source when a processed image is selected", () => {
+  const d = createDocument(p);
+  const original = {
+    name: "original.jpg",
+    mimeType: "image/jpeg",
+    bytes: 120,
+    width: 1400,
+    height: 1800,
+    sha256: "e".repeat(64),
+  };
+  const cutout = {
+    ...original,
+    name: "background-removed.png",
+    mimeType: "image/png",
+    bytes: 100,
+    sha256: "f".repeat(64),
+  };
+  const processed = validateDocument(
+    { ...d, artwork: cutout, sourceArtwork: original },
+    p,
+  );
+  assert.equal(processed.sourceArtwork?.sha256, original.sha256);
+  const restored = validateDocument(
+    {
+      ...processed,
+      artwork: original,
+      backgroundRemoval: { adapter: null },
+    },
+    p,
+  );
+  assert.equal(restored.artwork?.sha256, restored.sourceArtwork?.sha256);
+});

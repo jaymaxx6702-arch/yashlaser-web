@@ -450,6 +450,13 @@ export function useCustomization(
     setQualityIssues([]);
   }
 
+  async function restoreOriginalArtwork() {
+    const source = current.current.sourceArtwork;
+    const metadata = current.current.document.sourceArtwork;
+    if (!source || !metadata) return;
+    await upload(source, metadata.name, null, true);
+  }
+
   async function applyBackgroundRemoval(adapter: BackgroundRemovalAdapter) {
     if (!artwork) return;
     abort.current?.abort();
@@ -483,6 +490,7 @@ export function useCustomization(
     setDocument,
     artwork,
     sourceArtwork,
+    restoreOriginalArtwork,
     bitmap,
     ready,
     processing,

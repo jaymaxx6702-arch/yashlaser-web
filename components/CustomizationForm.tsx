@@ -583,6 +583,7 @@ export function CustomizationForm({
               if (activeBackgroundRemoval)
                 void editor.applyBackgroundRemoval(activeBackgroundRemoval);
             }}
+            onRestoreOriginal={() => void editor.restoreOriginalArtwork()}
             onDownload={() => void prepare()}
             lang={lang}
           />
