@@ -1,26 +1,49 @@
 # Customization engine
 
-- model.ts: versioned document, strict shared validation, limits and category/template allowlist.
-- templates.ts: normalized category frames; changing variant updates the selected size without inventing physical dimensions.
-- geometry.ts: normalized source crop, cover/contain scaling and bounded pan.
-- render.ts: single 1000 × 1000 canvas renderer for live preview and snapshot export.
-- snapshot.ts: PNG + portable design JSON, content-derived design ID. Preview is indicative, not production artwork.
-- persistence.ts: IndexedDB image/document draft, 24-hour restore window; expired drafts are purged when an editor opens. Contact details are never persisted. Reset removes photo/text; product/quantity remain selected.
-- CustomizationEditor: common pointer, keyboard, slider, text and crop controls. CanvasPreview is also used for enquiry review.
-- useCustomization: image lifecycle, concurrent upload protection, local recovery, save queue and optional background-removal integration.
+## Build-once architecture
 
-Original browser uploads are bounded to 8 MB / 25 MP. Cropping is non-destructive; source crop, pan and zoom remain in the JSON. PNG export does not include customer contact information. WhatsApp links cannot attach files: customers download/share the preview and attach their original artwork separately.
+The customer editor uses shared contracts rather than product-specific editors:
 
-## Backend
+- `model.ts`: versioned design document and strict persisted-state validation.
+- `rules.ts`: category/product customization rules for fields, templates, quantity limits and image requirements. The future admin rule builder must write this same contract instead of inventing another schema.
+- `assets.ts`: immutable design-asset lifecycle: `original -> processed -> preview -> proof -> production`. Production assets must be approved and locked.
+- `ai.ts`: provider-neutral AI media contract. Browser, self-hosted or server implementations must advertise capabilities and pass privacy policy checks.
+- `templates.ts`: normalized product frames.
+- `geometry.ts`: non-destructive crop, cover/contain scaling and bounded pan.
+- `render.ts`: single canvas renderer for previews.
+- `snapshot.ts`: portable preview/design export.
+- `persistence.ts`: 24-hour browser draft recovery. Customer contact details are not persisted.
+- `CustomizationEditor`: one shared editor; product/category rules change behaviour without forking the UI.
 
-Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.
+The first pilot is Photo Standee. Two additional seed products should validate that the same contracts work outside standees before full catalogue rollout.
 
-## Optional background removal
+## Image and AI pipeline
 
-Implement BackgroundRemovalAdapter and inject it into CustomizationForm in a client-side integration. Default: no adapter and no AI call. A browser model or an owned self-hosted rembg service can implement removeBackground(Blob, {signal}). Return transparent PNG/WebP. The output passes the same upload validation and becomes the new draft artwork. Check model/code licence, local memory requirements and deployment configuration before enabling a provider. Do not put service secrets in this client interface.
+The intended reusable pipeline is:
+
+`original upload -> quality analysis -> optional AI processing -> customer-editable preview -> proof -> approved production asset`
+
+Rules:
+
+1. Always retain the original customer source separately.
+2. AI processing is optional and reversible.
+3. Customer crop/position overrides remain available.
+4. A preview is never treated as production artwork.
+5. Remote customer-media processing is disabled unless the configured privacy policy explicitly allows it.
+6. Provider-specific credentials never enter browser code.
+7. Background removal and enhancement adapters return validated image outputs and may fail without blocking manual customization.
+
+Original browser uploads remain bounded to 8 MB / 25 MP until a verified business requirement changes those limits.
+
+## Backend and file security
+
+Private uploads use signed targets and immutable metadata. The API validates the design against the catalogue product, bounds payload/file sizes and keeps prices server-derived. New asset/version storage migrations must be additive; historical proofs and production assets must not be overwritten.
 
 ## Checks
 
+```bash
 npm run test:customization
 npm run lint
 npm run build
+npm run verify:offline
+```
