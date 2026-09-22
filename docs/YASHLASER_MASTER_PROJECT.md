@@ -10,9 +10,9 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.3 |
+| Master File Version | 1.4 |
 | Last Updated | 22 September 2026 |
-| Current Active Task | **YL-083 - Public endpoints પર rate limits enable અને verify કરવું** |
+| Current Active Task | **YL-101 - AI photo quality analysis અને safe processing foundation શરૂ કરવું** |
 | Overall State | Planning locked; Stage 19 audited અને productionમાં merged; launch-readiness ચાલુ |
 
 ---
@@ -208,25 +208,28 @@ Known completed foundation:
 | Status | Count |
 |---|---:|
 | Completed | 31 |
-| In Progress | 9 |
+| In Progress | 10 |
 | Blocked | 4 |
-| Pending | 56 |
-| **Total** | **100** |
+| Pending | 78 |
+| **Total** | **123** |
 
 ### Reconciled open-work count — 22 September 2026
 
-- Master checklistમાં કુલ **69 open tasks** છે: 9 In Progress + 56 Pending + 4 Blocked.
-- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **62 direct website tasks open** છે.
-- આ 62માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **58 actionable website tasks** અત્યારે આગળ લઈ શકાય.
+- Master checklistમાં કુલ **92 open tasks** છે: 10 In Progress + 78 Pending + 4 Blocked.
+- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **85 direct website tasks open** છે.
+- આ 85માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **81 actionable website tasks** અત્યારે આગળ લઈ શકાય.
+- YL-101 to YL-123 અગાઉની website planning/chatમાં ચર્ચાયેલા પણ 100-task masterમાં explicit ન રહેલા useful features ઉમેરે છે.
 - આ count conservative છે: code foundation થયેલા પરંતુ production flag/business approval/full browser QA વગરના tasks Done mark કર્યા નથી.
 
 ### Immediate execution order
 
-1. **YL-083, YL-084** - rate limits અને analytics enable/test.
-2. **YL-048, YL-049, YL-050, YL-082** - bulk/event/custom/support flows enable/test.
-3. **YL-081, YL-057, YL-058, YL-059** - reviews અને customer accounts.
-4. Catalogue data, legal pages, SEO, performance અને full QA.
-5. Payment અને courier credentials મળ્યા પછી blocked tasks.
+1. **YL-101 to YL-109** - AI photo/customisation foundation: quality check, background removal, upscale/correction, cutout refinement, smart positioning અને production validation.
+2. **YL-041 to YL-047** - universal customisation engine સાથે AI pipeline integrate કરીને Photo Standee pilot perfect કરવો.
+3. **YL-083, YL-084, YL-085** - rate limits અને analytics enable/test/verify.
+4. **YL-048, YL-049, YL-050, YL-082** - bulk/event/custom/support flows enable/test.
+5. **YL-081, YL-057, YL-058, YL-059** - reviews અને customer accounts.
+6. Catalogue data, legal pages, SEO, performance અને full QA.
+7. Payment અને courier credentials મળ્યા પછી blocked tasks.
 
 ### Reference base
 
@@ -240,7 +243,7 @@ Known completed foundation:
 
 ---
 
-## 9. Master Implementation Checklist - 100 Tasks
+## 9. Master Implementation Checklist - 123 Tasks
 
 ### A. Governance, Architecture and Deployment - YL-001 to YL-010
 
@@ -300,6 +303,7 @@ Known completed foundation:
 - [ ] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું.
 - [ ] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા.
 - [ ] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું.
+  - AI photo-processing expansion YL-101 to YL-109માં separately tracked છે જેથી background removal/upscale/correction જેવી requirements broad taskમાં ખોવાય નહીં.
 - [ ] [IN PROGRESS] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો.
 - [ ] [IN PROGRESS] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો.
 - [ ] [IN PROGRESS] **YL-050** Custom Acrylic request submit-to-admin workflow enable અને test કરવો.
@@ -369,6 +373,38 @@ Known completed foundation:
 - [ ] **YL-099** Final launch runbook, rollback, support ownership અને issue-priority matrix freeze કરવી.
 - [ ] **YL-100** Soft launch પછી blockers fix કરીને public launch approve કરવો.
 
+### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
+
+- [ ] [IN PROGRESS] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી.
+- [ ] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો.
+- [ ] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું.
+- [ ] **YL-104** AI image enhancement/upscale pipeline: resolution upscale, sharpness, noise reduction, lighting, white-balance/color correction અને face-safe enhancement implement કરવી; over-processing ટાળવું.
+- [ ] **YL-105** Subject/face-aware smart crop, auto-centering અને product safe-area positioning બનાવવું; customerને manual crop/zoom/position override હંમેશા આપવો.
+- [ ] **YL-106** AI-processed imageને existing customizer canvasમાં non-destructive રીતે integrate કરીને cutout/silhouette અને realistic product mockup preview બનાવવો.
+- [ ] **YL-107** Product/category પ્રમાણે optional AI design assistance: suitable template, layout, text placement અને style suggestions આપવી; customerની explicit selection વગર design auto-final ન કરવું.
+- [ ] **YL-108** AI provider/model abstraction, browser/server execution choice, privacy/consent, file-retention rules, cost/usage limits, timeout/retry અને provider-failure fallback define/test કરવું.
+- [ ] **YL-109** AI preview અને production file વચ્ચે strict separation રાખીને final print-quality validation, original source retention, approved version lock અને proof handoff verify કરવું.
+
+### K. Advanced Commerce, Admin and Customer Experience - YL-110 to YL-121
+
+- [ ] **YL-110** Admin Customisation Field/Rule Builder બનાવવો જેથી developer વગર product માટે photo, text, name, date, logo, QR, size, colour, required/optional fields અને validation rules configure થઈ શકે.
+- [ ] **YL-111** Name Plate advanced configurator: width × height/shape/material-based pricing rules, profession/business templates, multilingual preview અને minimum-size validation support કરવું.
+- [ ] **YL-112** Business QR Generator suite બનાવવી: UPI, Google Review, WhatsApp, website/menu/Wi-Fi QR types, QR preview/download અને QR-based acrylic product templates સાથે integration.
+- [ ] **YL-113** Advanced event personalisation: Winner/Runner-up/Participant/VIP/Guest/Committee વગેરે recipient groups, Same Design–Different Text, group quantities અને repeat-event reuse support કરવું.
+- [ ] **YL-114** Saved custom design/projectને secure share link અને printable/shareable summary PDF દ્વારા customer/colleague સાથે share કરવાની facility બનાવવી; token expiry/revoke controls રાખવા.
+- [ ] **YL-115** Customer Notification Engine બનાવવું: order/proof/quote/payment-required/missing-data/dispatch/support events માટે multilingual Email + WhatsApp + optional SMS templates, retry, dedupe અને delivery audit.
+- [ ] **YL-116** Organisation/Corporate account features: saved brand kit/logo, approved templates, PO upload, organisation-specific terms/pricing hooks અને repeat approved design workflow બનાવવો.
+- [ ] **YL-117** CRM/Lead follow-up pipeline: source, owner, priority, next follow-up date, activity history, duplicate lead merge, lost/dormant reason અને quote-to-order conversion tracking.
+- [ ] **YL-118** Automated follow-up/retention flows: abandoned cart, saved-design reminder, quote reminder, annual-event repeat reminder અને approved-repeat project nudges with frequency caps/opt-out.
+- [ ] **YL-119** Advanced shipping/damage/replacement workflow: multi-box shipment, box-level tracking, damage complaint with photo/video/quantity/box-condition evidence અને linked replacement order.
+- [ ] **YL-120** Multi-channel Order Dashboard બનાવવો જેથી Website, Quote, WhatsApp/manual અને Offline-origin commercial orders source label સાથે એક admin viewમાં search/filter/manage થઈ શકે.
+- [ ] **YL-121** Campaign/Coupon/Attribution foundation: coupon rules/audit, UTM/referral source, offline QR source tracking અને campaign-to-lead/cart/order conversion reporting; discount stacking business rules explicit રાખવા.
+
+### L. AI Discovery and Guided Selling - YL-122 to YL-123
+
+- [ ] **YL-122** Natural-language product search/recommendation layer બનાવવી જેથી customer use-case, quantity, budget અથવા occasion પ્રમાણે relevant products શોધી શકે; deterministic filters/fallback જાળવવા.
+- [ ] **YL-123** AI-assisted Event Planner બનાવવો: event type, participants, budget અને required date પરથી suggested products/quantities/bundles આપવી; final price/availability server-validated data પરથી જ બતાવવી.
+
 ---
 
 ## 10. Blockers and Required User/Business Inputs
@@ -381,6 +417,8 @@ Known completed foundation:
 | Return/refund/replacement/cancellation decisions | YL-077, payment/refund QA |
 | Final business/GST/contact details | YL-080 |
 | Production auth method: password, OTP અથવા magic link | YL-057 to YL-059 |
+| AI provider/model choice, pricing/limits અને privacy terms | YL-102, YL-104, YL-108 (provider-dependent parts only) |
+| Discount/coupon business rules | YL-121 |
 
 ### Safety rules while blocked
 
@@ -396,6 +434,7 @@ Known completed foundation:
 Website complete ત્યારે જ ગણાશે જ્યારે:
 
 - Customer product શોધી અને યોગ્ય personalisation કરી શકે.
+- AI photo tools enabled હોય ત્યારે original file સુરક્ષિત રહે, processing reversible હોય, customer override કરી શકે અને AI previewને production-ready file માનવામાં ન આવે જ્યાં સુધી final quality/proof validation pass ન થાય.
 - Final server-validated price, quantity અને delivery information જોઈ શકે.
 - Cart અને checkoutમાંથી duplicate વગર order બની શકે.
 - Order secure રીતે track થઈ શકે.
@@ -420,7 +459,13 @@ Website complete ત્યારે જ ગણાશે જ્યારે:
 - Steps 43-54: search, pricing, statuses, notifications, files, media, SEO content, QA, go-live, decision register અને development handover.
 - Steps 55-64: sprints, pilot catalogue, product data, admin/order/quote/support/reviews/reorder workflows.
 - Steps 65-73: inventory, capacity, batch planning, QC/dispatch, accounts, CRM, marketing, dealer/B2B અને RBAC.
-- Remaining launch-readiness decisions હવે YL-001 to YL-100 implementation checklistમાં tracked રહેશે.
+- Remaining launch-readiness decisions હવે YL-001 to YL-123 implementation checklistમાં tracked રહેશે.
+
+### Missing-feature reconciliation — 22 September 2026
+
+- Earlier website/customisation discussionsમાંથી background removal, photo quality/upscale/correction, cutout refinement, smart crop, AI mockup/design help, QR generator, advanced event personalisation, shareable designs, notifications, corporate accounts, CRM/follow-up, shipping damage/replacement, multi-channel orders અને campaign attribution explicit tasks તરીકે YL-101 to YL-123માં ઉમેરાયા.
+- Partner/dealer portal, white-label/API resale અને broad distributor ecosystem useful future ideas છે, પરંતુ current Shop launch backlogને unnecessarily inflate ન કરવા Post-launch Growth Backlogમાં જ રાખવામાં આવ્યા.
+- AI tasks Photo Standeeને pilot product માનીને reusable engine તરીકે બનાવવાના; 370 products માટે separate AI logic લખવાનો નથી.
 
 ### Post-launch growth backlog
 
@@ -429,6 +474,16 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 ---
 
 ## 13. Change Log
+
+### Version 1.4 - 22 September 2026
+
+- Earlier website chats સામે feature tally કરીને useful-but-missing requirements explicit task IDsમાં ઉમેર્યાં.
+- YL-101 to YL-109 AI Photo/Intelligent Customisation માટે ઉમેર્યાં: quality analysis, background removal, manual cutout refine, upscale/enhancement/correction, smart crop/position, mockup integration, design assistance, provider/privacy limits અને production validation.
+- YL-110 to YL-121 admin/customer/business workflow માટે ઉમેર્યાં: field builder, name-plate configurator, business QR generator, advanced event personalisation, secure design sharing, notifications, corporate accounts, CRM, automated follow-up, damage/replacement, multi-channel orders અને campaign attribution.
+- YL-122 to YL-123 AI natural-language discovery અને AI Event Planner માટે future-capable but useful tasks ઉમેર્યાં.
+- Current Active Task YL-101 set કર્યો જેથી AI Customisation workને rate-limit/analytics પહેલાં priority મળે.
+- Partner/dealer/white-label ecosystem master launch countમાં ઉમેર્યો નથી; Post-launch Growth Backlogમાં જ રાખ્યો.
+- Dashboard હવે **31 Completed, 10 In Progress, 4 Blocked, 78 Pending = 123 tasks** છે; direct Shop open work **85**, જેમાં provider/business blockers કાઢ્યા પછી **81 actionable** છે.
 
 ### Version 1.3 - 22 September 2026
 
@@ -474,12 +529,13 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 નવી chat શરૂ કરતી વખતે આ Master File attach/mention કરીને નીચેનું લખાણ મોકલવું:
 
-> **YashLaser Website continue. `YASHLASER_MASTER_PROJECT.md` ને Source of Truth માનો. પહેલાં Current Active Task, Dashboard અને છેલ્લો Change Log વાંચો. હાલ YL-083થી આગળ website-only કામ ચાલુ કરો. YashFlow appમાં અત્યારે changes ન કરો. કોઈ task verify થયા વગર Done mark ન કરો. કામ પૂર્ણ થયા પછી checklist, counts, active task અને change log update કરીને આ જ fileની નવી version save કરો.**
+> **YashLaser Website continue. `YASHLASER_MASTER_PROJECT.md` ને Source of Truth માનો. પહેલાં Current Active Task, Dashboard અને છેલ્લો Change Log વાંચો. હાલ YL-101થી AI Photo/Customisation work ચાલુ કરો અને YL-041 customizer સાથે integrate કરો. YashFlow appમાં અત્યારે changes ન કરો. કોઈ task verify થયા વગર Done mark ન કરો. કામ પૂર્ણ થયા પછી checklist, counts, active task અને change log update કરીને આ જ fileની નવી version save કરો.**
 
 ### Current handoff
 
-- Active: **YL-083 - Public endpoints પર rate limits enable/test કરવું.**
-- Next: **YL-084 - Production analytics enable/test કરવું.**
+- Active: **YL-101 - AI photo quality analysis અને safe processing foundation.**
+- Next: **YL-102 - AI background removal/cutout**, પછી YL-103/YL-104 refinement + enhancement.
+- Pilot product: **Photo Standee**; engine reusable રાખવો.
 - Payments: OFF રાખવા.
 - Analytics: હજી enable/test કરવાનું બાકી.
 - YashFlow: manual Sync / Retry current safe method.
