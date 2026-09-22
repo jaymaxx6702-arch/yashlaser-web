@@ -330,3 +330,43 @@ test("local quality analysis reports exposure and resolution without claiming pr
   const variedReport = analyzeQualitySample(10, 10, varied);
   assert.equal(variedReport.issues.includes("low-contrast"), false);
 });
+
+
+test("legacy customization documents gain safe image-correction defaults", () => {
+  const legacy = createDocument(p);
+  const input = JSON.parse(JSON.stringify(legacy));
+  delete input.image.adjustments;
+  const checked = validateDocument(input, p);
+  assert.deepEqual(checked.image.adjustments, {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+  });
+});
+
+test("image correction remains bounded and non-destructive", () => {
+  const d = createDocument(p);
+  const checked = validateDocument(
+    {
+      ...d,
+      image: {
+        ...d.image,
+        adjustments: { brightness: 1.2, contrast: 0.9, saturation: 1.4 },
+      },
+    },
+    p,
+  );
+  assert.equal(checked.image.adjustments.brightness, 1.2);
+  assert.throws(() =>
+    validateDocument(
+      {
+        ...d,
+        image: {
+          ...d.image,
+          adjustments: { brightness: 3, contrast: 1, saturation: 1 },
+        },
+      },
+      p,
+    ),
+  );
+});

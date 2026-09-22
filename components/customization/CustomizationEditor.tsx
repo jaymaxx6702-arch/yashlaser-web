@@ -56,6 +56,10 @@ const copy = {
     zoom: "Zoom",
     horizontal: "Horizontal position",
     vertical: "Vertical position",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "Reset photo correction",
     personalText: "3. Personal text",
     textLine: "Text line",
     line: "Line",
@@ -112,6 +116,10 @@ const copy = {
     zoom: "ઝૂમ",
     horizontal: "આડું સ્થાન",
     vertical: "ઊભું સ્થાન",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "ફોટો correction reset કરો",
     personalText: "3. વ્યક્તિગત લખાણ",
     textLine: "લખાણ લાઇન",
     line: "લાઇન",
@@ -168,6 +176,10 @@ const copy = {
     zoom: "ज़ूम",
     horizontal: "क्षैतिज स्थिति",
     vertical: "ऊर्ध्व स्थिति",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "फोटो correction रीसेट करें",
     personalText: "3. व्यक्तिगत टेक्स्ट",
     textLine: "टेक्स्ट लाइन",
     line: "लाइन",
@@ -224,6 +236,10 @@ const copy = {
     zoom: "झूम",
     horizontal: "आडवे स्थान",
     vertical: "उभे स्थान",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "फोटो correction रीसेट करा",
     personalText: "3. वैयक्तिक मजकूर",
     textLine: "मजकूर ओळ",
     line: "ओळ",
@@ -595,6 +611,75 @@ export function CustomizationEditor({
                 </>
               )}
             </>
+          )}
+          {bitmap && (
+            <div className="option-fields">
+              <label>
+                {t.brightness}
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.05"
+                  value={doc.image.adjustments.brightness}
+                  onChange={(e) =>
+                    image({
+                      adjustments: {
+                        ...doc.image.adjustments,
+                        brightness: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                {t.contrast}
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.05"
+                  value={doc.image.adjustments.contrast}
+                  onChange={(e) =>
+                    image({
+                      adjustments: {
+                        ...doc.image.adjustments,
+                        contrast: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                {t.saturation}
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.05"
+                  value={doc.image.adjustments.saturation}
+                  onChange={(e) =>
+                    image({
+                      adjustments: {
+                        ...doc.image.adjustments,
+                        saturation: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <button
+                type="button"
+                className="text-link"
+                onClick={() =>
+                  image({
+                    adjustments: { brightness: 1, contrast: 1, saturation: 1 },
+                  })
+                }
+              >
+                {t.resetAdjustments}
+              </button>
+            </div>
           )}
         </section>
 

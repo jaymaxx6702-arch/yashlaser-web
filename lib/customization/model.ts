@@ -40,6 +40,11 @@ export type CustomizationDocument = {
     panX: number;
     panY: number;
     fit: "contain" | "cover";
+    adjustments: {
+      brightness: number;
+      contrast: number;
+      saturation: number;
+    };
   };
   text: [TextLayer, TextLayer];
   backgroundRemoval: { adapter: string | null };
@@ -66,6 +71,7 @@ export function createDocument(
       panX: 0,
       panY: 0,
       fit: "cover",
+      adjustments: { brightness: 1, contrast: 1, saturation: 1 },
     },
     text: [
       { text: "", fontSize: 32, align: "center", font: "sans" },
@@ -119,7 +125,9 @@ export function validateDocument(
   if (!Number.isInteger(quantity))
     throw new Error("Quantity must be a whole number.");
   const image = record(d.image),
-    crop = record(image.crop);
+    crop = record(image.crop),
+    adjustments =
+      image.adjustments === undefined ? {} : record(image.adjustments);
   const normalizedCrop = {
     x: numeric(crop.x, 0, 0.95),
     y: numeric(crop.y, 0, 0.95),
@@ -177,6 +185,20 @@ export function validateDocument(
       panX: numeric(image.panX, -1, 1),
       panY: numeric(image.panY, -1, 1),
       fit: member(image.fit, ["contain", "cover"]),
+      adjustments: {
+        brightness:
+          adjustments.brightness === undefined
+            ? 1
+            : numeric(adjustments.brightness, 0.5, 1.5),
+        contrast:
+          adjustments.contrast === undefined
+            ? 1
+            : numeric(adjustments.contrast, 0.5, 1.5),
+        saturation:
+          adjustments.saturation === undefined
+            ? 1
+            : numeric(adjustments.saturation, 0, 2),
+      },
     },
     text,
     backgroundRemoval: { adapter },

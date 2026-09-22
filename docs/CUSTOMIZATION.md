@@ -44,3 +44,13 @@ future product-specific behaviour behind reusable contracts:
 The rule contract is additive. Do not store payment, customer contact or provider secrets in
 customization JSON. Original customer artwork must remain recoverable and AI/processed output
 must be treated as derived data. A preview is never equivalent to production approval.
+
+
+## Non-destructive photo correction
+
+The version-1 document now carries bounded brightness, contrast and saturation
+adjustments. Old saved designs without these values restore with neutral defaults,
+so the change is backward compatible. Rendering applies corrections only to the
+preview/canvas; the original uploaded artwork remains unchanged. Future AI
+enhancement can therefore produce suggestions or a derived processed asset without
+replacing the customer's source file.
