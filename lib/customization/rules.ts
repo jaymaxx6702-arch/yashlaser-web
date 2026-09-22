@@ -262,3 +262,113 @@ export function validateCustomizationRule(rule: ProductCustomizationRule) {
   }
   return rule;
 }
+
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("Invalid customization rule.");
+  return value as Record<string, unknown>;
+}
+
+function asBoolean(value: unknown) {
+  if (typeof value !== "boolean") throw new Error("Invalid customization rule.");
+  return value;
+}
+
+function asInteger(value: unknown, min: number, max: number) {
+  if (
+    typeof value !== "number" ||
+    !Number.isInteger(value) ||
+    value < min ||
+    value > max
+  )
+    throw new Error("Invalid customization rule.");
+  return value;
+}
+
+function asString(value: unknown, max: number) {
+  if (typeof value !== "string" || !value || value.length > max)
+    throw new Error("Invalid customization rule.");
+  return value;
+}
+
+export function parseCustomizationRule(input: unknown): ProductCustomizationRule {
+  const root = asRecord(input);
+  if (root.version !== 1) throw new Error("Unsupported customization rule version.");
+  const categoryId = asString(root.categoryId, 40) as CategoryId;
+  if (!Object.hasOwn(categoryRules, categoryId))
+    throw new Error("Unknown customization category.");
+
+  if (!Array.isArray(root.templateIds) || root.templateIds.length < 1 || root.templateIds.length > 20)
+    throw new Error("Invalid template list.");
+  const allowedTemplates = new Set(categoryRules[categoryId].templateIds);
+  const templateIds = root.templateIds.map((value) => {
+    const id = asString(value, 60) as TemplateId;
+    if (!allowedTemplates.has(id)) throw new Error("Template is not allowed for this category.");
+    return id;
+  });
+
+  const quantityInput = asRecord(root.quantity);
+  const quantity = {
+    min: asInteger(quantityInput.min, 1, 10000),
+    max: asInteger(quantityInput.max, 1, 10000),
+  };
+  if (quantity.max < quantity.min) throw new Error("Invalid quantity rule.");
+
+  if (!Array.isArray(root.fields) || root.fields.length > 40)
+    throw new Error("Invalid field list.");
+  const kinds = new Set<CustomFieldKind>([
+    "text",
+    "date",
+    "photo",
+    "logo",
+    "qr",
+    "number",
+    "choice",
+  ]);
+  const fields = root.fields.map((value) => {
+    const field = asRecord(value);
+    const kind = asString(field.kind, 20) as CustomFieldKind;
+    if (!kinds.has(kind)) throw new Error("Unknown customization field kind.");
+    const slot =
+      field.slot === undefined
+        ? undefined
+        : field.slot === "primary" || field.slot === "secondary"
+          ? field.slot
+          : (() => {
+              throw new Error("Invalid customization text slot.");
+            })();
+    const maxLength =
+      field.maxLength === undefined
+        ? undefined
+        : asInteger(field.maxLength, 1, 3000);
+    return {
+      id: asString(field.id, 80),
+      kind,
+      label: asString(field.label, 160),
+      required: asBoolean(field.required),
+      ...(maxLength === undefined ? {} : { maxLength }),
+      ...(slot === undefined ? {} : { slot }),
+    } satisfies CustomFieldRule;
+  });
+
+  const imageInput = asRecord(root.image);
+  const image: ImageRule = {
+    required: asBoolean(imageInput.required),
+    allowPhoto: asBoolean(imageInput.allowPhoto),
+    allowLogo: asBoolean(imageInput.allowLogo),
+    allowBackgroundRemoval: asBoolean(imageInput.allowBackgroundRemoval),
+    allowEnhancement: asBoolean(imageInput.allowEnhancement),
+    minRecommendedWidth: asInteger(imageInput.minRecommendedWidth, 1, 25000),
+    minRecommendedHeight: asInteger(imageInput.minRecommendedHeight, 1, 25000),
+  };
+
+  return validateCustomizationRule({
+    version: 1,
+    categoryId,
+    templateIds,
+    quantity,
+    fields,
+    image,
+  });
+}

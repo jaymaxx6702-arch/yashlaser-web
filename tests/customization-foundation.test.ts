@@ -4,6 +4,7 @@ import fs from "node:fs";
 import type { CustomizationProduct } from "../lib/customization";
 import {
   customizationRuleFor,
+  parseCustomizationRule,
   validateCustomizationRule,
 } from "../lib/customization/rules";
 import { categoryTemplates } from "../lib/customization/model";
@@ -215,4 +216,37 @@ test("design asset migration is additive, private and enforces immutable product
   assert.match(sql, /approved_at is not null and locked = true/);
   assert.match(sql, /enable row level security/);
   assert.match(sql, /revoke all on public\.shop_design_assets from anon, authenticated/);
+});
+
+
+test("admin-facing rule parser accepts safe rule JSON and rejects unsafe or incompatible input", () => {
+  const standee = products.find((product) => product.categoryId === "standees");
+  assert.ok(standee);
+  const rule = customizationRuleFor(standee);
+  assert.deepEqual(parseCustomizationRule(JSON.parse(JSON.stringify(rule))), rule);
+  assert.throws(() =>
+    parseCustomizationRule({
+      ...rule,
+      templateIds: ["name-plate"],
+    }),
+  );
+  assert.throws(() =>
+    parseCustomizationRule({
+      ...rule,
+      quantity: { min: 1, max: 10001 },
+    }),
+  );
+  assert.throws(() =>
+    parseCustomizationRule({
+      ...rule,
+      fields: [
+        {
+          id: "html",
+          kind: "script",
+          label: "Unsafe",
+          required: false,
+        },
+      ],
+    }),
+  );
 });
