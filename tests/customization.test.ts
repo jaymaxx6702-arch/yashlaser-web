@@ -80,6 +80,7 @@ test("tampered product, variant, quantity, crop and transform values are rejecte
     { panX: Infinity },
     { panY: 2 },
     { fit: "html" },
+    { adjustments: { brightness: 2, contrast: 1, saturation: 1 } },
     { crop: { x: 0.8, y: 0, width: 0.5, height: 1 } },
   ])
     assert.throws(() =>
@@ -244,4 +245,120 @@ test("background removal is injected, cancellable, and requires transparent-capa
       new AbortController().signal,
     ),
   );
+});
+
+
+test("image corrections are non-destructive, bounded and backward-compatible", () => {
+  const d = createDocument(p);
+  assert.deepEqual(d.image.adjustments, {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+  });
+  const legacy = {
+    ...d,
+    image: {
+      crop: d.image.crop,
+      zoom: d.image.zoom,
+      panX: d.image.panX,
+      panY: d.image.panY,
+      fit: d.image.fit,
+    },
+  };
+  assert.deepEqual(validateDocument(legacy, p).image.adjustments, {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+  });
+  assert.equal(
+    validateDocument(
+      {
+        ...d,
+        image: {
+          ...d.image,
+          adjustments: {
+            brightness: 1.2,
+            contrast: 0.9,
+            saturation: 1.1,
+          },
+        },
+      },
+      p,
+    ).image.adjustments.brightness,
+    1.2,
+  );
+});
+
+
+test("processed artwork keeps original source metadata while legacy designs remain valid", () => {
+  const d = createDocument(p);
+  const original = {
+    name: "original.jpg",
+    mimeType: "image/jpeg",
+    bytes: 100,
+    width: 1200,
+    height: 1200,
+    sha256: "c".repeat(64),
+  };
+  const processed = {
+    ...original,
+    name: "cutout.png",
+    mimeType: "image/png",
+    bytes: 80,
+    sha256: "d".repeat(64),
+  };
+  const checked = validateDocument(
+    {
+      ...d,
+      artwork: processed,
+      sourceArtwork: original,
+    },
+    p,
+  );
+  assert.equal(checked.artwork?.sha256, processed.sha256);
+  assert.equal(checked.sourceArtwork?.sha256, original.sha256);
+
+  const legacy = validateDocument(
+    {
+      ...d,
+      artwork: original,
+      sourceArtwork: undefined,
+    },
+    p,
+  );
+  assert.equal(legacy.sourceArtwork?.sha256, original.sha256);
+});
+
+
+test("original artwork remains the stable source when a processed image is selected", () => {
+  const d = createDocument(p);
+  const original = {
+    name: "original.jpg",
+    mimeType: "image/jpeg",
+    bytes: 120,
+    width: 1400,
+    height: 1800,
+    sha256: "e".repeat(64),
+  };
+  const cutout = {
+    ...original,
+    name: "background-removed.png",
+    mimeType: "image/png",
+    bytes: 100,
+    sha256: "f".repeat(64),
+  };
+  const processed = validateDocument(
+    { ...d, artwork: cutout, sourceArtwork: original },
+    p,
+  );
+  assert.equal(processed.sourceArtwork?.sha256, original.sha256);
+  const restored = validateDocument(
+    {
+      ...processed,
+      artwork: original,
+      backgroundRemoval: { adapter: null },
+    },
+    p,
+  );
+  assert.equal(restored.artwork?.sha256, restored.sourceArtwork?.sha256);
 });

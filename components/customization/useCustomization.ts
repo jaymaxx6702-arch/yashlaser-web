@@ -25,6 +25,51 @@ import {
   removeBackground,
   type BackgroundRemovalAdapter,
 } from "@/lib/customization/background-removal";
+import { customizationRuleFor } from "@/lib/customization/rules";
+import {
+  analyzeBitmapQuality,
+  assessImageQuality,
+  type ImageQualityIssueCode,
+} from "@/lib/customization/quality";
+
+const qualityCopy: Record<UiLanguage, Record<ImageQualityIssueCode, string>> = {
+  en: {
+    "resolution-low": "This photo is below the recommended resolution. A higher-resolution original may print better.",
+    "blur-risk": "This photo may be blurred. Review enhancement or use a sharper original.",
+    underexposed: "This photo appears too dark and may need correction.",
+    overexposed: "This photo appears too bright and may have lost detail.",
+    "contrast-low": "This photo has low contrast and may need correction.",
+    "subject-missing": "No clear main subject was detected. Check the crop manually.",
+    "multiple-subjects": "Multiple subjects were detected. Confirm the intended subject.",
+  },
+  gu: {
+    "resolution-low": "આ ફોટોની resolution ભલામણ કરતાં ઓછી છે. વધુ high-resolution originalથી print વધુ સારું આવી શકે.",
+    "blur-risk": "ફોટો blur હોઈ શકે છે. Enhancement ચેક કરો અથવા વધુ sharp original વાપરો.",
+    underexposed: "ફોટો બહુ dark લાગે છે અને correctionની જરૂર પડી શકે.",
+    overexposed: "ફોટો બહુ bright લાગે છે અને detail ખોવાઈ હોઈ શકે.",
+    "contrast-low": "ફોટોમાં contrast ઓછો છે અને correctionની જરૂર પડી શકે.",
+    "subject-missing": "સ્પષ્ટ main subject મળ્યો નથી. Crop manual રીતે ચેક કરો.",
+    "multiple-subjects": "એકથી વધુ subjects મળ્યા છે. કયો subject વાપરવો તે કન્ફર્મ કરો.",
+  },
+  hi: {
+    "resolution-low": "इस फोटो की resolution सुझाए गए स्तर से कम है. Higher-resolution original से print बेहतर हो सकता है.",
+    "blur-risk": "फोटो blur हो सकती है. Enhancement जांचें या sharper original उपयोग करें.",
+    underexposed: "फोटो बहुत dark लग रही है और correction की जरूरत हो सकती है.",
+    overexposed: "फोटो बहुत bright लग रही है और detail खो सकती है.",
+    "contrast-low": "फोटो में contrast कम है और correction की जरूरत हो सकती है.",
+    "subject-missing": "स्पष्ट main subject नहीं मिला. Crop को manually जांचें.",
+    "multiple-subjects": "एक से अधिक subjects मिले हैं. उपयोग होने वाला subject confirm करें.",
+  },
+  mr: {
+    "resolution-low": "या फोटोची resolution शिफारसीपेक्षा कमी आहे. Higher-resolution originalमुळे print चांगला येऊ शकतो.",
+    "blur-risk": "फोटो blur असू शकतो. Enhancement तपासा किंवा sharper original वापरा.",
+    underexposed: "फोटो खूप dark दिसतो आणि correctionची गरज असू शकते.",
+    overexposed: "फोटो खूप bright दिसतो आणि detail कमी झाली असू शकते.",
+    "contrast-low": "फोटोमध्ये contrast कमी आहे आणि correctionची गरज असू शकते.",
+    "subject-missing": "स्पष्ट main subject सापडला नाही. Crop manually तपासा.",
+    "multiple-subjects": "एकापेक्षा जास्त subjects सापडले. कोणता subject वापरायचा ते confirm करा.",
+  },
+};
 
 const statusCopy = {
   en: {
@@ -116,13 +161,15 @@ export function useCustomization(
     createDocument(product, selection),
   );
   const [artwork, setArtwork] = useState<Blob | null>(null),
+    [sourceArtwork, setSourceArtwork] = useState<Blob | null>(null),
     [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
   const [ready, setReady] = useState(false),
     [processing, setProcessing] = useState(false),
     [storageMessage, setStorageMessage] = useState<string>(t.loading),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [qualityIssues, setQualityIssues] = useState<string[]>([]);
 
-  const current = useRef({ document, artwork });
+  const current = useRef({ document, artwork, sourceArtwork });
   const activeBitmap = useRef<ImageBitmap | null>(null),
     operation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -130,9 +177,9 @@ export function useCustomization(
   const productRef = useRef(product);
 
   useEffect(() => {
-    current.current = { document, artwork };
+    current.current = { document, artwork, sourceArtwork };
     productRef.current = product;
-  }, [document, artwork, product]);
+  }, [document, artwork, sourceArtwork, product]);
 
   const initial = useRef({ selection, overrides });
 
@@ -207,8 +254,25 @@ export function useCustomization(
               inspected.bitmap.close();
               throw new Error(t.mismatch);
             }
+            const sourceBlob = draft.sourceArtwork ?? draft.artwork;
+            if (checked.sourceArtwork) {
+              const sourceInspected =
+                checked.sourceArtwork.sha256 === inspected.metadata.sha256
+                  ? null
+                  : await inspectArtwork(sourceBlob, checked.sourceArtwork.name);
+              if (
+                sourceInspected &&
+                sourceInspected.metadata.sha256 !== checked.sourceArtwork.sha256
+              ) {
+                sourceInspected.bitmap.close();
+                inspected.bitmap.close();
+                throw new Error(t.mismatch);
+              }
+              sourceInspected?.bitmap.close();
+            }
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
+            setSourceArtwork(sourceBlob);
           } else if (checked.artwork) {
             throw new Error(t.unavailable);
           }
@@ -262,7 +326,7 @@ export function useCustomization(
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [document, artwork, ready, flush]);
+  }, [document, artwork, sourceArtwork, ready, flush]);
 
   useEffect(() => {
     if (!ready) return;
@@ -277,6 +341,7 @@ export function useCustomization(
     file: Blob,
     name: string,
     adapter: string | null = null,
+    preserveSource = false,
   ) {
     const token = ++operation.current;
     setProcessing(true);
@@ -289,10 +354,32 @@ export function useCustomization(
         return;
       }
 
+      const localSignals = await analyzeBitmapQuality(next.bitmap).catch(() => ({}));
+      const quality = assessImageQuality(
+        {
+          width: next.metadata.width,
+          height: next.metadata.height,
+          ...localSignals,
+        },
+        customizationRuleFor(productRef.current),
+      );
+      setQualityIssues(
+        quality.issues.map((issue) => qualityCopy[lang][issue.code]),
+      );
+
       const d = current.current.document;
+      const nextSourceArtwork = preserveSource
+        ? d.sourceArtwork
+        : next.metadata;
+      const nextSourceBlob = preserveSource
+        ? current.current.sourceArtwork
+        : file;
+      if (!nextSourceArtwork || !nextSourceBlob)
+        throw new Error("Original artwork is unavailable.");
       const nextDocument: CustomizationDocument = {
         ...d,
         artwork: next.metadata,
+        sourceArtwork: nextSourceArtwork,
         image: {
           ...d.image,
           crop: { x: 0, y: 0, width: 1, height: 1 },
@@ -307,6 +394,7 @@ export function useCustomization(
         await saveDraft(product.id, {
           document: nextDocument,
           artwork: file,
+          sourceArtwork: nextSourceBlob,
           updatedAt: Date.now(),
         });
       } catch {
@@ -318,9 +406,14 @@ export function useCustomization(
         return;
       }
 
-      current.current = { document: nextDocument, artwork: file };
+      current.current = {
+        document: nextDocument,
+        artwork: file,
+        sourceArtwork: nextSourceBlob,
+      };
       replaceBitmap(next.bitmap);
       setArtwork(file);
+      setSourceArtwork(nextSourceBlob);
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
@@ -335,23 +428,44 @@ export function useCustomization(
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setSourceArtwork(null);
 
     const clean = createDocument(productRef.current, {
       variantId: current.current.document.variantId,
       quantity: current.current.document.quantity,
     });
 
-    current.current = { document: clean, artwork: null };
+    current.current = { document: clean, artwork: null, sourceArtwork: null };
     setDocument(clean);
 
     void saveDraft(product.id, {
       document: clean,
       artwork: null,
+      sourceArtwork: null,
       updatedAt: Date.now(),
     }).catch(() => setStorageMessage(t.clearFailed));
 
     setProcessing(false);
     setError("");
+    setQualityIssues([]);
+  }
+
+  async function restoreOriginalArtwork() {
+    const source = current.current.sourceArtwork;
+    const metadata = current.current.document.sourceArtwork;
+    if (!source || !metadata) return;
+    await upload(source, metadata.name, null, true);
+  }
+
+  async function applyRefinedArtwork(result: Blob) {
+    const processor =
+      current.current.document.backgroundRemoval.adapter || "manual-cutout";
+    await upload(
+      result,
+      "refined-cutout.png",
+      ("manual-refine:" + processor).slice(0, 80),
+      true,
+    );
   }
 
   async function applyBackgroundRemoval(adapter: BackgroundRemovalAdapter) {
@@ -372,6 +486,7 @@ export function useCustomization(
         result,
         "background-removed." + (result.type === "image/png" ? "png" : "webp"),
         adapter.id,
+        true,
       );
     } catch (e) {
       if (!controller.signal.aborted)
@@ -385,10 +500,14 @@ export function useCustomization(
     document,
     setDocument,
     artwork,
+    sourceArtwork,
+    restoreOriginalArtwork,
+    applyRefinedArtwork,
     bitmap,
     ready,
     processing,
     storageMessage,
+    qualityIssues,
     error,
     setError,
     upload,

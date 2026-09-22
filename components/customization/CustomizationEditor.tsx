@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import { fieldLabels, type CustomizationProduct } from "@/lib/customization";
+import type { CustomizationProduct } from "@/lib/customization";
 import {
-  categoryTemplates,
   clamp,
   type CustomizationDocument,
   type Crop,
 } from "@/lib/customization/model";
 import { templates } from "@/lib/customization/templates";
+import { customizationRuleFor } from "@/lib/customization/rules";
 import { cropPreset } from "@/lib/customization/geometry";
 import { CanvasPreview } from "./CanvasPreview";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
@@ -36,6 +36,8 @@ const copy = {
     selected: "Selected:",
     noPhoto: "No photograph selected.",
     removeBackground: "Remove background",
+    useOriginal: "Use original photo",
+    refineCutout: "Refine cutout",
     onDevice: "on this device",
     selfHosted: "self-hosted",
     resetPosition: "Reset position",
@@ -51,6 +53,11 @@ const copy = {
     zoom: "Zoom",
     horizontal: "Horizontal position",
     vertical: "Vertical position",
+    imageAdjustments: "Image correction",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Colour intensity",
+    resetAdjustments: "Reset image correction",
     personalText: "3. Personal text",
     textLine: "Text line",
     line: "Line",
@@ -88,6 +95,8 @@ const copy = {
     selected: "પસંદ કરેલ:",
     noPhoto: "કોઈ ફોટો પસંદ નથી.",
     removeBackground: "બેકગ્રાઉન્ડ દૂર કરો",
+    useOriginal: "મૂળ ફોટો વાપરો",
+    refineCutout: "કટઆઉટ સુધારો",
     onDevice: "આ ડિવાઇસ પર",
     selfHosted: "સેલ્ફ-હોસ્ટેડ",
     resetPosition: "સ્થાન રીસેટ કરો",
@@ -103,6 +112,11 @@ const copy = {
     zoom: "ઝૂમ",
     horizontal: "આડું સ્થાન",
     vertical: "ઊભું સ્થાન",
+    imageAdjustments: "ઇમેજ કરેકશન",
+    brightness: "બ્રાઇટનેસ",
+    contrast: "કોન્ટ્રાસ્ટ",
+    saturation: "કલર ઇન્ટેન્સિટી",
+    resetAdjustments: "ઇમેજ કરેકશન રીસેટ કરો",
     personalText: "3. વ્યક્તિગત લખાણ",
     textLine: "લખાણ લાઇન",
     line: "લાઇન",
@@ -140,6 +154,8 @@ const copy = {
     selected: "चुना गया:",
     noPhoto: "कोई फोटो नहीं चुनी गई.",
     removeBackground: "बैकग्राउंड हटाएँ",
+    useOriginal: "मूल फोटो उपयोग करें",
+    refineCutout: "कटआउट सुधारें",
     onDevice: "इस डिवाइस पर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थिति रीसेट करें",
@@ -155,6 +171,11 @@ const copy = {
     zoom: "ज़ूम",
     horizontal: "क्षैतिज स्थिति",
     vertical: "ऊर्ध्व स्थिति",
+    imageAdjustments: "इमेज करेक्शन",
+    brightness: "ब्राइटनेस",
+    contrast: "कॉन्ट्रास्ट",
+    saturation: "कलर इंटेंसिटी",
+    resetAdjustments: "इमेज करेक्शन रीसेट करें",
     personalText: "3. व्यक्तिगत टेक्स्ट",
     textLine: "टेक्स्ट लाइन",
     line: "लाइन",
@@ -192,6 +213,8 @@ const copy = {
     selected: "निवडलेले:",
     noPhoto: "कोणताही फोटो निवडलेला नाही.",
     removeBackground: "बॅकग्राउंड काढा",
+    useOriginal: "मूळ फोटो वापरा",
+    refineCutout: "कटआउट सुधारा",
     onDevice: "या डिवाइसवर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थान रीसेट करा",
@@ -207,6 +230,11 @@ const copy = {
     zoom: "झूम",
     horizontal: "आडवे स्थान",
     vertical: "उभे स्थान",
+    imageAdjustments: "इमेज करेक्शन",
+    brightness: "ब्राइटनेस",
+    contrast: "कॉन्ट्रास्ट",
+    saturation: "कलर इंटेन्सिटी",
+    resetAdjustments: "इमेज करेक्शन रीसेट करा",
     personalText: "3. वैयक्तिक मजकूर",
     textLine: "मजकूर ओळ",
     line: "ओळ",
@@ -233,8 +261,11 @@ export function CustomizationEditor({
   onReset,
   onOverflow,
   processing,
+  qualityIssues,
   adapter,
   onRemoveBackground,
+  onRestoreOriginal,
+  onRefineCutout,
   onDownload,
   lang = "en",
 }: {
@@ -246,8 +277,11 @@ export function CustomizationEditor({
   onReset: () => void;
   onOverflow: (v: boolean) => void;
   processing: boolean;
+  qualityIssues: string[];
   adapter?: BackgroundRemovalAdapter;
   onRemoveBackground: () => void;
+  onRestoreOriginal: () => void;
+  onRefineCutout: () => void;
   onDownload: () => void;
   lang?: UiLanguage;
 }) {
@@ -257,6 +291,8 @@ export function CustomizationEditor({
   const image = (patch: Partial<CustomizationDocument["image"]>) =>
     onChange({ ...doc, image: { ...doc.image, ...patch } });
   const crop = (next: Crop) => image({ crop: next, zoom: 1, panX: 0, panY: 0 });
+  const rule = customizationRuleFor(product);
+  const textRules = rule.fields.filter((field) => field.kind === "text");
   const currentVariant = product.variants.find((v) => v.id === doc.variantId);
   const price =
     currentVariant?.effectivePriceMinor ?? product.effectivePriceMinor;
@@ -325,15 +361,17 @@ export function CustomizationEditor({
               {t.quantity}
               <input
                 type="number"
-                min={1}
-                max={10000}
+                min={rule.quantity.min}
+                max={rule.quantity.max}
                 step={1}
                 value={doc.quantity}
                 onChange={(e) => {
                   const n = e.target.valueAsNumber;
                   onChange({
                     ...doc,
-                    quantity: Number.isInteger(n) ? clamp(n, 1, 10000) : 1,
+                    quantity: Number.isInteger(n)
+                      ? clamp(n, rule.quantity.min, rule.quantity.max)
+                      : rule.quantity.min,
                   });
                 }}
               />
@@ -355,7 +393,7 @@ export function CustomizationEditor({
                 " " +
                 t.productEstimate}
           </p>
-          {categoryTemplates[product.categoryId].length > 1 && (
+          {rule.templateIds.length > 1 && (
             <label>
               {t.previewTemplate}
               <select
@@ -368,7 +406,7 @@ export function CustomizationEditor({
                   })
                 }
               >
-                {categoryTemplates[product.categoryId].map((templateId) => (
+                {rule.templateIds.map((templateId) => (
                   <option key={templateId} value={templateId}>
                     {templates[templateId].name}
                   </option>
@@ -400,7 +438,14 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
-          {adapter && (
+          {qualityIssues.length > 0 && (
+            <ul className="muted" aria-live="polite">
+              {qualityIssues.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          )}
+          {adapter && rule.image.allowBackgroundRemoval && (
             <button
               type="button"
               className="text-link"
@@ -411,6 +456,30 @@ export function CustomizationEditor({
               {adapter.execution === "browser" ? t.onDevice : t.selfHosted})
             </button>
           )}
+          {doc.artwork &&
+            doc.sourceArtwork &&
+            doc.artwork.sha256 !== doc.sourceArtwork.sha256 && (
+              <button
+                type="button"
+                className="text-link"
+                disabled={processing}
+                onClick={onRestoreOriginal}
+              >
+                {t.useOriginal}
+              </button>
+            )}
+          {doc.artwork &&
+            doc.sourceArtwork &&
+            doc.artwork.sha256 !== doc.sourceArtwork.sha256 && (
+              <button
+                type="button"
+                className="text-link"
+                disabled={processing}
+                onClick={onRefineCutout}
+              >
+                {t.refineCutout}
+              </button>
+            )}
           {bitmap && (
             <>
               <div className="editor-toolbar">
@@ -554,6 +623,48 @@ export function CustomizationEditor({
                       onChange={(e) => image({ panY: Number(e.target.value) })}
                     />
                   </label>
+                  <fieldset className="image-adjustment-controls">
+                    <legend>{t.imageAdjustments}</legend>
+                    {([
+                      ["brightness", t.brightness],
+                      ["contrast", t.contrast],
+                      ["saturation", t.saturation],
+                    ] as const).map(([key, label]) => (
+                      <label key={key}>
+                        {label}: {Math.round(doc.image.adjustments[key] * 100)}%
+                        <input
+                          type="range"
+                          min={0.5}
+                          max={1.5}
+                          step={0.01}
+                          value={doc.image.adjustments[key]}
+                          onChange={(e) =>
+                            image({
+                              adjustments: {
+                                ...doc.image.adjustments,
+                                [key]: Number(e.target.value),
+                              },
+                            })
+                          }
+                        />
+                      </label>
+                    ))}
+                    <button
+                      type="button"
+                      className="text-link"
+                      onClick={() =>
+                        image({
+                          adjustments: {
+                            brightness: 1,
+                            contrast: 1,
+                            saturation: 1,
+                          },
+                        })
+                      }
+                    >
+                      {t.resetAdjustments}
+                    </button>
+                  </fieldset>
                 </>
               )}
             </>
@@ -566,11 +677,11 @@ export function CustomizationEditor({
             <div className="text-layer-controls" key={i}>
               <label>
                 {lang === "en"
-                  ? fieldLabels[product.categoryId][i]
+                  ? textRules[i]?.label ?? t.textLine + " " + (i + 1)
                   : t.textLine + " " + (i + 1)}
                 <textarea
                   rows={2}
-                  maxLength={i === 0 ? 120 : 180}
+                  maxLength={textRules[i]?.maxLength ?? (i === 0 ? 120 : 180)}
                   value={layer.text}
                   onChange={(e) =>
                     onChange({

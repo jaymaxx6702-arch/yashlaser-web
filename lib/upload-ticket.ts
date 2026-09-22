@@ -4,6 +4,7 @@ export type UploadTicket = {
   requestId: string;
   payloadHash: string;
   artworkPath: string | null;
+  sourceArtworkPath?: string | null;
   previewPath: string;
   previewBytes: number;
   previewHash: string;
@@ -48,7 +49,10 @@ export function verifyTicket(
     !data.previewPath.endsWith("/preview.png") ||
     (data.artworkPath !== null &&
       (!prefix.test(data.artworkPath) ||
-        !/\/artwork\.(jpg|png|webp)$/.test(data.artworkPath)))
+        !/\/artwork\.(jpg|png|webp)$/.test(data.artworkPath))) ||
+    (data.sourceArtworkPath != null &&
+      (!prefix.test(data.sourceArtworkPath) ||
+        !/\/source-artwork\.(jpg|png|webp)$/.test(data.sourceArtworkPath)))
   )
     throw new Error("Invalid upload path.");
   return data;
