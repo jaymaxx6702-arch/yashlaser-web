@@ -26,6 +26,7 @@ customisation migrations:
 9. `202609200013_support_workflow.sql`
 10. `202609200014_project_followup.sql`
 11. `202609220015_design_assets.sql`
+12. `202609220016_original_artwork_lineage.sql`
 
 After each migration, confirm it completes without error before running the
 next one.
@@ -135,3 +136,9 @@ processed, preview, proof and production assets. It does not replace or delete
 existing enquiry artwork/preview paths or proof records. New code should dual-write
 the lineage table when an asset becomes part of a persisted customer/order workflow.
 Production assets must be approved and locked.
+
+
+`202609220016_original_artwork_lineage.sql` preserves the original uploaded
+customer artwork separately when a processed cutout/enhanced image differs from
+the source. It also returns the enquiry ID from `submit_enquiry` so the API can
+dual-write the additive design-asset lineage without replacing historical paths.

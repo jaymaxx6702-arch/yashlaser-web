@@ -20,6 +20,7 @@ const ticket: UploadTicket = {
   requestId: "12345678-1234-4234-8234-123456789012",
   payloadHash: "a".repeat(64),
   artworkPath: folder + "/artwork.jpg",
+  sourceArtworkPath: folder + "/source-artwork.jpg",
   previewPath: folder + "/preview.png",
   previewBytes: 1000,
   previewHash: "b".repeat(64),
@@ -34,7 +35,7 @@ test("upload receipt binds immutable paths and cannot be forged, expired or re-s
   assert.throws(() =>
     verifyTicket(
       signTicket(
-        { ...ticket, artworkPath: "../../private.png" },
+        { ...ticket, sourceArtworkPath: "../../private.png" },
         "test-only-secret",
       ),
       "test-only-secret",

@@ -288,3 +288,43 @@ test("image corrections are non-destructive, bounded and backward-compatible", (
     1.2,
   );
 });
+
+
+test("processed artwork keeps original source metadata while legacy designs remain valid", () => {
+  const d = createDocument(p);
+  const original = {
+    name: "original.jpg",
+    mimeType: "image/jpeg",
+    bytes: 100,
+    width: 1200,
+    height: 1200,
+    sha256: "c".repeat(64),
+  };
+  const processed = {
+    ...original,
+    name: "cutout.png",
+    mimeType: "image/png",
+    bytes: 80,
+    sha256: "d".repeat(64),
+  };
+  const checked = validateDocument(
+    {
+      ...d,
+      artwork: processed,
+      sourceArtwork: original,
+    },
+    p,
+  );
+  assert.equal(checked.artwork?.sha256, processed.sha256);
+  assert.equal(checked.sourceArtwork?.sha256, original.sha256);
+
+  const legacy = validateDocument(
+    {
+      ...d,
+      artwork: original,
+      sourceArtwork: undefined,
+    },
+    p,
+  );
+  assert.equal(legacy.sourceArtwork?.sha256, original.sha256);
+});

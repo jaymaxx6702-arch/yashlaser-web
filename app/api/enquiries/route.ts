@@ -32,7 +32,14 @@ export async function POST(request: Request) {
     if (
       ticket.requestId !== input.requestId ||
       ticket.payloadHash !== input.payloadHash ||
-      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork)
+      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork) ||
+      Boolean(ticket.sourceArtworkPath) !==
+        Boolean(
+          input.customization.sourceArtwork &&
+            input.customization.artwork &&
+            input.customization.sourceArtwork.sha256 !==
+              input.customization.artwork.sha256,
+        )
     )
       throw new EnquiryError(
         "Uploads do not match this enquiry. Please retry.",
@@ -52,13 +59,11 @@ export async function POST(request: Request) {
         throw new EnquiryError("Uploaded file does not match the design.");
       return buffer;
     };
-    const artwork = input.customization.artwork;
-    if (artwork && ticket.artworkPath) {
-      const buffer = await download(
-        ticket.artworkPath,
-        artwork.bytes,
-        artwork.sha256,
-      );
+    const validateArtwork = async (
+      path: string,
+      artwork: NonNullable<typeof input.customization.artwork>,
+    ) => {
+      const buffer = await download(path, artwork.bytes, artwork.sha256);
       try {
         const meta = await sharp(buffer, {
           limitInputPixels: 25000000,
@@ -84,7 +89,13 @@ export async function POST(request: Request) {
           "The uploaded photograph is invalid. Choose a valid JPG, PNG or WebP image.",
         );
       }
-    }
+    };
+    const artwork = input.customization.artwork;
+    const sourceArtwork = input.customization.sourceArtwork;
+    if (artwork && ticket.artworkPath)
+      await validateArtwork(ticket.artworkPath, artwork);
+    if (sourceArtwork && ticket.sourceArtworkPath)
+      await validateArtwork(ticket.sourceArtworkPath, sourceArtwork);
     const preview = await download(
       ticket.previewPath,
       ticket.previewBytes,
@@ -131,12 +142,87 @@ export async function POST(request: Request) {
             ? null
             : (variant?.effectivePriceMinor ?? product.effectivePriceMinor),
         artwork_path: ticket.artworkPath,
+        source_artwork_path:
+          ticket.sourceArtworkPath || ticket.artworkPath,
         preview_path: ticket.previewPath,
         customization: design,
         design_id: input.designId,
       },
     });
     if (result.error) throw new Error("Save failed");
+    const saved = result.data as {
+      reference: string;
+      enquiry_id?: string;
+    };
+    if (saved.enquiry_id) {
+      let sourceAssetId: string | null = null;
+      const originalPath = ticket.sourceArtworkPath || ticket.artworkPath;
+      if (sourceArtwork && originalPath) {
+        const sourceInsert = await db
+          .from("shop_design_assets")
+          .insert({
+            design_id: input.designId,
+            owner_type: "enquiry",
+            owner_id: saved.enquiry_id,
+            stage: "original",
+            source_asset_id: null,
+            storage_bucket: "customer-artwork",
+            file_path: originalPath,
+            file_name: sourceArtwork.name,
+            mime_type: sourceArtwork.mimeType,
+            file_size: sourceArtwork.bytes,
+            sha256: sourceArtwork.sha256,
+            width: sourceArtwork.width,
+            height: sourceArtwork.height,
+          })
+          .select("id")
+          .maybeSingle();
+        sourceAssetId = sourceInsert.data?.id || null;
+      }
+      let currentAssetId = sourceAssetId;
+      if (
+        artwork &&
+        ticket.artworkPath &&
+        (!sourceArtwork || artwork.sha256 !== sourceArtwork.sha256)
+      ) {
+        const processedInsert = await db
+          .from("shop_design_assets")
+          .insert({
+            design_id: input.designId,
+            owner_type: "enquiry",
+            owner_id: saved.enquiry_id,
+            stage: "processed",
+            source_asset_id: sourceAssetId,
+            storage_bucket: "customer-artwork",
+            file_path: ticket.artworkPath,
+            file_name: artwork.name,
+            mime_type: artwork.mimeType,
+            file_size: artwork.bytes,
+            sha256: artwork.sha256,
+            width: artwork.width,
+            height: artwork.height,
+            processor: design.backgroundRemoval.adapter,
+          })
+          .select("id")
+          .maybeSingle();
+        currentAssetId = processedInsert.data?.id || null;
+      }
+      await db.from("shop_design_assets").insert({
+        design_id: input.designId,
+        owner_type: "enquiry",
+        owner_id: saved.enquiry_id,
+        stage: "preview",
+        source_asset_id: currentAssetId,
+        storage_bucket: "customer-artwork",
+        file_path: ticket.previewPath,
+        file_name: "preview.png",
+        mime_type: "image/png",
+        file_size: ticket.previewBytes,
+        sha256: ticket.previewHash,
+        width: 1000,
+        height: 1000,
+      });
+    }
     // Keep immutable files on ambiguous/retried commits. Orphan cleanup is separate.
     return Response.json({ reference: result.data.reference }, { status: 201 });
   } catch (error) {

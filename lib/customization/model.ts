@@ -34,6 +34,7 @@ export type CustomizationDocument = {
   variantId: string;
   quantity: number;
   artwork: Artwork | null;
+  sourceArtwork: Artwork | null;
   image: {
     crop: Crop;
     zoom: number;
@@ -76,6 +77,7 @@ export function createDocument(
       selection?.variantId ?? p.variants.find((v) => v.available)?.id ?? "",
     quantity: selection?.quantity ?? 1,
     artwork: null,
+    sourceArtwork: null,
     image: {
       crop: { x: 0, y: 0, width: 1, height: 1 },
       zoom: 1,
@@ -119,6 +121,26 @@ function member<T extends string>(value: unknown, allowed: readonly T[]): T {
   if (typeof value !== "string" || !allowed.includes(value as T))
     throw new Error("Invalid customization option.");
   return value as T;
+}
+function artworkValue(value: unknown): Artwork | null {
+  if (value === null || value === undefined) return null;
+  const a = record(value);
+  const artwork: Artwork = {
+    name: string(a.name, 180),
+    mimeType: member(a.mimeType, ["image/jpeg", "image/png", "image/webp"]),
+    bytes: numeric(a.bytes, 1, MAX_UPLOAD_BYTES),
+    width: numeric(a.width, 1, MAX_IMAGE_PIXELS),
+    height: numeric(a.height, 1, MAX_IMAGE_PIXELS),
+    sha256: string(a.sha256, 64),
+  };
+  if (
+    !/^[a-f0-9]{64}$/.test(artwork.sha256) ||
+    !Number.isInteger(artwork.width) ||
+    !Number.isInteger(artwork.height) ||
+    artwork.width * artwork.height > MAX_IMAGE_PIXELS
+  )
+    throw new Error("Invalid artwork metadata.");
+  return artwork;
 }
 export function validateDocument(
   input: unknown,
@@ -180,25 +202,13 @@ export function validateDocument(
       font: member(t.font, ["sans", "serif", "mono"]),
     };
   }) as [TextLayer, TextLayer];
-  let artwork: Artwork | null = null;
-  if (d.artwork !== null) {
-    const a = record(d.artwork);
-    artwork = {
-      name: string(a.name, 180),
-      mimeType: member(a.mimeType, ["image/jpeg", "image/png", "image/webp"]),
-      bytes: numeric(a.bytes, 1, MAX_UPLOAD_BYTES),
-      width: numeric(a.width, 1, MAX_IMAGE_PIXELS),
-      height: numeric(a.height, 1, MAX_IMAGE_PIXELS),
-      sha256: string(a.sha256, 64),
-    };
-    if (
-      !/^[a-f0-9]{64}$/.test(artwork.sha256) ||
-      !Number.isInteger(artwork.width) ||
-      !Number.isInteger(artwork.height) ||
-      artwork.width * artwork.height > MAX_IMAGE_PIXELS
-    )
-      throw new Error("Invalid artwork metadata.");
-  }
+  const artwork = artworkValue(d.artwork);
+  const sourceArtwork =
+    d.sourceArtwork === undefined
+      ? artwork
+      : artworkValue(d.sourceArtwork);
+  if (artwork && !sourceArtwork)
+    throw new Error("Original artwork metadata is required.");
   const removal = record(d.backgroundRemoval);
   const adapter = removal.adapter === null ? null : string(removal.adapter, 80);
   return {
@@ -209,6 +219,7 @@ export function validateDocument(
     variantId,
     quantity,
     artwork,
+    sourceArtwork,
     image: {
       crop: normalizedCrop,
       zoom: numeric(image.zoom, 1, 4),

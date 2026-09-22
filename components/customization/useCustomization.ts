@@ -161,6 +161,7 @@ export function useCustomization(
     createDocument(product, selection),
   );
   const [artwork, setArtwork] = useState<Blob | null>(null),
+    [sourceArtwork, setSourceArtwork] = useState<Blob | null>(null),
     [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
   const [ready, setReady] = useState(false),
     [processing, setProcessing] = useState(false),
@@ -168,7 +169,7 @@ export function useCustomization(
     [error, setError] = useState(""),
     [qualityIssues, setQualityIssues] = useState<string[]>([]);
 
-  const current = useRef({ document, artwork });
+  const current = useRef({ document, artwork, sourceArtwork });
   const activeBitmap = useRef<ImageBitmap | null>(null),
     operation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -176,9 +177,9 @@ export function useCustomization(
   const productRef = useRef(product);
 
   useEffect(() => {
-    current.current = { document, artwork };
+    current.current = { document, artwork, sourceArtwork };
     productRef.current = product;
-  }, [document, artwork, product]);
+  }, [document, artwork, sourceArtwork, product]);
 
   const initial = useRef({ selection, overrides });
 
@@ -253,8 +254,25 @@ export function useCustomization(
               inspected.bitmap.close();
               throw new Error(t.mismatch);
             }
+            const sourceBlob = draft.sourceArtwork ?? draft.artwork;
+            if (checked.sourceArtwork) {
+              const sourceInspected =
+                checked.sourceArtwork.sha256 === inspected.metadata.sha256
+                  ? null
+                  : await inspectArtwork(sourceBlob, checked.sourceArtwork.name);
+              if (
+                sourceInspected &&
+                sourceInspected.metadata.sha256 !== checked.sourceArtwork.sha256
+              ) {
+                sourceInspected.bitmap.close();
+                inspected.bitmap.close();
+                throw new Error(t.mismatch);
+              }
+              sourceInspected?.bitmap.close();
+            }
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
+            setSourceArtwork(sourceBlob);
           } else if (checked.artwork) {
             throw new Error(t.unavailable);
           }
@@ -308,7 +326,7 @@ export function useCustomization(
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [document, artwork, ready, flush]);
+  }, [document, artwork, sourceArtwork, ready, flush]);
 
   useEffect(() => {
     if (!ready) return;
@@ -323,6 +341,7 @@ export function useCustomization(
     file: Blob,
     name: string,
     adapter: string | null = null,
+    preserveSource = false,
   ) {
     const token = ++operation.current;
     setProcessing(true);
@@ -349,9 +368,18 @@ export function useCustomization(
       );
 
       const d = current.current.document;
+      const nextSourceArtwork = preserveSource
+        ? d.sourceArtwork
+        : next.metadata;
+      const nextSourceBlob = preserveSource
+        ? current.current.sourceArtwork
+        : file;
+      if (!nextSourceArtwork || !nextSourceBlob)
+        throw new Error("Original artwork is unavailable.");
       const nextDocument: CustomizationDocument = {
         ...d,
         artwork: next.metadata,
+        sourceArtwork: nextSourceArtwork,
         image: {
           ...d.image,
           crop: { x: 0, y: 0, width: 1, height: 1 },
@@ -366,6 +394,7 @@ export function useCustomization(
         await saveDraft(product.id, {
           document: nextDocument,
           artwork: file,
+          sourceArtwork: nextSourceBlob,
           updatedAt: Date.now(),
         });
       } catch {
@@ -377,9 +406,14 @@ export function useCustomization(
         return;
       }
 
-      current.current = { document: nextDocument, artwork: file };
+      current.current = {
+        document: nextDocument,
+        artwork: file,
+        sourceArtwork: nextSourceBlob,
+      };
       replaceBitmap(next.bitmap);
       setArtwork(file);
+      setSourceArtwork(nextSourceBlob);
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
@@ -394,18 +428,20 @@ export function useCustomization(
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setSourceArtwork(null);
 
     const clean = createDocument(productRef.current, {
       variantId: current.current.document.variantId,
       quantity: current.current.document.quantity,
     });
 
-    current.current = { document: clean, artwork: null };
+    current.current = { document: clean, artwork: null, sourceArtwork: null };
     setDocument(clean);
 
     void saveDraft(product.id, {
       document: clean,
       artwork: null,
+      sourceArtwork: null,
       updatedAt: Date.now(),
     }).catch(() => setStorageMessage(t.clearFailed));
 
@@ -432,6 +468,7 @@ export function useCustomization(
         result,
         "background-removed." + (result.type === "image/png" ? "png" : "webp"),
         adapter.id,
+        true,
       );
     } catch (e) {
       if (!controller.signal.aborted)
@@ -445,6 +482,7 @@ export function useCustomization(
     document,
     setDocument,
     artwork,
+    sourceArtwork,
     bitmap,
     ready,
     processing,

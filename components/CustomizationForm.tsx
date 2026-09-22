@@ -388,6 +388,13 @@ export function CustomizationForm({
           }
         }
         if (!saved && session) {
+          if (session.sourceArtwork && !session.sourceArtworkDone) {
+            if (!editor.sourceArtwork)
+              throw new Error(t.selectArtwork);
+            setUploadStatus(t.uploadArtwork);
+            await uploadPrivate(session.sourceArtwork, editor.sourceArtwork);
+            session.sourceArtworkDone = true;
+          }
           if (session.artwork && !session.artworkDone) {
             if (!editor.artwork)
               throw new Error(t.selectArtwork);

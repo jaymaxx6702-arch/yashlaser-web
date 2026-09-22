@@ -29,9 +29,18 @@ export async function POST(request: Request) {
       throw new EnquiryError("Invalid preview metadata.");
     const prefix = `incoming/${input.requestId}/${randomUUID()}`;
     const artwork = input.customization.artwork;
+    const sourceArtwork = input.customization.sourceArtwork;
+    const extension = (mimeType: string) =>
+      mimeType === "image/jpeg" ? "jpg" : mimeType === "image/png" ? "png" : "webp";
     const artworkPath = artwork
-      ? `${prefix}/artwork.${artwork.mimeType === "image/jpeg" ? "jpg" : artwork.mimeType === "image/png" ? "png" : "webp"}`
+      ? `${prefix}/artwork.${extension(artwork.mimeType)}`
       : null;
+    const sourceArtworkPath =
+      artwork &&
+      sourceArtwork &&
+      sourceArtwork.sha256 !== artwork.sha256
+        ? `${prefix}/source-artwork.${extension(sourceArtwork.mimeType)}`
+        : null;
     const previewPath = `${prefix}/preview.png`;
     const db = getSupabase();
     const sign = async (path: string) => {
@@ -42,8 +51,9 @@ export async function POST(request: Request) {
       return { path, url: r.data.signedUrl };
     };
     const expiresAt = Date.now() + 30 * 60 * 1000;
-    const [artworkTarget, previewTarget] = await Promise.all([
+    const [artworkTarget, sourceArtworkTarget, previewTarget] = await Promise.all([
       artworkPath ? sign(artworkPath) : null,
+      sourceArtworkPath ? sign(sourceArtworkPath) : null,
       sign(previewPath),
     ]);
     const receipt = signTicket(
@@ -52,6 +62,7 @@ export async function POST(request: Request) {
         requestId: input.requestId,
         payloadHash: input.payloadHash,
         artworkPath,
+        sourceArtworkPath,
         previewPath,
         previewBytes: preview.bytes!,
         previewHash: preview.sha256!,
@@ -60,7 +71,13 @@ export async function POST(request: Request) {
       serverSecret(),
     );
     return Response.json(
-      { receipt, expiresAt, artwork: artworkTarget, preview: previewTarget },
+      {
+        receipt,
+        expiresAt,
+        artwork: artworkTarget,
+        sourceArtwork: sourceArtworkTarget,
+        preview: previewTarget,
+      },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {
