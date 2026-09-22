@@ -24,6 +24,7 @@ import { customizationRules, validateCustomizationRules } from "../lib/customiza
 import { CUSTOMIZATION_ARTWORK_POLICY, artworkWithinPolicy } from "../lib/customization/file-policy";
 import { canTransitionDesignAsset, validateDesignAssetRef } from "../lib/customization/assets";
 import { providerSupports, type ImageProcessingProvider } from "../lib/customization/image-provider";
+import { analyzeQualitySample } from "../lib/customization/quality";
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
 ) as CustomizationProduct[];
@@ -313,4 +314,19 @@ test("image provider contract declares capabilities before provider-specific cal
   };
   assert.equal(providerSupports(provider, "quality-analysis"), true);
   assert.equal(providerSupports(provider, "enhancement"), false);
+});
+
+
+test("local quality analysis reports exposure and resolution without claiming print readiness", () => {
+  const bright = new Uint8Array(100).fill(240);
+  const brightReport = analyzeQualitySample(10, 10, bright);
+  assert.ok(brightReport.issues.includes("overexposed"));
+  assert.ok(brightReport.issues.includes("low-resolution"));
+  assert.equal(brightReport.suitableForProduction, null);
+  assert.equal(brightReport.source, "local-heuristic");
+
+  const varied = new Uint8Array(100);
+  for (let i = 0; i < varied.length; i++) varied[i] = i % 2 ? 30 : 220;
+  const variedReport = analyzeQualitySample(10, 10, varied);
+  assert.equal(variedReport.issues.includes("low-contrast"), false);
 });
