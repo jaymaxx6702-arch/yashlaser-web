@@ -354,7 +354,25 @@ export function CustomizationForm({
         throw new Error(t.validationError);
       const doc = snapshot.document,
         variant = p.variants.find((v) => v.id === doc.variantId);
-      const fingerprint = JSON.stringify([snapshot.designId, customer]);
+      const sourceArtwork =
+        doc.backgroundRemoval.adapter &&
+        editor.originalArtwork &&
+        editor.originalArtwork !== editor.artwork
+          ? {
+              bytes: editor.originalArtwork.size,
+              sha256: await blobHash(editor.originalArtwork),
+              mimeType: editor.originalArtwork.type,
+              name:
+                editor.originalArtwork instanceof File
+                  ? editor.originalArtwork.name.slice(0, 180)
+                  : "original-artwork",
+            }
+          : null;
+      const fingerprint = JSON.stringify([
+        snapshot.designId,
+        sourceArtwork?.sha256 || null,
+        customer,
+      ]);
       if (requestKey.current.fingerprint !== fingerprint)
         requestKey.current = { fingerprint, id: crypto.randomUUID() };
       const requestId = requestKey.current.id;
@@ -366,6 +384,7 @@ export function CustomizationForm({
         quantity: doc.quantity,
         customization: doc,
         designId: snapshot.designId,
+        sourceArtwork,
         website: String(new FormData(e.currentTarget).get("website") || ""),
       };
       let reference = "YL-DRAFT-" + requestId.slice(0, 8).toUpperCase(),
@@ -400,6 +419,13 @@ export function CustomizationForm({
             setUploadStatus(t.uploadArtwork);
             await uploadPrivate(session.artwork, editor.artwork);
             session.artworkDone = true;
+          }
+          if (session.sourceArtwork && !session.sourceArtworkDone) {
+            if (!editor.originalArtwork)
+              throw new Error(t.selectArtwork);
+            setUploadStatus(t.uploadArtwork);
+            await uploadPrivate(session.sourceArtwork, editor.originalArtwork);
+            session.sourceArtworkDone = true;
           }
           if (!session.previewDone) {
             setUploadStatus(t.uploadPreview);

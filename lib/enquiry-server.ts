@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { products } from "@/data/catalog";
 import { requireReadyDocument } from "@/lib/customization/model";
+import { CUSTOMIZATION_ARTWORK_POLICY } from "@/lib/customization/file-policy";
 import { MAX_ENQUIRY_BYTES } from "./enquiry-limits";
 import { getSupabase, submissionEnabled } from "./supabase";
 import { consumeRequestRateLimit } from "@/lib/rate-limit";
@@ -116,6 +117,53 @@ export function parseEnquiry(data: Record<string, unknown>) {
       "Please check your product options and customization.",
     );
   }
+  const sourceInput = data.sourceArtwork;
+  let sourceArtwork: null | {
+    bytes: number;
+    sha256: string;
+    mimeType: (typeof CUSTOMIZATION_ARTWORK_POLICY.mimeTypes)[number];
+    name: string;
+  } = null;
+  if (sourceInput !== null && sourceInput !== undefined) {
+    if (
+      typeof sourceInput !== "object" ||
+      Array.isArray(sourceInput)
+    )
+      throw new EnquiryError("Invalid original artwork metadata.");
+    const source = sourceInput as Record<string, unknown>;
+    const bytes = Number(source.bytes);
+    const sha256 =
+      typeof source.sha256 === "string" ? source.sha256.toLowerCase() : "";
+    const mimeType =
+      typeof source.mimeType === "string" ? source.mimeType.toLowerCase() : "";
+    const name = typeof source.name === "string" ? source.name.trim() : "";
+    if (
+      !Number.isInteger(bytes) ||
+      bytes < 1 ||
+      bytes > CUSTOMIZATION_ARTWORK_POLICY.maxBytes ||
+      !/^[a-f0-9]{64}$/.test(sha256) ||
+      !CUSTOMIZATION_ARTWORK_POLICY.mimeTypes.includes(
+        mimeType as (typeof CUSTOMIZATION_ARTWORK_POLICY.mimeTypes)[number],
+      ) ||
+      !name ||
+      name.length > 180
+    )
+      throw new EnquiryError("Invalid original artwork metadata.");
+    sourceArtwork = {
+      bytes,
+      sha256,
+      mimeType:
+        mimeType as (typeof CUSTOMIZATION_ARTWORK_POLICY.mimeTypes)[number],
+      name,
+    };
+  }
+  if (
+    Boolean(design.backgroundRemoval.adapter) !== Boolean(sourceArtwork)
+  )
+    throw new EnquiryError(
+      "Original artwork is required for processed designs.",
+    );
+
   const designId = digest(JSON.stringify(design)).slice(0, 16);
   if (
     text("designId", 16, true) !== designId ||
@@ -144,6 +192,7 @@ export function parseEnquiry(data: Record<string, unknown>) {
     quantity: design.quantity,
     designId,
     customization: design,
+    sourceArtwork,
     customerName,
     phone,
     email,
