@@ -5,6 +5,7 @@ import { supportedLanguages, uiCopy } from "../lib/i18n";
 import { languageAlternates } from "../lib/seo";
 import {
   RequestBodyError,
+  readBinaryBody,
   readJsonBody,
 } from "../lib/request-security";
 import { categories, products } from "../data/catalog";
@@ -71,6 +72,28 @@ test("JSON body guard accepts valid JSON and rejects malformed or oversized inpu
   );
 });
 
+test("binary body guard streams safely and enforces the byte limit", async () => {
+  const ok = new Request("https://shop.yashlaser.in/api/image", {
+    method: "POST",
+    headers: { "content-type": "image/png" },
+    body: new Uint8Array([1, 2, 3, 4]),
+  });
+  const input = await readBinaryBody(ok, 4);
+  assert.equal(input.mimeType, "image/png");
+  assert.deepEqual([...input.body], [1, 2, 3, 4]);
+
+  const tooLarge = new Request("https://shop.yashlaser.in/api/image", {
+    method: "POST",
+    headers: { "content-type": "image/png" },
+    body: new Uint8Array(5),
+  });
+  await assert.rejects(
+    () => readBinaryBody(tooLarge, 4),
+    (error: unknown) =>
+      error instanceof RequestBodyError && error.status === 413,
+  );
+});
+
 test("catalogue identifiers remain unique and commerce quantities cannot rely on duplicate product IDs", () => {
   assert.equal(
     new Set(products.map((product) => product.id)).size,
@@ -101,6 +124,7 @@ test("environment template is parseable and rollout-sensitive flags default disa
     "ANALYTICS_ENABLED",
     "RATE_LIMITS_ENABLED",
     "CUSTOMER_ACCOUNTS_ENABLED",
+    "AI_IMAGE_TOOLS_ENABLED",
   ]) {
     assert.match(env, new RegExp("^" + flag + "=false$", "m"));
   }
@@ -126,6 +150,7 @@ test("customer-facing write APIs retain persisted request rate limiting", () => 
     "app/api/shipping/check/route.ts",
     "app/api/support/route.ts",
     "app/api/support/[ticketNo]/route.ts",
+    "app/api/image-tools/background-remove/route.ts",
   ];
 
   for (const path of directRoutes) {
@@ -295,4 +320,53 @@ test("public JSON write APIs use bounded body readers", () => {
       path + " must not use unbounded request.json()",
     );
   }
+});
+
+
+test("AI image service remains server-only and disabled by default", () => {
+  const env = fs.readFileSync(".env.example", "utf8");
+  assert.match(env, /^AI_IMAGE_TOOLS_ENABLED=false$/m);
+  assert.match(env, /^AI_BACKGROUND_REMOVE_URL=$/m);
+  assert.match(env, /^AI_IMAGE_API_SECRET=$/m);
+  assert.doesNotMatch(env, /NEXT_PUBLIC_AI_/);
+
+  const route = fs.readFileSync(
+    "app/api/image-tools/background-remove/route.ts",
+    "utf8",
+  );
+  assert.match(route, /readBinaryBody/);
+  assert.match(route, /consumeRequestRateLimit/);
+  assert.doesNotMatch(route, /AI_IMAGE_API_SECRET/);
+
+  const client = fs.readFileSync(
+    "lib/customization/background-removal-client.ts",
+    "utf8",
+  );
+  assert.match(client, /\/api\/image-tools\/background-remove/);
+  assert.doesNotMatch(client, /AI_IMAGE_API_SECRET|AI_BACKGROUND_REMOVE_URL/);
+});
+
+
+test("processed enquiries preserve original source artwork separately", () => {
+  const uploadRoute = fs.readFileSync(
+    "app/api/enquiries/uploads/route.ts",
+    "utf8",
+  );
+  const submitRoute = fs.readFileSync("app/api/enquiries/route.ts", "utf8");
+  const parser = fs.readFileSync("lib/enquiry-server.ts", "utf8");
+  const adminArtwork = fs.readFileSync(
+    "app/admin/artwork/[id]/route.ts",
+    "utf8",
+  );
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609220015_enquiry_source_artwork.sql",
+    "utf8",
+  );
+
+  assert.match(uploadRoute, /sourceArtworkPath/);
+  assert.match(submitRoute, /source_artwork_path/);
+  assert.match(parser, /Original artwork is required for processed designs/);
+  assert.match(adminArtwork, /source_artwork_path/);
+  assert.match(migration, /add column if not exists source_artwork_path text/);
+  assert.match(migration, /source_artwork_path/);
 });

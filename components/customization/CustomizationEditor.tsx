@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { fieldLabels, type CustomizationProduct } from "@/lib/customization";
+import type { CustomizationProduct } from "@/lib/customization";
+import { customizationRules } from "@/lib/customization/rules";
 import {
-  categoryTemplates,
   clamp,
   type CustomizationDocument,
   type Crop,
@@ -12,6 +12,7 @@ import { cropPreset } from "@/lib/customization/geometry";
 import { CanvasPreview } from "./CanvasPreview";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
 import type { UiLanguage } from "@/lib/i18n";
+import type { ImageQualityReport } from "@/lib/customization/image-provider";
 
 const copy = {
   en: {
@@ -35,7 +36,12 @@ const copy = {
     fileHelp: "JPG, PNG or WebP · up to 8 MB / 25 megapixels.",
     selected: "Selected:",
     noPhoto: "No photograph selected.",
+    qualityGood: "Photo quality looks suitable for editing.",
+    qualityWarning: "Photo quality warning:",
+    qualityProduction: "Final print quality will be confirmed after size/DPI review.",
+    issueLabels: { "low-resolution": "low resolution", blur: "possible blur", underexposed: "too dark", overexposed: "too bright", "low-contrast": "low contrast" },
     removeBackground: "Remove background",
+    restoreOriginal: "Restore original photo",
     onDevice: "on this device",
     selfHosted: "self-hosted",
     resetPosition: "Reset position",
@@ -51,6 +57,10 @@ const copy = {
     zoom: "Zoom",
     horizontal: "Horizontal position",
     vertical: "Vertical position",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "Reset photo correction",
     personalText: "3. Personal text",
     textLine: "Text line",
     line: "Line",
@@ -87,7 +97,12 @@ const copy = {
     fileHelp: "JPG, PNG અથવા WebP · વધુમાં વધુ 8 MB / 25 megapixels.",
     selected: "પસંદ કરેલ:",
     noPhoto: "કોઈ ફોટો પસંદ નથી.",
+    qualityGood: "ફોટોની quality editing માટે યોગ્ય લાગે છે.",
+    qualityWarning: "ફોટો quality warning:",
+    qualityProduction: "Final print quality size/DPI review પછી confirm થશે.",
+    issueLabels: { "low-resolution": "ઓછું resolution", blur: "શક્ય blur", underexposed: "ઘણો dark", overexposed: "ઘણો bright", "low-contrast": "ઓછો contrast" },
     removeBackground: "બેકગ્રાઉન્ડ દૂર કરો",
+    restoreOriginal: "મૂળ ફોટો પાછો લાવો",
     onDevice: "આ ડિવાઇસ પર",
     selfHosted: "સેલ્ફ-હોસ્ટેડ",
     resetPosition: "સ્થાન રીસેટ કરો",
@@ -103,6 +118,10 @@ const copy = {
     zoom: "ઝૂમ",
     horizontal: "આડું સ્થાન",
     vertical: "ઊભું સ્થાન",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "ફોટો correction reset કરો",
     personalText: "3. વ્યક્તિગત લખાણ",
     textLine: "લખાણ લાઇન",
     line: "લાઇન",
@@ -139,7 +158,12 @@ const copy = {
     fileHelp: "JPG, PNG या WebP · अधिकतम 8 MB / 25 megapixels.",
     selected: "चुना गया:",
     noPhoto: "कोई फोटो नहीं चुनी गई.",
+    qualityGood: "फोटो की quality editing के लिए ठीक लगती है.",
+    qualityWarning: "फोटो quality warning:",
+    qualityProduction: "Final print quality size/DPI review के बाद confirm होगी.",
+    issueLabels: { "low-resolution": "कम resolution", blur: "संभावित blur", underexposed: "बहुत dark", overexposed: "बहुत bright", "low-contrast": "कम contrast" },
     removeBackground: "बैकग्राउंड हटाएँ",
+    restoreOriginal: "मूल फोटो वापस लाएँ",
     onDevice: "इस डिवाइस पर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थिति रीसेट करें",
@@ -155,6 +179,10 @@ const copy = {
     zoom: "ज़ूम",
     horizontal: "क्षैतिज स्थिति",
     vertical: "ऊर्ध्व स्थिति",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "फोटो correction रीसेट करें",
     personalText: "3. व्यक्तिगत टेक्स्ट",
     textLine: "टेक्स्ट लाइन",
     line: "लाइन",
@@ -191,7 +219,12 @@ const copy = {
     fileHelp: "JPG, PNG किंवा WebP · कमाल 8 MB / 25 megapixels.",
     selected: "निवडलेले:",
     noPhoto: "कोणताही फोटो निवडलेला नाही.",
+    qualityGood: "फोटो quality editing साठी योग्य दिसते.",
+    qualityWarning: "फोटो quality warning:",
+    qualityProduction: "Final print quality size/DPI review नंतर confirm होईल.",
+    issueLabels: { "low-resolution": "कमी resolution", blur: "संभाव्य blur", underexposed: "खूप dark", overexposed: "खूप bright", "low-contrast": "कमी contrast" },
     removeBackground: "बॅकग्राउंड काढा",
+    restoreOriginal: "मूळ फोटो परत आणा",
     onDevice: "या डिवाइसवर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थान रीसेट करा",
@@ -207,6 +240,10 @@ const copy = {
     zoom: "झूम",
     horizontal: "आडवे स्थान",
     vertical: "उभे स्थान",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Saturation",
+    resetAdjustments: "फोटो correction रीसेट करा",
     personalText: "3. वैयक्तिक मजकूर",
     textLine: "मजकूर ओळ",
     line: "ओळ",
@@ -227,6 +264,7 @@ const copy = {
 export function CustomizationEditor({
   document: doc,
   bitmap,
+  qualityReport,
   product,
   onChange,
   onUpload,
@@ -235,11 +273,14 @@ export function CustomizationEditor({
   processing,
   adapter,
   onRemoveBackground,
+  hasOriginalArtwork,
+  onRestoreOriginal,
   onDownload,
   lang = "en",
 }: {
   document: CustomizationDocument;
   bitmap: ImageBitmap | null;
+  qualityReport: ImageQualityReport | null;
   product: CustomizationProduct;
   onChange: (d: CustomizationDocument) => void;
   onUpload: (file: File) => void;
@@ -248,10 +289,14 @@ export function CustomizationEditor({
   processing: boolean;
   adapter?: BackgroundRemovalAdapter;
   onRemoveBackground: () => void;
+  hasOriginalArtwork: boolean;
+  onRestoreOriginal: () => void;
   onDownload: () => void;
   lang?: UiLanguage;
 }) {
   const t = copy[lang];
+  const rules = customizationRules(product);
+  const textRules = rules.fields.filter((field) => field.kind === "text");
   const [cropMode, setCropMode] = useState(false),
     [fileKey, setFileKey] = useState(0);
   const image = (patch: Partial<CustomizationDocument["image"]>) =>
@@ -355,7 +400,7 @@ export function CustomizationEditor({
                 " " +
                 t.productEstimate}
           </p>
-          {categoryTemplates[product.categoryId].length > 1 && (
+          {rules.templates.length > 1 && (
             <label>
               {t.previewTemplate}
               <select
@@ -368,7 +413,7 @@ export function CustomizationEditor({
                   })
                 }
               >
-                {categoryTemplates[product.categoryId].map((templateId) => (
+                {rules.templates.map((templateId) => (
                   <option key={templateId} value={templateId}>
                     {templates[templateId].name}
                   </option>
@@ -400,6 +445,23 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
+          {qualityReport && (
+            <div className={qualityReport.issues.length ? "form-error" : "muted"} role="status">
+              <strong>
+                {qualityReport.issues.length ? t.qualityWarning : t.qualityGood}
+              </strong>{" "}
+              {qualityReport.issues.length
+                ? qualityReport.issues
+                    .map((issue) => t.issueLabels[issue])
+                    .join(", ")
+                : ""}
+              <div>
+                {qualityReport.width} × {qualityReport.height} ·{" "}
+                {qualityReport.megapixels.toFixed(1)} MP
+              </div>
+              <small>{t.qualityProduction}</small>
+            </div>
+          )}
           {adapter && (
             <button
               type="button"
@@ -409,6 +471,16 @@ export function CustomizationEditor({
             >
               {t.removeBackground} (
               {adapter.execution === "browser" ? t.onDevice : t.selfHosted})
+            </button>
+          )}
+          {doc.backgroundRemoval.adapter && hasOriginalArtwork && (
+            <button
+              type="button"
+              className="text-link"
+              disabled={!bitmap || processing}
+              onClick={onRestoreOriginal}
+            >
+              {t.restoreOriginal}
             </button>
           )}
           {bitmap && (
@@ -558,6 +630,75 @@ export function CustomizationEditor({
               )}
             </>
           )}
+          {bitmap && (
+            <div className="option-fields">
+              <label>
+                {t.brightness}
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.05"
+                  value={doc.image.adjustments.brightness}
+                  onChange={(e) =>
+                    image({
+                      adjustments: {
+                        ...doc.image.adjustments,
+                        brightness: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                {t.contrast}
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.05"
+                  value={doc.image.adjustments.contrast}
+                  onChange={(e) =>
+                    image({
+                      adjustments: {
+                        ...doc.image.adjustments,
+                        contrast: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                {t.saturation}
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.05"
+                  value={doc.image.adjustments.saturation}
+                  onChange={(e) =>
+                    image({
+                      adjustments: {
+                        ...doc.image.adjustments,
+                        saturation: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <button
+                type="button"
+                className="text-link"
+                onClick={() =>
+                  image({
+                    adjustments: { brightness: 1, contrast: 1, saturation: 1 },
+                  })
+                }
+              >
+                {t.resetAdjustments}
+              </button>
+            </div>
+          )}
         </section>
 
         <section>
@@ -566,11 +707,11 @@ export function CustomizationEditor({
             <div className="text-layer-controls" key={i}>
               <label>
                 {lang === "en"
-                  ? fieldLabels[product.categoryId][i]
+                  ? textRules[i]?.label ?? t.textLine + " " + (i + 1)
                   : t.textLine + " " + (i + 1)}
                 <textarea
                   rows={2}
-                  maxLength={i === 0 ? 120 : 180}
+                  maxLength={textRules[i]?.maxLength ?? (i === 0 ? 120 : 180)}
                   value={layer.text}
                   onChange={(e) =>
                     onChange({

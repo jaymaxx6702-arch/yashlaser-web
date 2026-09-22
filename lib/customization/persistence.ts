@@ -3,6 +3,7 @@ const TTL = 24 * 60 * 60 * 1000;
 export type Draft = {
   document: CustomizationDocument;
   artwork: Blob | null;
+  originalArtwork?: Blob | null;
   updatedAt: number;
 };
 const queues = new Map<string, Promise<unknown>>();

@@ -22,6 +22,7 @@ import {
   type CustomizationSnapshot,
 } from "@/lib/customization/snapshot";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
+import { sameOriginBackgroundRemovalAdapter } from "@/lib/customization/background-removal-client";
 import { addCartItem } from "@/lib/cart";
 import type { UiLanguage } from "@/lib/i18n";
 
@@ -281,17 +282,22 @@ export function CustomizationForm({
   onlineSubmission,
   initialSelection,
   selectionOverrides = {},
-  backgroundRemovalAdapter,
+  backgroundRemovalEnabled = false,
+  backgroundRemovalAdapter: injectedBackgroundRemovalAdapter,
   lang = "en",
 }: {
   product: CustomizationProduct;
   onlineSubmission: boolean;
   initialSelection?: { variantId: string; quantity: number };
   selectionOverrides?: { variantId?: string; quantity?: number };
+  backgroundRemovalEnabled?: boolean;
   backgroundRemovalAdapter?: BackgroundRemovalAdapter;
   lang?: UiLanguage;
 }) {
   const t = formCopy[lang];
+  const backgroundRemovalAdapter =
+    injectedBackgroundRemovalAdapter ??
+    (backgroundRemovalEnabled ? sameOriginBackgroundRemovalAdapter : undefined);
   const prefix = lang === "en" ? "" : "/" + lang;
   const productPath = prefix + "/products/" + p.slug;
   const editor = useCustomization(
@@ -348,7 +354,25 @@ export function CustomizationForm({
         throw new Error(t.validationError);
       const doc = snapshot.document,
         variant = p.variants.find((v) => v.id === doc.variantId);
-      const fingerprint = JSON.stringify([snapshot.designId, customer]);
+      const sourceArtwork =
+        doc.backgroundRemoval.adapter &&
+        editor.originalArtwork &&
+        editor.originalArtwork !== editor.artwork
+          ? {
+              bytes: editor.originalArtwork.size,
+              sha256: await blobHash(editor.originalArtwork),
+              mimeType: editor.originalArtwork.type,
+              name:
+                editor.originalArtwork instanceof File
+                  ? editor.originalArtwork.name.slice(0, 180)
+                  : "original-artwork",
+            }
+          : null;
+      const fingerprint = JSON.stringify([
+        snapshot.designId,
+        sourceArtwork?.sha256 || null,
+        customer,
+      ]);
       if (requestKey.current.fingerprint !== fingerprint)
         requestKey.current = { fingerprint, id: crypto.randomUUID() };
       const requestId = requestKey.current.id;
@@ -360,6 +384,7 @@ export function CustomizationForm({
         quantity: doc.quantity,
         customization: doc,
         designId: snapshot.designId,
+        sourceArtwork,
         website: String(new FormData(e.currentTarget).get("website") || ""),
       };
       let reference = "YL-DRAFT-" + requestId.slice(0, 8).toUpperCase(),
@@ -394,6 +419,13 @@ export function CustomizationForm({
             setUploadStatus(t.uploadArtwork);
             await uploadPrivate(session.artwork, editor.artwork);
             session.artworkDone = true;
+          }
+          if (session.sourceArtwork && !session.sourceArtworkDone) {
+            if (!editor.originalArtwork)
+              throw new Error(t.selectArtwork);
+            setUploadStatus(t.uploadArtwork);
+            await uploadPrivate(session.sourceArtwork, editor.originalArtwork);
+            session.sourceArtworkDone = true;
           }
           if (!session.previewDone) {
             setUploadStatus(t.uploadPreview);
@@ -549,6 +581,7 @@ export function CustomizationForm({
           <CustomizationEditor
             document={editor.document}
             bitmap={editor.bitmap}
+            qualityReport={editor.qualityReport}
             product={p}
             onChange={editor.setDocument}
             onUpload={(f) => void editor.upload(f, f.name)}
@@ -565,6 +598,8 @@ export function CustomizationForm({
               if (backgroundRemovalAdapter)
                 void editor.applyBackgroundRemoval(backgroundRemovalAdapter);
             }}
+            hasOriginalArtwork={Boolean(editor.originalArtwork)}
+            onRestoreOriginal={() => void editor.restoreOriginalArtwork()}
             onDownload={() => void prepare()}
             lang={lang}
           />

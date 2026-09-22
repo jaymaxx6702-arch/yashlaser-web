@@ -20,6 +20,11 @@ import {
   relativeBox,
 } from "../lib/customization/templates";
 import { removeBackground } from "../lib/customization/background-removal";
+import { customizationRules, validateCustomizationRules } from "../lib/customization/rules";
+import { CUSTOMIZATION_ARTWORK_POLICY, CUSTOMIZATION_PREVIEW_POLICY, artworkWithinPolicy } from "../lib/customization/file-policy";
+import { canTransitionDesignAsset, validateDesignAssetRef } from "../lib/customization/assets";
+import { providerSupports, type ImageProcessingProvider } from "../lib/customization/image-provider";
+import { analyzeQualitySample } from "../lib/customization/quality";
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
 ) as CustomizationProduct[];
@@ -244,4 +249,187 @@ test("background removal is injected, cancellable, and requires transparent-capa
       new AbortController().signal,
     ),
   );
+});
+
+
+test("shared product rules preserve current editor limits and remain product-bound", () => {
+  const rules = customizationRules(p);
+  assert.equal(rules.productId, p.id);
+  assert.equal(rules.fields.find((field) => field.id === "artwork")?.required, true);
+  assert.equal(rules.fields.find((field) => field.id === "line1")?.maxLength, 120);
+  assert.equal(rules.fields.find((field) => field.id === "line2")?.maxLength, 180);
+  assert.equal(rules.quantity.min, 1);
+  assert.equal(rules.quantity.max, 10000);
+  assert.deepEqual(validateCustomizationRules(rules, p), rules);
+  assert.throws(() =>
+    validateCustomizationRules({ ...rules, productId: "other" }, p),
+  );
+});
+
+test("artwork policy is shared and rejects oversized pixel or byte payloads", () => {
+  assert.equal(CUSTOMIZATION_ARTWORK_POLICY.maxBytes, 8 * 1024 * 1024);
+  assert.equal(CUSTOMIZATION_ARTWORK_POLICY.maxPixels, 25_000_000);
+  assert.equal(
+    artworkWithinPolicy({ bytes: 1000, width: 1200, height: 1200 }),
+    true,
+  );
+  assert.equal(
+    artworkWithinPolicy({ bytes: 1000, width: 6000, height: 6000 }),
+    false,
+  );
+  assert.equal(
+    artworkWithinPolicy({
+      bytes: CUSTOMIZATION_ARTWORK_POLICY.maxBytes + 1,
+      width: 1200,
+      height: 1200,
+    }),
+    false,
+  );
+});
+
+test("design asset lifecycle keeps originals immutable and derived files traceable", () => {
+  assert.equal(canTransitionDesignAsset("draft", "generated"), true);
+  assert.equal(canTransitionDesignAsset("approved", "draft"), false);
+  const original = {
+    id: "asset_orig_1234",
+    role: "original" as const,
+    state: "generated" as const,
+    sha256: "a".repeat(64),
+    mimeType: "image/png",
+    bytes: 100,
+    parentId: null,
+    createdAt: new Date(0).toISOString(),
+  };
+  assert.deepEqual(validateDesignAssetRef(original), original);
+  assert.throws(() =>
+    validateDesignAssetRef({ ...original, role: "processed", parentId: null }),
+  );
+});
+
+test("image provider contract declares capabilities before provider-specific calls", () => {
+  const provider: ImageProcessingProvider = {
+    id: "test-provider",
+    execution: "browser",
+    capabilities: ["quality-analysis", "background-removal"],
+  };
+  assert.equal(providerSupports(provider, "quality-analysis"), true);
+  assert.equal(providerSupports(provider, "enhancement"), false);
+});
+
+
+test("local quality analysis reports exposure and resolution without claiming print readiness", () => {
+  const bright = new Uint8Array(100).fill(240);
+  const brightReport = analyzeQualitySample(10, 10, bright);
+  assert.ok(brightReport.issues.includes("overexposed"));
+  assert.ok(brightReport.issues.includes("low-resolution"));
+  assert.equal(brightReport.suitableForProduction, null);
+  assert.equal(brightReport.source, "local-heuristic");
+
+  const varied = new Uint8Array(100);
+  for (let i = 0; i < varied.length; i++) varied[i] = i % 2 ? 30 : 220;
+  const variedReport = analyzeQualitySample(10, 10, varied);
+  assert.equal(variedReport.issues.includes("low-contrast"), false);
+});
+
+
+test("legacy customization documents gain safe image-correction defaults", () => {
+  const legacy = createDocument(p);
+  const input = JSON.parse(JSON.stringify(legacy));
+  delete input.image.adjustments;
+  const checked = validateDocument(input, p);
+  assert.deepEqual(checked.image.adjustments, {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+  });
+});
+
+test("image correction remains bounded and non-destructive", () => {
+  const d = createDocument(p);
+  const checked = validateDocument(
+    {
+      ...d,
+      image: {
+        ...d.image,
+        adjustments: { brightness: 1.2, contrast: 0.9, saturation: 1.4 },
+      },
+    },
+    p,
+  );
+  assert.equal(checked.image.adjustments.brightness, 1.2);
+  assert.throws(() =>
+    validateDocument(
+      {
+        ...d,
+        image: {
+          ...d.image,
+          adjustments: { brightness: 3, contrast: 1, saturation: 1 },
+        },
+      },
+      p,
+    ),
+  );
+});
+
+
+test("preview policy stays aligned with the exported canvas contract", () => {
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.width, 1000);
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.height, 1000);
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.mimeType, "image/png");
+  assert.equal(CUSTOMIZATION_PREVIEW_POLICY.maxBytes, 4 * 1024 * 1024);
+});
+
+
+test("product rule overrides stay within the shared contract", () => {
+  const base = customizationRules(p);
+  const overridden = customizationRules(p, {
+    quantity: { max: 250 },
+    fields: [
+      ...base.fields,
+      {
+        id: "finish",
+        kind: "choice",
+        label: "Finish",
+        required: true,
+        options: [
+          { value: "gloss", label: "Gloss" },
+          { value: "matte", label: "Matte" },
+        ],
+      },
+    ],
+    ai: { smartCrop: false },
+  });
+  assert.equal(overridden.quantity.max, 250);
+  assert.equal(overridden.ai.smartCrop, false);
+  assert.equal(overridden.fields.at(-1)?.id, "finish");
+
+  assert.throws(() =>
+    customizationRules(p, {
+      fields: [
+        {
+          id: "finish",
+          kind: "choice",
+          label: "Finish",
+          required: true,
+          options: [],
+        },
+      ],
+    }),
+  );
+});
+
+
+test("draft persistence reserves the original artwork separately from processed output", () => {
+  const persistence = fs.readFileSync(
+    "lib/customization/persistence.ts",
+    "utf8",
+  );
+  const hook = fs.readFileSync(
+    "components/customization/useCustomization.ts",
+    "utf8",
+  );
+  assert.match(persistence, /originalArtwork\?: Blob \| null/);
+  assert.match(hook, /originalArtwork: sourceOriginal/);
+  assert.match(hook, /restoreOriginalArtwork/);
+  assert.match(hook, /const source = originalArtwork \?\? artwork/);
 });

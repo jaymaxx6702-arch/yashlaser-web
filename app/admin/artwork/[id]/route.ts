@@ -18,7 +18,7 @@ export async function GET(
   const kind = new URL(request.url).searchParams.get("kind");
   if (
     !/^[a-f0-9-]{36}$/i.test(id) ||
-    !["artwork", "preview"].includes(kind || "")
+    !["artwork", "source", "preview"].includes(kind || "")
   )
     return new Response("Invalid request", {
       status: 400,
@@ -27,7 +27,7 @@ export async function GET(
   const db = getSupabase();
   const { data, error } = await db
     .from("enquiry_items")
-    .select("artwork_path,preview_path")
+    .select("artwork_path,source_artwork_path,preview_path")
     .eq("id", id)
     .maybeSingle();
   if (error)
@@ -35,7 +35,12 @@ export async function GET(
       status: 503,
       headers: privateHeaders,
     });
-  const path = kind === "artwork" ? data?.artwork_path : data?.preview_path;
+  const path =
+    kind === "artwork"
+      ? data?.artwork_path
+      : kind === "source"
+        ? data?.source_artwork_path
+        : data?.preview_path;
   if (!path)
     return new Response("Not found", { status: 404, headers: privateHeaders });
   const signed = await db.storage

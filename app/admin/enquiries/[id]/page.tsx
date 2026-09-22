@@ -91,13 +91,22 @@ export default async function Detail({
                 Open private preview ↗
               </a>
             )}
+            {item.source_artwork_path && (
+              <a
+                href={`/admin/artwork/${item.id}?kind=source`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open original customer artwork ↗
+              </a>
+            )}
             {item.artwork_path && (
               <a
                 href={`/admin/artwork/${item.id}?kind=artwork`}
                 target="_blank"
                 rel="noreferrer"
               >
-                Open uploaded artwork ↗
+                Open current processed artwork ↗
               </a>
             )}
           </div>

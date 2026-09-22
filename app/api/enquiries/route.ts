@@ -10,6 +10,10 @@ import {
   serverSecret,
 } from "@/lib/enquiry-server";
 import { verifyTicket } from "@/lib/upload-ticket";
+import {
+  CUSTOMIZATION_ARTWORK_POLICY,
+  CUSTOMIZATION_PREVIEW_POLICY,
+} from "@/lib/customization/file-policy";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 export async function POST(request: Request) {
@@ -32,7 +36,8 @@ export async function POST(request: Request) {
     if (
       ticket.requestId !== input.requestId ||
       ticket.payloadHash !== input.payloadHash ||
-      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork)
+      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork) ||
+      Boolean(ticket.sourceArtworkPath) !== Boolean(input.sourceArtwork)
     )
       throw new EnquiryError(
         "Uploads do not match this enquiry. Please retry.",
@@ -61,20 +66,22 @@ export async function POST(request: Request) {
       );
       try {
         const meta = await sharp(buffer, {
-          limitInputPixels: 25000000,
+          limitInputPixels: CUSTOMIZATION_ARTWORK_POLICY.maxPixels,
         }).metadata();
         const mime =
           meta.format === "jpeg" ? "image/jpeg" : `image/${meta.format}`;
         const rotated = Boolean(meta.orientation && meta.orientation >= 5);
         if (
-          !["jpeg", "png", "webp"].includes(meta.format || "") ||
+          !CUSTOMIZATION_ARTWORK_POLICY.mimeTypes.includes(
+            mime as (typeof CUSTOMIZATION_ARTWORK_POLICY.mimeTypes)[number],
+          ) ||
           mime !== artwork.mimeType ||
           (meta.pages || 1) !== 1 ||
           (rotated ? meta.height : meta.width) !== artwork.width ||
           (rotated ? meta.width : meta.height) !== artwork.height
         )
           throw new Error();
-        await sharp(buffer, { limitInputPixels: 25000000 })
+        await sharp(buffer, { limitInputPixels: CUSTOMIZATION_ARTWORK_POLICY.maxPixels })
           .rotate()
           .resize(1, 1)
           .png()
@@ -85,6 +92,43 @@ export async function POST(request: Request) {
         );
       }
     }
+    const sourceArtwork = input.sourceArtwork;
+    if (sourceArtwork && ticket.sourceArtworkPath) {
+      const buffer = await download(
+        ticket.sourceArtworkPath,
+        sourceArtwork.bytes,
+        sourceArtwork.sha256,
+      );
+      try {
+        const meta = await sharp(buffer, {
+          limitInputPixels: CUSTOMIZATION_ARTWORK_POLICY.maxPixels,
+        }).metadata();
+        const mime =
+          meta.format === "jpeg" ? "image/jpeg" : `image/${meta.format}`;
+        if (
+          !CUSTOMIZATION_ARTWORK_POLICY.mimeTypes.includes(
+            mime as (typeof CUSTOMIZATION_ARTWORK_POLICY.mimeTypes)[number],
+          ) ||
+          mime !== sourceArtwork.mimeType ||
+          (meta.pages || 1) !== 1 ||
+          !meta.width ||
+          !meta.height
+        )
+          throw new Error();
+        await sharp(buffer, {
+          limitInputPixels: CUSTOMIZATION_ARTWORK_POLICY.maxPixels,
+        })
+          .rotate()
+          .resize(1, 1)
+          .png()
+          .toBuffer();
+      } catch {
+        throw new EnquiryError(
+          "The original photograph is invalid. Choose a valid JPG, PNG or WebP image.",
+        );
+      }
+    }
+
     const preview = await download(
       ticket.previewPath,
       ticket.previewBytes,
@@ -92,16 +136,24 @@ export async function POST(request: Request) {
     );
     try {
       const meta = await sharp(preview, {
-        limitInputPixels: 1100000,
+        limitInputPixels: Math.ceil(
+          CUSTOMIZATION_PREVIEW_POLICY.width *
+            CUSTOMIZATION_PREVIEW_POLICY.height *
+            1.1,
+        ),
       }).metadata();
       if (
-        meta.format !== "png" ||
-        meta.width !== 1000 ||
-        meta.height !== 1000 ||
+        `image/${meta.format}` !== CUSTOMIZATION_PREVIEW_POLICY.mimeType ||
+        meta.width !== CUSTOMIZATION_PREVIEW_POLICY.width ||
+        meta.height !== CUSTOMIZATION_PREVIEW_POLICY.height ||
         (meta.pages || 1) !== 1
       )
         throw new Error();
-      await sharp(preview, { limitInputPixels: 1100000 })
+      await sharp(preview, { limitInputPixels: Math.ceil(
+          CUSTOMIZATION_PREVIEW_POLICY.width *
+            CUSTOMIZATION_PREVIEW_POLICY.height *
+            1.1,
+        ) })
         .resize(1, 1)
         .png()
         .toBuffer();
@@ -131,6 +183,7 @@ export async function POST(request: Request) {
             ? null
             : (variant?.effectivePriceMinor ?? product.effectivePriceMinor),
         artwork_path: ticket.artworkPath,
+        source_artwork_path: ticket.sourceArtworkPath ?? null,
         preview_path: ticket.previewPath,
         customization: design,
         design_id: input.designId,

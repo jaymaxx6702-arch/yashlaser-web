@@ -1,6 +1,7 @@
 import { renderCustomization } from "./render";
 import { requireReadyDocument, type CustomizationDocument } from "./model";
 import type { CustomizationProduct } from "../customization";
+import { CUSTOMIZATION_PREVIEW_POLICY } from "./file-policy";
 export type CustomizationSnapshot = {
   designId: string;
   document: CustomizationDocument;
@@ -16,7 +17,8 @@ export async function createSnapshot(
   if (doc.artwork && !bitmap)
     throw new Error("Your photograph is still loading. Please wait.");
   const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 1000;
+  canvas.width = CUSTOMIZATION_PREVIEW_POLICY.width;
+  canvas.height = CUSTOMIZATION_PREVIEW_POLICY.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Preview export is unavailable in this browser.");
   const result = renderCustomization(
@@ -46,7 +48,7 @@ export async function createSnapshot(
       "image/png",
     ),
   );
-  if (png.size > 4 * 1024 * 1024)
+  if (png.size > CUSTOMIZATION_PREVIEW_POLICY.maxBytes)
     throw new Error("Preview is too large. Please use a smaller photograph.");
   return {
     designId,

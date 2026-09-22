@@ -5,6 +5,7 @@ import { findProduct } from "@/data/catalog";
 import { CustomizationForm } from "@/components/CustomizationForm";
 import { submissionEnabled } from "@/lib/supabase";
 import { resolveSelection } from "@/lib/customization";
+import { aiImageToolsEnabled } from "@/lib/ai-image-server";
 import { isUiLanguage } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -85,6 +86,7 @@ export default async function LocalizedCustomizePage({
           priceMinor,
         }}
         onlineSubmission={submissionEnabled()}
+        backgroundRemovalEnabled={aiImageToolsEnabled()}
       />
     </main>
   );

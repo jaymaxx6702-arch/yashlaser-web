@@ -1,6 +1,7 @@
+import type { ImageProcessingExecution } from "./image-provider";
 export interface BackgroundRemovalAdapter {
   readonly id: string;
-  readonly execution: "browser" | "self-hosted";
+  readonly execution: ImageProcessingExecution;
   removeBackground(
     source: Blob,
     options: { signal: AbortSignal; onProgress?: (progress: number) => void },
