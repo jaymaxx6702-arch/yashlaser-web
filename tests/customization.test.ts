@@ -378,3 +378,42 @@ test("preview policy stays aligned with the exported canvas contract", () => {
   assert.equal(CUSTOMIZATION_PREVIEW_POLICY.mimeType, "image/png");
   assert.equal(CUSTOMIZATION_PREVIEW_POLICY.maxBytes, 4 * 1024 * 1024);
 });
+
+
+test("product rule overrides stay within the shared contract", () => {
+  const base = customizationRules(p);
+  const overridden = customizationRules(p, {
+    quantity: { max: 250 },
+    fields: [
+      ...base.fields,
+      {
+        id: "finish",
+        kind: "choice",
+        label: "Finish",
+        required: true,
+        options: [
+          { value: "gloss", label: "Gloss" },
+          { value: "matte", label: "Matte" },
+        ],
+      },
+    ],
+    ai: { smartCrop: false },
+  });
+  assert.equal(overridden.quantity.max, 250);
+  assert.equal(overridden.ai.smartCrop, false);
+  assert.equal(overridden.fields.at(-1)?.id, "finish");
+
+  assert.throws(() =>
+    customizationRules(p, {
+      fields: [
+        {
+          id: "finish",
+          kind: "choice",
+          label: "Finish",
+          required: true,
+          options: [],
+        },
+      ],
+    }),
+  );
+});

@@ -26,6 +26,16 @@ export type CustomFieldRule = {
   label: string;
   required: boolean;
   maxLength?: number;
+  min?: number;
+  max?: number;
+  options?: readonly { value: string; label: string }[];
+};
+
+export type ProductCustomizationRuleOverride = {
+  templates?: readonly TemplateId[];
+  quantity?: Partial<{ min: number; max: number }>;
+  fields?: readonly CustomFieldRule[];
+  ai?: Partial<ProductCustomizationRules["ai"]>;
 };
 
 export type ProductCustomizationRules = {
@@ -69,11 +79,12 @@ const textLabels: Record<
 
 export function customizationRules(
   product: CustomizationProduct,
+  override?: ProductCustomizationRuleOverride,
 ): ProductCustomizationRules {
   const [line1, line2] = textLabels[product.categoryId];
   const photoRequired = product.categoryId === "standees";
 
-  return {
+  const base: ProductCustomizationRules = {
     version: CUSTOMIZATION_RULES_VERSION,
     productId: product.id,
     categoryId: product.categoryId,
@@ -82,9 +93,11 @@ export function customizationRules(
     fields: [
       {
         id: "artwork",
-        kind: product.categoryId === "id-cards" ? "photo" : "photo",
+        kind: "photo",
         label:
-          product.categoryId === "name-plates" ? "Photo / logo (optional)" : "Photo / logo",
+          product.categoryId === "name-plates"
+            ? "Photo / logo (optional)"
+            : "Photo / logo",
         required: photoRequired,
       },
       { id: "line1", kind: "text", label: line1, required: false, maxLength: 120 },
@@ -97,6 +110,19 @@ export function customizationRules(
       smartCrop: true,
     },
   };
+
+  if (!override) return base;
+
+  return validateCustomizationRules(
+    {
+      ...base,
+      ...(override.templates ? { templates: override.templates } : {}),
+      quantity: { ...base.quantity, ...override.quantity },
+      fields: override.fields ?? base.fields,
+      ai: { ...base.ai, ...override.ai },
+    },
+    product,
+  );
 }
 
 export function textRule(
@@ -137,11 +163,22 @@ export function validateCustomizationRules(
   )
     throw new Error("Invalid customization quantity rules.");
 
+  const allowedKinds = new Set<CustomFieldKind>([
+    "photo",
+    "logo",
+    "text",
+    "date",
+    "qr",
+    "choice",
+    "number",
+  ]);
   const ids = new Set<string>();
   for (const field of input.fields) {
     if (!/^[a-z][a-z0-9_-]{0,39}$/.test(field.id) || ids.has(field.id))
       throw new Error("Invalid or duplicate customization field id.");
     ids.add(field.id);
+    if (!allowedKinds.has(field.kind))
+      throw new Error("Invalid customization field kind.");
     if (!field.label || field.label.length > 120)
       throw new Error("Invalid customization field label.");
     if (
@@ -151,6 +188,34 @@ export function validateCustomizationRules(
         field.maxLength > 3000)
     )
       throw new Error("Invalid customization field length.");
+    if (
+      field.min !== undefined &&
+      (!Number.isFinite(field.min) || Math.abs(field.min) > 1_000_000_000)
+    )
+      throw new Error("Invalid customization field minimum.");
+    if (
+      field.max !== undefined &&
+      (!Number.isFinite(field.max) ||
+        Math.abs(field.max) > 1_000_000_000 ||
+        (field.min !== undefined && field.max < field.min))
+    )
+      throw new Error("Invalid customization field maximum.");
+    if (field.kind === "choice") {
+      if (!field.options?.length || field.options.length > 100)
+        throw new Error("Choice fields require bounded options.");
+      const optionValues = new Set<string>();
+      for (const option of field.options) {
+        if (
+          !option.value ||
+          option.value.length > 80 ||
+          !option.label ||
+          option.label.length > 120 ||
+          optionValues.has(option.value)
+        )
+          throw new Error("Invalid customization choice option.");
+        optionValues.add(option.value);
+      }
+    }
   }
 
   return input;
