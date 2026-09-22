@@ -41,6 +41,7 @@ const copy = {
     qualityProduction: "Final print quality will be confirmed after size/DPI review.",
     issueLabels: { "low-resolution": "low resolution", blur: "possible blur", underexposed: "too dark", overexposed: "too bright", "low-contrast": "low contrast" },
     removeBackground: "Remove background",
+    restoreOriginal: "Restore original photo",
     onDevice: "on this device",
     selfHosted: "self-hosted",
     resetPosition: "Reset position",
@@ -101,6 +102,7 @@ const copy = {
     qualityProduction: "Final print quality size/DPI review પછી confirm થશે.",
     issueLabels: { "low-resolution": "ઓછું resolution", blur: "શક્ય blur", underexposed: "ઘણો dark", overexposed: "ઘણો bright", "low-contrast": "ઓછો contrast" },
     removeBackground: "બેકગ્રાઉન્ડ દૂર કરો",
+    restoreOriginal: "મૂળ ફોટો પાછો લાવો",
     onDevice: "આ ડિવાઇસ પર",
     selfHosted: "સેલ્ફ-હોસ્ટેડ",
     resetPosition: "સ્થાન રીસેટ કરો",
@@ -161,6 +163,7 @@ const copy = {
     qualityProduction: "Final print quality size/DPI review के बाद confirm होगी.",
     issueLabels: { "low-resolution": "कम resolution", blur: "संभावित blur", underexposed: "बहुत dark", overexposed: "बहुत bright", "low-contrast": "कम contrast" },
     removeBackground: "बैकग्राउंड हटाएँ",
+    restoreOriginal: "मूल फोटो वापस लाएँ",
     onDevice: "इस डिवाइस पर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थिति रीसेट करें",
@@ -221,6 +224,7 @@ const copy = {
     qualityProduction: "Final print quality size/DPI review नंतर confirm होईल.",
     issueLabels: { "low-resolution": "कमी resolution", blur: "संभाव्य blur", underexposed: "खूप dark", overexposed: "खूप bright", "low-contrast": "कमी contrast" },
     removeBackground: "बॅकग्राउंड काढा",
+    restoreOriginal: "मूळ फोटो परत आणा",
     onDevice: "या डिवाइसवर",
     selfHosted: "सेल्फ-होस्टेड",
     resetPosition: "स्थान रीसेट करा",
@@ -269,6 +273,8 @@ export function CustomizationEditor({
   processing,
   adapter,
   onRemoveBackground,
+  hasOriginalArtwork,
+  onRestoreOriginal,
   onDownload,
   lang = "en",
 }: {
@@ -283,6 +289,8 @@ export function CustomizationEditor({
   processing: boolean;
   adapter?: BackgroundRemovalAdapter;
   onRemoveBackground: () => void;
+  hasOriginalArtwork: boolean;
+  onRestoreOriginal: () => void;
   onDownload: () => void;
   lang?: UiLanguage;
 }) {
@@ -463,6 +471,16 @@ export function CustomizationEditor({
             >
               {t.removeBackground} (
               {adapter.execution === "browser" ? t.onDevice : t.selfHosted})
+            </button>
+          )}
+          {doc.backgroundRemoval.adapter && hasOriginalArtwork && (
+            <button
+              type="button"
+              className="text-link"
+              disabled={!bitmap || processing}
+              onClick={onRestoreOriginal}
+            >
+              {t.restoreOriginal}
             </button>
           )}
           {bitmap && (

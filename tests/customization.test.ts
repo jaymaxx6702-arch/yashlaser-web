@@ -417,3 +417,19 @@ test("product rule overrides stay within the shared contract", () => {
     }),
   );
 });
+
+
+test("draft persistence reserves the original artwork separately from processed output", () => {
+  const persistence = fs.readFileSync(
+    "lib/customization/persistence.ts",
+    "utf8",
+  );
+  const hook = fs.readFileSync(
+    "components/customization/useCustomization.ts",
+    "utf8",
+  );
+  assert.match(persistence, /originalArtwork\?: Blob \| null/);
+  assert.match(hook, /originalArtwork: sourceOriginal/);
+  assert.match(hook, /restoreOriginalArtwork/);
+  assert.match(hook, /const source = originalArtwork \?\? artwork/);
+});

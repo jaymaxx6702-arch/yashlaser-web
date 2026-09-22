@@ -118,6 +118,7 @@ export function useCustomization(
     createDocument(product, selection),
   );
   const [artwork, setArtwork] = useState<Blob | null>(null),
+    [originalArtwork, setOriginalArtwork] = useState<Blob | null>(null),
     [bitmap, setBitmap] = useState<ImageBitmap | null>(null),
     [qualityReport, setQualityReport] = useState<ImageQualityReport | null>(null);
   const [ready, setReady] = useState(false),
@@ -125,7 +126,7 @@ export function useCustomization(
     [storageMessage, setStorageMessage] = useState<string>(t.loading),
     [error, setError] = useState("");
 
-  const current = useRef({ document, artwork });
+  const current = useRef({ document, artwork, originalArtwork });
   const activeBitmap = useRef<ImageBitmap | null>(null),
     operation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -133,9 +134,9 @@ export function useCustomization(
   const productRef = useRef(product);
 
   useEffect(() => {
-    current.current = { document, artwork };
+    current.current = { document, artwork, originalArtwork };
     productRef.current = product;
-  }, [document, artwork, product]);
+  }, [document, artwork, originalArtwork, product]);
 
   const initial = useRef({ selection, overrides });
 
@@ -213,6 +214,7 @@ export function useCustomization(
             setQualityReport(analyzeArtworkQuality(inspected.bitmap));
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
+            setOriginalArtwork(draft.originalArtwork ?? draft.artwork);
           } else if (checked.artwork) {
             throw new Error(t.unavailable);
           }
@@ -295,6 +297,10 @@ export function useCustomization(
 
       const quality = analyzeArtworkQuality(next.bitmap);
       const d = current.current.document;
+      const sourceOriginal =
+        adapter === null
+          ? file
+          : current.current.originalArtwork ?? current.current.artwork ?? file;
       const nextDocument: CustomizationDocument = {
         ...d,
         artwork: next.metadata,
@@ -312,6 +318,7 @@ export function useCustomization(
         await saveDraft(product.id, {
           document: nextDocument,
           artwork: file,
+          originalArtwork: sourceOriginal,
           updatedAt: Date.now(),
         });
       } catch {
@@ -323,10 +330,15 @@ export function useCustomization(
         return;
       }
 
-      current.current = { document: nextDocument, artwork: file };
-      setQualityReport(quality);
+      current.current = {
+        document: nextDocument,
+        artwork: file,
+        originalArtwork: sourceOriginal,
+      };
+      if (adapter === null) setQualityReport(quality);
       replaceBitmap(next.bitmap);
       setArtwork(file);
+      setOriginalArtwork(sourceOriginal);
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
@@ -341,6 +353,7 @@ export function useCustomization(
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setOriginalArtwork(null);
     setQualityReport(null);
 
     const clean = createDocument(productRef.current, {
@@ -348,12 +361,13 @@ export function useCustomization(
       quantity: current.current.document.quantity,
     });
 
-    current.current = { document: clean, artwork: null };
+    current.current = { document: clean, artwork: null, originalArtwork: null };
     setDocument(clean);
 
     void saveDraft(product.id, {
       document: clean,
       artwork: null,
+      originalArtwork: null,
       updatedAt: Date.now(),
     }).catch(() => setStorageMessage(t.clearFailed));
 
@@ -362,7 +376,8 @@ export function useCustomization(
   }
 
   async function applyBackgroundRemoval(adapter: BackgroundRemovalAdapter) {
-    if (!artwork) return;
+    const source = originalArtwork ?? artwork;
+    if (!source) return;
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
@@ -372,7 +387,7 @@ export function useCustomization(
     try {
       const result = await removeBackground(
         adapter,
-        artwork,
+        source,
         controller.signal,
       );
       await upload(
@@ -388,10 +403,26 @@ export function useCustomization(
     }
   }
 
+  async function restoreOriginalArtwork() {
+    if (!originalArtwork) return;
+    const ext =
+      originalArtwork.type === "image/png"
+        ? "png"
+        : originalArtwork.type === "image/webp"
+          ? "webp"
+          : "jpg";
+    const name =
+      originalArtwork instanceof File && originalArtwork.name
+        ? originalArtwork.name
+        : "original-artwork." + ext;
+    await upload(originalArtwork, name, null);
+  }
+
   return {
     document,
     setDocument,
     artwork,
+    originalArtwork,
     bitmap,
     qualityReport,
     ready,
@@ -403,5 +434,6 @@ export function useCustomization(
     reset,
     flush,
     applyBackgroundRemoval,
+    restoreOriginalArtwork,
   };
 }

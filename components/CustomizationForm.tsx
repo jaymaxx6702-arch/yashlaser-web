@@ -572,6 +572,8 @@ export function CustomizationForm({
               if (backgroundRemovalAdapter)
                 void editor.applyBackgroundRemoval(backgroundRemovalAdapter);
             }}
+            hasOriginalArtwork={Boolean(editor.originalArtwork)}
+            onRestoreOriginal={() => void editor.restoreOriginalArtwork()}
             onDownload={() => void prepare()}
             lang={lang}
           />
