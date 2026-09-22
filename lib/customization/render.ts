@@ -7,6 +7,10 @@ const families = {
   mono: "monospace",
 };
 export const CANVAS_SIZE = 1000;
+function imageFilter(doc: CustomizationDocument) {
+  const a = doc.image.adjustments;
+  return `brightness(${a.brightness}) contrast(${a.contrast}) saturate(${a.saturation})`;
+}
 function shape(ctx: CanvasRenderingContext2D, box: Box, kind: string) {
   ctx.beginPath();
   if (kind === "circle")
@@ -126,7 +130,10 @@ export function renderCustomization(
   if (cropMode && bitmap) {
     const stage = cropStage(bitmap.width, bitmap.height);
     cropBox = stage;
+    ctx.save();
+    ctx.filter = imageFilter(doc);
     ctx.drawImage(bitmap, stage.x, stage.y, stage.width, stage.height);
+    ctx.restore();
     const crop = doc.image.crop,
       box = {
         x: stage.x + crop.x * stage.width,
@@ -180,6 +187,8 @@ export function renderCustomization(
       const layout = placement(bitmap.width, bitmap.height, photo, doc.image);
       const s = layout.source,
         d = layout.destination;
+      ctx.save();
+      ctx.filter = imageFilter(doc);
       ctx.drawImage(
         bitmap,
         s.x,
@@ -191,6 +200,7 @@ export function renderCustomization(
         d.width,
         d.height,
       );
+      ctx.restore();
       panRange = { x: layout.rangeX, y: layout.rangeY };
     } else {
       ctx.fillStyle = "#6f7267";

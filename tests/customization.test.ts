@@ -80,6 +80,7 @@ test("tampered product, variant, quantity, crop and transform values are rejecte
     { panX: Infinity },
     { panY: 2 },
     { fit: "html" },
+    { adjustments: { brightness: 2, contrast: 1, saturation: 1 } },
     { crop: { x: 0.8, y: 0, width: 0.5, height: 1 } },
   ])
     assert.throws(() =>
@@ -243,5 +244,47 @@ test("background removal is injected, cancellable, and requires transparent-capa
       new Blob(),
       new AbortController().signal,
     ),
+  );
+});
+
+
+test("image corrections are non-destructive, bounded and backward-compatible", () => {
+  const d = createDocument(p);
+  assert.deepEqual(d.image.adjustments, {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+  });
+  const legacy = {
+    ...d,
+    image: {
+      crop: d.image.crop,
+      zoom: d.image.zoom,
+      panX: d.image.panX,
+      panY: d.image.panY,
+      fit: d.image.fit,
+    },
+  };
+  assert.deepEqual(validateDocument(legacy, p).image.adjustments, {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+  });
+  assert.equal(
+    validateDocument(
+      {
+        ...d,
+        image: {
+          ...d.image,
+          adjustments: {
+            brightness: 1.2,
+            contrast: 0.9,
+            saturation: 1.1,
+          },
+        },
+      },
+      p,
+    ).image.adjustments.brightness,
+    1.2,
   );
 });

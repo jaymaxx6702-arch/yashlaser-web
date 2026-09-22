@@ -40,6 +40,11 @@ export type CustomizationDocument = {
     panX: number;
     panY: number;
     fit: "contain" | "cover";
+    adjustments: {
+      brightness: number;
+      contrast: number;
+      saturation: number;
+    };
   };
   text: [TextLayer, TextLayer];
   backgroundRemoval: { adapter: string | null };
@@ -77,6 +82,11 @@ export function createDocument(
       panX: 0,
       panY: 0,
       fit: "cover",
+      adjustments: {
+        brightness: 1,
+        contrast: 1,
+        saturation: 1,
+      },
     },
     text: [
       { text: "", fontSize: 32, align: "center", font: "sans" },
@@ -142,6 +152,22 @@ export function validateDocument(
     normalizedCrop.y + normalizedCrop.height > 1.000001
   )
     throw new Error("Crop is outside the photograph.");
+  const adjustmentInput =
+    image.adjustments === undefined ? {} : record(image.adjustments);
+  const adjustments = {
+    brightness:
+      adjustmentInput.brightness === undefined
+        ? 1
+        : numeric(adjustmentInput.brightness, 0.5, 1.5),
+    contrast:
+      adjustmentInput.contrast === undefined
+        ? 1
+        : numeric(adjustmentInput.contrast, 0.5, 1.5),
+    saturation:
+      adjustmentInput.saturation === undefined
+        ? 1
+        : numeric(adjustmentInput.saturation, 0.5, 1.5),
+  };
   if (!Array.isArray(d.text) || d.text.length !== 2)
     throw new Error("Invalid text layers.");
   const textRules = rule.fields.filter((field) => field.kind === "text");
@@ -189,6 +215,7 @@ export function validateDocument(
       panX: numeric(image.panX, -1, 1),
       panY: numeric(image.panY, -1, 1),
       fit: member(image.fit, ["contain", "cover"]),
+      adjustments,
     },
     text,
     backgroundRemoval: { adapter },

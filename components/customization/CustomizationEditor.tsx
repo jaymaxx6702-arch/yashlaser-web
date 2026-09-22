@@ -51,6 +51,11 @@ const copy = {
     zoom: "Zoom",
     horizontal: "Horizontal position",
     vertical: "Vertical position",
+    imageAdjustments: "Image correction",
+    brightness: "Brightness",
+    contrast: "Contrast",
+    saturation: "Colour intensity",
+    resetAdjustments: "Reset image correction",
     personalText: "3. Personal text",
     textLine: "Text line",
     line: "Line",
@@ -103,6 +108,11 @@ const copy = {
     zoom: "ઝૂમ",
     horizontal: "આડું સ્થાન",
     vertical: "ઊભું સ્થાન",
+    imageAdjustments: "ઇમેજ કરેકશન",
+    brightness: "બ્રાઇટનેસ",
+    contrast: "કોન્ટ્રાસ્ટ",
+    saturation: "કલર ઇન્ટેન્સિટી",
+    resetAdjustments: "ઇમેજ કરેકશન રીસેટ કરો",
     personalText: "3. વ્યક્તિગત લખાણ",
     textLine: "લખાણ લાઇન",
     line: "લાઇન",
@@ -155,6 +165,11 @@ const copy = {
     zoom: "ज़ूम",
     horizontal: "क्षैतिज स्थिति",
     vertical: "ऊर्ध्व स्थिति",
+    imageAdjustments: "इमेज करेक्शन",
+    brightness: "ब्राइटनेस",
+    contrast: "कॉन्ट्रास्ट",
+    saturation: "कलर इंटेंसिटी",
+    resetAdjustments: "इमेज करेक्शन रीसेट करें",
     personalText: "3. व्यक्तिगत टेक्स्ट",
     textLine: "टेक्स्ट लाइन",
     line: "लाइन",
@@ -207,6 +222,11 @@ const copy = {
     zoom: "झूम",
     horizontal: "आडवे स्थान",
     vertical: "उभे स्थान",
+    imageAdjustments: "इमेज करेक्शन",
+    brightness: "ब्राइटनेस",
+    contrast: "कॉन्ट्रास्ट",
+    saturation: "कलर इंटेन्सिटी",
+    resetAdjustments: "इमेज करेक्शन रीसेट करा",
     personalText: "3. वैयक्तिक मजकूर",
     textLine: "मजकूर ओळ",
     line: "ओळ",
@@ -567,6 +587,48 @@ export function CustomizationEditor({
                       onChange={(e) => image({ panY: Number(e.target.value) })}
                     />
                   </label>
+                  <fieldset className="image-adjustment-controls">
+                    <legend>{t.imageAdjustments}</legend>
+                    {([
+                      ["brightness", t.brightness],
+                      ["contrast", t.contrast],
+                      ["saturation", t.saturation],
+                    ] as const).map(([key, label]) => (
+                      <label key={key}>
+                        {label}: {Math.round(doc.image.adjustments[key] * 100)}%
+                        <input
+                          type="range"
+                          min={0.5}
+                          max={1.5}
+                          step={0.01}
+                          value={doc.image.adjustments[key]}
+                          onChange={(e) =>
+                            image({
+                              adjustments: {
+                                ...doc.image.adjustments,
+                                [key]: Number(e.target.value),
+                              },
+                            })
+                          }
+                        />
+                      </label>
+                    ))}
+                    <button
+                      type="button"
+                      className="text-link"
+                      onClick={() =>
+                        image({
+                          adjustments: {
+                            brightness: 1,
+                            contrast: 1,
+                            saturation: 1,
+                          },
+                        })
+                      }
+                    >
+                      {t.resetAdjustments}
+                    </button>
+                  </fieldset>
                 </>
               )}
             </>
