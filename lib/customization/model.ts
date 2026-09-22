@@ -1,7 +1,6 @@
 import type { CustomizationProduct } from "../customization";
 import { CUSTOMIZATION_ARTWORK_POLICY } from "./file-policy";
 import {
-  categoryTemplates,
   customizationRules,
   textRule,
   type TemplateId,

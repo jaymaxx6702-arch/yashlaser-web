@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         notes: text(raw.notes, 500),
       };
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Invalid cart." },
       { status: 400 },

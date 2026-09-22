@@ -62,10 +62,13 @@ export async function removeBackgroundWithProvider(
   if (process.env.AI_IMAGE_API_SECRET)
     headers.Authorization = "Bearer " + process.env.AI_IMAGE_API_SECRET;
 
+  const providerBody = new ArrayBuffer(source.byteLength);
+  new Uint8Array(providerBody).set(source);
+
   const response = await fetch(process.env.AI_BACKGROUND_REMOVE_URL!, {
     method: "POST",
     headers,
-    body: source,
+    body: providerBody,
     signal: AbortSignal.timeout(90_000),
     cache: "no-store",
   });
