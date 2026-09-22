@@ -18,6 +18,10 @@ import {
   defaultAiProcessingPolicy,
   providerSupports,
 } from "../lib/customization/ai";
+import {
+  assessImageQuality,
+  printPpiForSize,
+} from "../lib/customization/quality";
 
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
@@ -166,4 +170,34 @@ test("generic AI media adapters bridge into the existing background-removal UI c
     signal: new AbortController().signal,
   });
   assert.equal(result.type, "image/png");
+});
+
+
+test("quality assessment gives actionable warnings without blocking customer preview", () => {
+  const standee = products.find((product) => product.categoryId === "standees");
+  assert.ok(standee);
+  const rule = customizationRuleFor(standee);
+  const assessment = assessImageQuality(
+    {
+      width: 700,
+      height: 900,
+      blurScore: 0.8,
+      exposure: "low",
+      contrastScore: 0.1,
+      subjectCount: 2,
+      faceCount: 2,
+    },
+    rule,
+  );
+  assert.equal(assessment.acceptableForPreview, true);
+  assert.ok(assessment.issues.some((issue) => issue.code === "resolution-low"));
+  assert.ok(assessment.issues.some((issue) => issue.code === "blur-risk"));
+  assert.ok(assessment.issues.some((issue) => issue.code === "underexposed"));
+  assert.ok(assessment.issues.some((issue) => issue.code === "contrast-low"));
+  assert.ok(assessment.issues.some((issue) => issue.code === "multiple-subjects"));
+});
+
+test("print PPI calculation is deterministic once physical size is verified", () => {
+  assert.equal(printPpiForSize(3000, 3000, 254, 254), 300);
+  assert.throws(() => printPpiForSize(0, 3000, 254, 254));
 });
