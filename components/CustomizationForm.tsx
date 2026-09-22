@@ -549,6 +549,7 @@ export function CustomizationForm({
           <CustomizationEditor
             document={editor.document}
             bitmap={editor.bitmap}
+            qualityReport={editor.qualityReport}
             product={p}
             onChange={editor.setDocument}
             onUpload={(f) => void editor.upload(f, f.name)}
