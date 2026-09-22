@@ -198,6 +198,10 @@ export function requireReadyDocument(input: unknown, p: CustomizationProduct) {
   const d = validateDocument(input, p);
   const rule = customizationRuleFor(p);
   if (rule.image.required && !d.artwork)
-    throw new Error("Please upload the required artwork for this product.");
+    throw new Error(
+      p.categoryId === "standees"
+        ? "Please upload a photograph for your standee."
+        : "Please upload the required artwork for this product.",
+    );
   return d;
 }

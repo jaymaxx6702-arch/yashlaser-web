@@ -168,7 +168,7 @@ export async function POST(request: Request) {
         trackingPath,
         idempotent: created.idempotent,
       });
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Unable to create order." },
         { status: 500 },
