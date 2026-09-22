@@ -1,15 +1,16 @@
 import type { CustomizationProduct } from "../customization";
+import { CUSTOMIZATION_ARTWORK_POLICY } from "./file-policy";
+import {
+  categoryTemplates,
+  customizationRules,
+  textRule,
+  type TemplateId,
+} from "./rules";
+export { categoryTemplates } from "./rules";
+export type { TemplateId } from "./rules";
 export const ENGINE_VERSION = 1;
-export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
-export const MAX_IMAGE_PIXELS = 25_000_000;
-export type TemplateId =
-  | "standee"
-  | "trophy"
-  | "medal"
-  | "keychain"
-  | "id-card"
-  | "name-plate"
-  | "keepsake";
+export const MAX_UPLOAD_BYTES = CUSTOMIZATION_ARTWORK_POLICY.maxBytes;
+export const MAX_IMAGE_PIXELS = CUSTOMIZATION_ARTWORK_POLICY.maxPixels;
 export type Crop = { x: number; y: number; width: number; height: number };
 export type Artwork = {
   name: string;
@@ -43,28 +44,18 @@ export type CustomizationDocument = {
   text: [TextLayer, TextLayer];
   backgroundRemoval: { adapter: string | null };
 };
-export const categoryTemplates: Record<
-  CustomizationProduct["categoryId"],
-  TemplateId[]
-> = {
-  standees: ["standee"],
-  awards: ["trophy", "medal"],
-  keychains: ["keychain"],
-  "id-cards": ["id-card"],
-  "name-plates": ["name-plate"],
-  other: ["keepsake"],
-};
 export const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, n));
 export function createDocument(
   p: CustomizationProduct,
   selection?: { variantId: string; quantity: number },
 ): CustomizationDocument {
+  const rules = customizationRules(p);
   return {
     version: 1,
     productId: p.id,
     categoryId: p.categoryId,
-    templateId: categoryTemplates[p.categoryId][0],
+    templateId: rules.templates[0],
     variantId:
       selection?.variantId ?? p.variants.find((v) => v.available)?.id ?? "",
     quantity: selection?.quantity ?? 1,
@@ -113,9 +104,10 @@ export function validateDocument(
   p: CustomizationProduct,
 ): CustomizationDocument {
   const d = record(input);
+  const rules = customizationRules(p);
   if (d.version !== 1 || d.productId !== p.id || d.categoryId !== p.categoryId)
     throw new Error("This design does not match the product.");
-  const templateId = member(d.templateId, categoryTemplates[p.categoryId]);
+  const templateId = member(d.templateId, rules.templates);
   const variantId = string(d.variantId, 60);
   if (
     p.variants.length
@@ -123,7 +115,7 @@ export function validateDocument(
       : variantId !== ""
   )
     throw new Error("Please select an available size.");
-  const quantity = numeric(d.quantity, 1, 10000);
+  const quantity = numeric(d.quantity, rules.quantity.min, rules.quantity.max);
   if (!Number.isInteger(quantity))
     throw new Error("Quantity must be a whole number.");
   const image = record(d.image),
@@ -144,7 +136,7 @@ export function validateDocument(
   const text = d.text.map((entry, i) => {
     const t = record(entry);
     return {
-      text: string(t.text, i === 0 ? 120 : 180),
+      text: string(t.text, textRule(p, i as 0 | 1).maxLength ?? (i === 0 ? 120 : 180)),
       fontSize: numeric(t.fontSize, 14, 60),
       align: member(t.align, ["left", "center", "right"]),
       font: member(t.font, ["sans", "serif", "mono"]),
@@ -155,7 +147,7 @@ export function validateDocument(
     const a = record(d.artwork);
     artwork = {
       name: string(a.name, 180),
-      mimeType: member(a.mimeType, ["image/jpeg", "image/png", "image/webp"]),
+      mimeType: member(a.mimeType, CUSTOMIZATION_ARTWORK_POLICY.mimeTypes),
       bytes: numeric(a.bytes, 1, MAX_UPLOAD_BYTES),
       width: numeric(a.width, 1, MAX_IMAGE_PIXELS),
       height: numeric(a.height, 1, MAX_IMAGE_PIXELS),
@@ -192,7 +184,8 @@ export function validateDocument(
 }
 export function requireReadyDocument(input: unknown, p: CustomizationProduct) {
   const d = validateDocument(input, p);
-  if (p.categoryId === "standees" && !d.artwork)
-    throw new Error("Please upload a photograph for your standee.");
+  const artworkRule = customizationRules(p).fields.find((field) => field.id === "artwork");
+  if (artworkRule?.required && !d.artwork)
+    throw new Error("Please upload the required photograph or logo.");
   return d;
 }
