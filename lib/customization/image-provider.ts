@@ -28,7 +28,8 @@ export type ImageQualityReport = {
     | "low-contrast"
   )[];
   suitableForPreview: boolean;
-  suitableForProduction: boolean;
+  suitableForProduction: boolean | null;
+  source: "local-heuristic" | "provider";
 };
 
 export interface ImageProcessingProvider {
