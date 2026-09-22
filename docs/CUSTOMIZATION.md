@@ -24,3 +24,23 @@ Implement BackgroundRemovalAdapter and inject it into CustomizationForm in a cli
 npm run test:customization
 npm run lint
 npm run build
+
+
+## Stable shared contracts
+
+Wave 1 keeps the existing version-1 design document compatible while moving
+future product-specific behaviour behind reusable contracts:
+
+- `rules.ts`: one product-rule schema for templates, quantity, fields and AI capabilities.
+  Existing catalogue categories are adapted into this contract so later Admin Product
+  Builder work does not require separate product-specific editors.
+- `file-policy.ts`: one artwork/preview upload policy shared by browser and server validation.
+- `assets.ts`: immutable original -> processed -> preview/proof/production asset roles with
+  explicit lifecycle states and parent lineage.
+- `image-provider.ts`: provider-neutral capabilities for quality analysis, background removal,
+  enhancement and smart crop. No vendor is enabled by this contract.
+- Existing customizer UI now reads its template and text constraints from `rules.ts`.
+
+The rule contract is additive. Do not store payment, customer contact or provider secrets in
+customization JSON. Original customer artwork must remain recoverable and AI/processed output
+must be treated as derived data. A preview is never equivalent to production approval.
