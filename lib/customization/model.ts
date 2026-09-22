@@ -1,4 +1,5 @@
 import type { CustomizationProduct } from "../customization";
+import { customizationRuleFor } from "./rules";
 export const ENGINE_VERSION = 1;
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 export const MAX_IMAGE_PIXELS = 25_000_000;
@@ -60,11 +61,12 @@ export function createDocument(
   p: CustomizationProduct,
   selection?: { variantId: string; quantity: number },
 ): CustomizationDocument {
+  const rule = customizationRuleFor(p);
   return {
     version: 1,
     productId: p.id,
     categoryId: p.categoryId,
-    templateId: categoryTemplates[p.categoryId][0],
+    templateId: rule.templateIds[0],
     variantId:
       selection?.variantId ?? p.variants.find((v) => v.available)?.id ?? "",
     quantity: selection?.quantity ?? 1,
@@ -115,7 +117,8 @@ export function validateDocument(
   const d = record(input);
   if (d.version !== 1 || d.productId !== p.id || d.categoryId !== p.categoryId)
     throw new Error("This design does not match the product.");
-  const templateId = member(d.templateId, categoryTemplates[p.categoryId]);
+  const rule = customizationRuleFor(p);
+  const templateId = member(d.templateId, rule.templateIds);
   const variantId = string(d.variantId, 60);
   if (
     p.variants.length
@@ -123,7 +126,7 @@ export function validateDocument(
       : variantId !== ""
   )
     throw new Error("Please select an available size.");
-  const quantity = numeric(d.quantity, 1, 10000);
+  const quantity = numeric(d.quantity, rule.quantity.min, rule.quantity.max);
   if (!Number.isInteger(quantity))
     throw new Error("Quantity must be a whole number.");
   const image = record(d.image),
@@ -141,10 +144,11 @@ export function validateDocument(
     throw new Error("Crop is outside the photograph.");
   if (!Array.isArray(d.text) || d.text.length !== 2)
     throw new Error("Invalid text layers.");
+  const textRules = rule.fields.filter((field) => field.kind === "text");
   const text = d.text.map((entry, i) => {
     const t = record(entry);
     return {
-      text: string(t.text, i === 0 ? 120 : 180),
+      text: string(t.text, textRules[i]?.maxLength ?? (i === 0 ? 120 : 180)),
       fontSize: numeric(t.fontSize, 14, 60),
       align: member(t.align, ["left", "center", "right"]),
       font: member(t.font, ["sans", "serif", "mono"]),
@@ -192,7 +196,8 @@ export function validateDocument(
 }
 export function requireReadyDocument(input: unknown, p: CustomizationProduct) {
   const d = validateDocument(input, p);
-  if (p.categoryId === "standees" && !d.artwork)
-    throw new Error("Please upload a photograph for your standee.");
+  const rule = customizationRuleFor(p);
+  if (rule.image.required && !d.artwork)
+    throw new Error("Please upload the required artwork for this product.");
   return d;
 }

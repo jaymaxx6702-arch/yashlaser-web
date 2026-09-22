@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import { fieldLabels, type CustomizationProduct } from "@/lib/customization";
+import type { CustomizationProduct } from "@/lib/customization";
 import {
-  categoryTemplates,
   clamp,
   type CustomizationDocument,
   type Crop,
 } from "@/lib/customization/model";
 import { templates } from "@/lib/customization/templates";
+import { customizationRuleFor } from "@/lib/customization/rules";
 import { cropPreset } from "@/lib/customization/geometry";
 import { CanvasPreview } from "./CanvasPreview";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
@@ -257,6 +257,8 @@ export function CustomizationEditor({
   const image = (patch: Partial<CustomizationDocument["image"]>) =>
     onChange({ ...doc, image: { ...doc.image, ...patch } });
   const crop = (next: Crop) => image({ crop: next, zoom: 1, panX: 0, panY: 0 });
+  const rule = customizationRuleFor(product);
+  const textRules = rule.fields.filter((field) => field.kind === "text");
   const currentVariant = product.variants.find((v) => v.id === doc.variantId);
   const price =
     currentVariant?.effectivePriceMinor ?? product.effectivePriceMinor;
@@ -325,15 +327,17 @@ export function CustomizationEditor({
               {t.quantity}
               <input
                 type="number"
-                min={1}
-                max={10000}
+                min={rule.quantity.min}
+                max={rule.quantity.max}
                 step={1}
                 value={doc.quantity}
                 onChange={(e) => {
                   const n = e.target.valueAsNumber;
                   onChange({
                     ...doc,
-                    quantity: Number.isInteger(n) ? clamp(n, 1, 10000) : 1,
+                    quantity: Number.isInteger(n)
+                      ? clamp(n, rule.quantity.min, rule.quantity.max)
+                      : rule.quantity.min,
                   });
                 }}
               />
@@ -355,7 +359,7 @@ export function CustomizationEditor({
                 " " +
                 t.productEstimate}
           </p>
-          {categoryTemplates[product.categoryId].length > 1 && (
+          {rule.templateIds.length > 1 && (
             <label>
               {t.previewTemplate}
               <select
@@ -368,7 +372,7 @@ export function CustomizationEditor({
                   })
                 }
               >
-                {categoryTemplates[product.categoryId].map((templateId) => (
+                {rule.templateIds.map((templateId) => (
                   <option key={templateId} value={templateId}>
                     {templates[templateId].name}
                   </option>
@@ -400,7 +404,7 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
-          {adapter && (
+          {adapter && rule.image.allowBackgroundRemoval && (
             <button
               type="button"
               className="text-link"
@@ -566,11 +570,11 @@ export function CustomizationEditor({
             <div className="text-layer-controls" key={i}>
               <label>
                 {lang === "en"
-                  ? fieldLabels[product.categoryId][i]
+                  ? textRules[i]?.label ?? t.textLine + " " + (i + 1)
                   : t.textLine + " " + (i + 1)}
                 <textarea
                   rows={2}
-                  maxLength={i === 0 ? 120 : 180}
+                  maxLength={textRules[i]?.maxLength ?? (i === 0 ? 120 : 180)}
                   value={layer.text}
                   onChange={(e) =>
                     onChange({

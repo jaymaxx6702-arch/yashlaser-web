@@ -6,6 +6,8 @@ import {
   customizationRuleFor,
   validateCustomizationRule,
 } from "../lib/customization/rules";
+import { categoryTemplates } from "../lib/customization/model";
+import { backgroundRemovalAdapterFromAi } from "../lib/customization/background-removal";
 import {
   assertAssetTransition,
   canTransitionAsset,
@@ -135,4 +137,33 @@ test("AI providers are capability-driven and remote customer media is privacy-ga
       allowRemoteMediaProcessing: true,
     }),
   );
+});
+
+
+test("legacy template allowlists stay aligned with the shared rule contract", () => {
+  for (const product of products) {
+    const rule = customizationRuleFor(product);
+    assert.deepEqual(rule.templateIds, categoryTemplates[product.categoryId]);
+  }
+});
+
+test("generic AI media adapters bridge into the existing background-removal UI contract", async () => {
+  const ai = {
+    descriptor: {
+      id: "bridge-test",
+      execution: "browser" as const,
+      capabilities: ["background-removal"] as const,
+      sendsCustomerMediaOffDevice: false,
+    },
+    removeBackground: async () =>
+      new Blob(["transparent"], { type: "image/png" }),
+  };
+  const bridge = backgroundRemovalAdapterFromAi(ai);
+  assert.ok(bridge);
+  assert.equal(bridge.id, "bridge-test");
+  assert.equal(bridge.execution, "browser");
+  const result = await bridge.removeBackground(new Blob(["source"]), {
+    signal: new AbortController().signal,
+  });
+  assert.equal(result.type, "image/png");
 });
