@@ -5,6 +5,7 @@ import { findProduct } from "@/data/catalog";
 import { CustomizationForm } from "@/components/CustomizationForm";
 import { submissionEnabled } from "@/lib/supabase";
 import { resolveSelection } from "@/lib/customization";
+import { getPublishedCustomizationDefinition } from "@/lib/customization/server-rules";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Personalise & enquire",
@@ -23,17 +24,24 @@ export default async function CustomizePage({
   const p = findProduct((await params).slug);
   if (!p) notFound();
   const query = await searchParams;
-  const selection = resolveSelection(p, query.variant, query.quantity);
-  const {
-    id,
-    slug,
-    name,
-    categoryId,
-    variants,
-    pricingMode,
-    effectivePriceMinor,
-    priceMinor,
-  } = p;
+  const customizationDefinition =
+    await getPublishedCustomizationDefinition(p);
+  const customizationProduct = {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    categoryId: p.categoryId,
+    variants: p.variants,
+    pricingMode: p.pricingMode,
+    effectivePriceMinor: p.effectivePriceMinor,
+    priceMinor: p.priceMinor,
+    ...(customizationDefinition ? { customizationDefinition } : {}),
+  };
+  const selection = resolveSelection(
+    customizationProduct,
+    query.variant,
+    query.quantity,
+  );
   return (
     <main id="main-content" className="container customize-page">
       <nav className="breadcrumbs" aria-label="Breadcrumb">
@@ -57,16 +65,7 @@ export default async function CustomizePage({
         }}
         key={`${p.id}-${selection.variantId}-${selection.quantity}`}
         initialSelection={selection}
-        product={{
-          id,
-          slug,
-          name,
-          categoryId,
-          variants,
-          pricingMode,
-          effectivePriceMinor,
-          priceMinor,
-        }}
+        product={customizationProduct}
         onlineSubmission={submissionEnabled()}
       />
     </main>

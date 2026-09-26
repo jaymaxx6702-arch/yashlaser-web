@@ -11,6 +11,7 @@ export function AdminNav() {
       <Link href="/admin/support">Support</Link>
       <Link href="/admin/reviews">Reviews</Link>
       <Link href="/admin/search-analytics">Analytics</Link>
+      <Link href="/admin/customization-rules">Customisation Rules</Link>
     </nav>
   );
 }

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import type { CustomizationProduct } from "../lib/customization";
+import { resolveSelection, type CustomizationProduct } from "../lib/customization";
 import { customizationSeeds } from "../data/customization-seeds";
 import {
   createDocument,
@@ -60,6 +60,35 @@ test("universal customization definitions are valid and preserve v1 legacy slots
   assert.equal(standee.categoryId, "standees");
   assert.equal(requiredArtworkField(standee)?.kind, "photo");
   assert.equal(requiredArtworkField(standee)?.required, true);
+});
+
+test("published product definitions override defaults and normalize quantity safely", () => {
+  const published = {
+    ...categoryCustomizationDefinitions.standees,
+    quantity: { min: 10, max: 20 },
+  };
+  const product: CustomizationProduct = {
+    ...p,
+    customizationDefinition: published,
+  };
+
+  assert.deepEqual(getCustomizationDefinition(product).quantity, {
+    min: 10,
+    max: 20,
+  });
+  assert.equal(resolveSelection(product, undefined, "1").quantity, 10);
+  assert.equal(resolveSelection(product, undefined, "15").quantity, 15);
+  assert.equal(createDocument(product, {
+    variantId: p.variants.find((variant) => variant.available)?.id ?? "",
+    quantity: 1,
+  }).quantity, 10);
+
+  assert.throws(() =>
+    getCustomizationDefinition({
+      ...p,
+      customizationDefinition: categoryCustomizationDefinitions.awards,
+    }),
+  );
 });
 
 test("field visibility rules are deterministic and rule types include future inputs", () => {
@@ -237,6 +266,44 @@ test("field-rule contract rejects duplicate ids, slots and invalid dependencies"
             }
           : field,
       ),
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: base.fields.map((field, index) =>
+        index === 1
+          ? {
+              ...field,
+              visibility: [
+                {
+                  fieldId: "occasion",
+                  operator: "present" as const,
+                },
+              ],
+            }
+          : field,
+      ),
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: [
+        ...base.fields,
+        {
+          id: "dynamic-note",
+          kind: "text",
+          label: "Dynamic note",
+          required: false,
+          visibility: [
+            {
+              fieldId: "message",
+              operator: "present" as const,
+            },
+          ],
+        },
+      ],
     }),
   );
 });
@@ -589,4 +656,71 @@ test("three customization pilot products stay aligned with the generated catalog
       seed.variants,
     );
   }
+});
+
+
+test("admin customization rule storage is versioned, private and contract validated", () => {
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609261600_customization_rules.sql",
+    "utf8",
+  );
+  const actions = fs.readFileSync(
+    "app/admin/customization-rules/actions.ts",
+    "utf8",
+  );
+  const page = fs.readFileSync(
+    "app/admin/customization-rules/page.tsx",
+    "utf8",
+  );
+  const builder = fs.readFileSync(
+    "components/admin/CustomizationRuleBuilder.tsx",
+    "utf8",
+  );
+
+  assert.match(migration, /shop_customization_rules/);
+  assert.match(migration, /unique \(product_id, revision\)/);
+  assert.match(migration, /where status = 'published'/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all .* anon, authenticated/);
+  assert.match(migration, /grant all .* service_role/);
+  assert.match(migration, /publish_shop_customization_rule/);
+  assert.match(migration, /for update/);
+  assert.match(migration, /status = 'archived'/);
+  assert.match(migration, /status = 'published'/);
+
+  assert.match(actions, /requireAdmin\(\)/);
+  assert.match(actions, /validateCustomizationDefinition\(parsed\)/);
+  assert.match(actions, /nextCustomizationRuleRevision/);
+  assert.match(actions, /Rule category does not match product category/);
+  assert.match(actions, /publish_shop_customization_rule/);
+  assert.match(page, /CustomizationRuleBuilder/);
+  assert.match(page, /Publish this revision/);
+  assert.match(builder, /Save draft revision/);
+  assert.match(builder, /Add field/);
+  assert.match(builder, /Add photo \/ logo field/);
+  assert.match(builder, /Minimum quantity/);
+  assert.match(builder, /Maximum quantity/);
+  assert.match(builder, /Background removal/);
+  assert.match(builder, /Conditional visibility/);
+});
+
+test("customer customization pages use published rules with a safe fallback", () => {
+  const loader = fs.readFileSync(
+    "lib/customization/server-rules.ts",
+    "utf8",
+  );
+  const page = fs.readFileSync("app/customize/[slug]/page.tsx", "utf8");
+  const localized = fs.readFileSync(
+    "app/[lang]/customize/[slug]/page.tsx",
+    "utf8",
+  );
+
+  assert.match(loader, /status", "published"/);
+  assert.match(loader, /validateCustomizationDefinition\(data\.definition\)/);
+  assert.match(loader, /definition\.categoryId !== product\.categoryId/);
+  assert.match(loader, /catch \{/);
+  assert.match(page, /getPublishedCustomizationDefinition\(p\)/);
+  assert.match(page, /product=\{customizationProduct\}/);
+  assert.match(localized, /getPublishedCustomizationDefinition\(p\)/);
+  assert.match(localized, /product=\{customizationProduct\}/);
 });

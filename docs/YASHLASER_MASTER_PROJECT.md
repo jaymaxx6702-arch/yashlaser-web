@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.7 |
+| Master File Version | 1.8 |
 | Last Updated | 26 September 2026 |
-| Current Active Task | **YL-042 - Rule-driven customer customisation UI + YL-023 pilot validation** |
-| Overall State | Wave 1 foundation PR #6 productionમાં merged; rule-driven UI/pilot data PR #7માં verification ચાલુ |
+| Current Active Task | **YL-110 - Admin Customisation Field/Rule Builder foundation + published-rule storefront loading** |
+| Overall State | PR #6 + PR #7 productionમાં merged; YL-110 draft PR #9માં admin rules + published-rule loader verification ચાલુ |
 
 ---
 
@@ -542,6 +542,20 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 1.8 - 26 September 2026
+
+- PR #7 main/productionમાં successfully merge/deploy થયું; rule-driven customer customisation UI અને 3 pilot seed fixtures live codebaseમાં છે.
+- YL-110 માટે draft PR #9 (`yl-110-admin-rule-builder-v2`) શરૂ કર્યો.
+- Additive `shop_customization_rules` schema બનાવ્યું: per-product revision, `draft/published/archived` state, single published revision, RLS અને service-role-only access.
+- Admin → Customisation Rules screen ઉમેર્યું; server-side draft save shared `validateCustomizationDefinition` contractથી validate થાય છે.
+- Product ID catalogueમાં હોવો અને rule `categoryId` product category સાથે match થવો ફરજિયાત કર્યો.
+- Publish operation database function દ્વારા atomic બનાવ્યું જેથી previous published revision archive અને target publish વચ્ચે partial state ન રહે.
+- Customer customisation pages server-side published rule load કરે છે; missing table/rule/invalid category હોય તો existing category defaults પર safe fallback થાય છે.
+- Published quantity min/max initial URL selection અને new document creationમાં enforce થાય છે.
+- Live Supabase migration હજી apply કરેલ નથી અને PR #9 main/productionમાં merge કરેલ નથી.
+- YL-110 હજી Done નથી: structured no-JSON field builder controls, migration apply, live publish test અને admin usability validation બાકી છે.
+- Dashboard task counts unchanged રાખ્યા; partially completed task Done mark કર્યો નથી.
+
 ### Version 1.7 - 26 September 2026
 
 - PR #6 main/productionમાં successfully merge/deploy થયું; Wave 1 shared contract, asset lifecycle અને AI provider foundation live codebaseમાં છે.
@@ -633,7 +647,7 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ### Current handoff
 
-- Active: **YL-042 - Rule-driven customer customisation UI + YL-023 pilot validation.**\n- PR #6 Wave 1 foundation productionમાં merged/deployed છે. Current working branch: **`yl-042-dynamic-fields-ui`**, draft PR **#7**.
+- Active: **YL-110 - Admin Customisation Field/Rule Builder foundation + published-rule storefront loading.**\n- PR #6 Wave 1 foundation productionમાં merged/deployed છે. Current working branch: **`yl-042-dynamic-fields-ui`**, draft PR **#7**.
 - Current Wave: **Wave 1 shared foundation** — YL-023, YL-041/042, YL-046/047, YL-108, YL-110 foundation.
 - Next Wave: **Wave 2 AI Photo Engine** — YL-101 to YL-106, YL-109; YL-107 પછી.
 - Pilot product: **Photo Standee**, પછી વધુ 2 seed products; engine reusable રાખવો.
