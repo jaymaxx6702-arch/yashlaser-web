@@ -57,6 +57,8 @@ function parseRuleRow(row: RuleRow): StoredCustomizationRule {
     row.product_id,
     row.definition,
   );
+  if (row.category_id !== definition.categoryId)
+    throw new Error("Stored customization category does not match definition.");
   return {
     id: row.id,
     productId: row.product_id,
