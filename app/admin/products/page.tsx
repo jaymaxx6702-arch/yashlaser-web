@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/admin";
 import { categories, products } from "@/data/catalog";
 import { getSupabase } from "@/lib/supabase";
 import { ProductAdminWizard } from "@/components/admin/ProductAdminWizard";
+import { CatalogueCsvManager } from "@/components/admin/CatalogueCsvManager";
 import { publishProductAdminVersion } from "./actions";
 import type { ProductAdminDraft } from "@/lib/product-admin";
 
@@ -119,6 +120,8 @@ export default async function AdminProductsPage({
           <button type="submit">Load into wizard</button>
         </form>
       </section>
+
+      <CatalogueCsvManager />
 
       <ProductAdminWizard
         key={baseProductId || "new"}

@@ -62,3 +62,32 @@ test("catalogue CSV rejects conflicting repeated product data", () => {
   rows[2] = second;
   assert.throws(() => parseCatalogueCsv(rows.join("\r\n")));
 });
+
+
+test("catalogue CSV inspection reports multiple product issues without creating drafts", () => {
+  const csv = [
+    '"product_key","base_product_id","name","slug","category_id","subcategory_id","pricing_mode","price_minor","effective_price_minor","description","details","variant_id","variant_name","variant_price_minor","variant_effective_price_minor","variant_available"',
+    '"bad-one","","Bad One","same-slug","wrong-category","","fixed","100","100","","","","","","",""',
+    '"good-one","","Good One","same-slug","other","","fixed","100","100","","","","","","",""',
+    '"good-two","","Good Two","same-slug","other","","fixed","100","100","","","","","","",""',
+  ].join("\\r\\n");
+
+  const { inspectCatalogueCsv } = require("../lib/catalogue-csv") as typeof import("../lib/catalogue-csv");
+  const result = inspectCatalogueCsv(csv);
+  assert.ok(result.issues.length >= 2);
+  assert.ok(result.issues.some((issue) => issue.productKey === "bad-one"));
+  assert.ok(result.issues.some((issue) => /also used/.test(issue.message)));
+});
+
+test("catalogue import endpoint only creates draft revisions after server validation", () => {
+  const fs = require("node:fs") as typeof import("node:fs");
+  const source = fs.readFileSync("app/api/admin/products/import-drafts/route.ts", "utf8");
+  assert.match(source, /requireAdmin/);
+  assert.match(source, /inspectCatalogueCsv/);
+  assert.match(source, /findPublishedSlugConflicts/);
+  assert.match(source, /importProductAdminDrafts/);
+
+  const importer = fs.readFileSync("lib/catalogue-import-server.ts", "utf8");
+  assert.match(importer, /state: "draft"/);
+  assert.doesNotMatch(importer, /state: "published"/);
+});
