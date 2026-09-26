@@ -213,7 +213,11 @@ export const categoryCustomizationDefinitions: Record<
   },
 };
 
-type DefinitionProduct = { id: string; categoryId: CategoryId };
+type DefinitionProduct = {
+  id: string;
+  categoryId: CategoryId;
+  customizationDefinition?: CustomizationDefinition;
+};
 
 const productOverrides: Record<
   string,
@@ -530,6 +534,15 @@ export function validateCustomizationDefinition(
 export function getCustomizationDefinition(
   product: DefinitionProduct,
 ): CustomizationDefinition {
+  if (product.customizationDefinition) {
+    const published = validateCustomizationDefinition(
+      product.customizationDefinition,
+    );
+    if (published.categoryId !== product.categoryId)
+      throw new Error("Customization definition category does not match product.");
+    return published;
+  }
+
   const base = categoryCustomizationDefinitions[product.categoryId];
   const override = productOverrides[product.id];
   return validateCustomizationDefinition(
