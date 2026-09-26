@@ -57,16 +57,6 @@ export default async function LocalizedCustomizePage({
   );
   const t = copy[lang];
   const prefix = "/" + lang;
-  const {
-    id,
-    slug,
-    name,
-    categoryId,
-    variants,
-    pricingMode,
-    effectivePriceMinor,
-    priceMinor,
-  } = p;
 
   return (
     <main id="main-content" className="container customize-page" lang={lang}>
