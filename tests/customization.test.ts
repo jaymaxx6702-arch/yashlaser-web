@@ -27,6 +27,7 @@ import {
   requiredArtworkField,
   validateCustomizationDefinition,
   isFieldVisible,
+  validateFieldValues,
 } from "../lib/customization/contract";
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
@@ -105,6 +106,88 @@ test("field visibility rules are deterministic and rule types include future inp
     conditional.fields.map((field) => field.kind),
     ["choice", "qr", "date", "name", "logo"],
   );
+});
+
+test("rule-driven field values validate, persist and remain backward compatible", () => {
+  const dynamic = validateCustomizationDefinition({
+    version: 1,
+    categoryId: "other",
+    templates: ["keepsake"],
+    quantity: { min: 1, max: 20 },
+    fields: [
+      {
+        id: "mode",
+        kind: "choice",
+        label: "Mode",
+        required: true,
+        choices: ["text", "qr"],
+      },
+      {
+        id: "qr-value",
+        kind: "qr",
+        label: "QR value",
+        required: true,
+        maxLength: 500,
+        visibility: [{ fieldId: "mode", operator: "equals", value: "qr" }],
+      },
+      {
+        id: "event-date",
+        kind: "date",
+        label: "Event date",
+        required: false,
+      },
+      {
+        id: "brand-color",
+        kind: "color",
+        label: "Brand colour",
+        required: false,
+      },
+    ],
+  });
+
+  assert.deepEqual(
+    validateFieldValues(dynamic, {
+      mode: "qr",
+      "qr-value": "https://yashlaser.in",
+      "event-date": "2026-09-26",
+      "brand-color": "#112233",
+    }),
+    {
+      mode: "qr",
+      "qr-value": "https://yashlaser.in",
+      "event-date": "2026-09-26",
+      "brand-color": "#112233",
+    },
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "qr" }, { requireRequired: true }),
+  );
+  assert.deepEqual(
+    validateFieldValues(
+      dynamic,
+      { mode: "text" },
+      { requireRequired: true },
+    ),
+    { mode: "text" },
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "text", unknown: "x" }),
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "qr", "qr-value": "x".repeat(501) }),
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "text", "event-date": "26/09/2026" }),
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "text", "brand-color": "red" }),
+  );
+
+  const current = createDocument(p);
+  assert.deepEqual(current.fieldValues, {});
+  const legacy = JSON.parse(JSON.stringify(current));
+  delete legacy.fieldValues;
+  assert.deepEqual(validateDocument(legacy, p).fieldValues, {});
 });
 
 test("field-rule contract rejects duplicate ids, slots and invalid dependencies", () => {
