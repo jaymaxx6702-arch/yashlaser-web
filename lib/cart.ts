@@ -12,6 +12,7 @@ export type CartItem = {
   unitPriceMinor: number | null;
   pricingMode: string;
   designId?: string;
+  designToken?: string;
   notes?: string;
 };
 
@@ -35,13 +36,16 @@ function save(items: CartItem[]) {
 
 export function addCartItem(item: Omit<CartItem, "id">) {
   const items = readCart();
-  const same = items.find(
-    (x) =>
-      x.productId === item.productId &&
-      x.variantId === item.variantId &&
-      !x.designId &&
-      !item.designId,
-  );
+  const same = items.find((x) => {
+    if (x.productId !== item.productId || x.variantId !== item.variantId)
+      return false;
+    if (!x.designId && !item.designId) return true;
+    return (
+      Boolean(x.designId) &&
+      x.designId === item.designId &&
+      x.designToken === item.designToken
+    );
+  });
   if (same) {
     same.quantity = Math.min(10000, same.quantity + item.quantity);
   } else {
