@@ -101,7 +101,7 @@ export function validateProductAdminDraft(input: unknown): ProductAdminDraft {
     throw new Error("Invalid product variants.");
 
   const ids = new Set<string>();
-  const variants = value.variants.map((entry, index) => {
+  const variants = value.variants.map((entry) => {
     if (!entry || typeof entry !== "object" || Array.isArray(entry))
       throw new Error("Invalid variant.");
     const variant = entry as Record<string, unknown>;
