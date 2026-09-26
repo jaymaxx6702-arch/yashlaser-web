@@ -44,10 +44,13 @@ export default async function AdminCustomizationRulesPage({
     }
   }
 
+  const latestStoredRule = state
+    ? [state.latestDraft, state.published]
+        .filter((rule): rule is NonNullable<typeof rule> => Boolean(rule))
+        .sort((a, b) => b.revision - a.revision)[0] ?? null
+    : null;
   const initialDefinition = selected
-    ? state?.latestDraft?.definition ??
-      state?.published?.definition ??
-      getCustomizationDefinition(selected)
+    ? latestStoredRule?.definition ?? getCustomizationDefinition(selected)
     : null;
 
   return (
@@ -116,6 +119,26 @@ export default async function AdminCustomizationRulesPage({
             latestDraftRevision={state?.latestDraft?.revision}
             publishedRevision={state?.published?.revision}
           />
+          {state?.history.length ? (
+            <section className="admin-card">
+              <h2>Revision history</h2>
+              <div className="admin-list">
+                {state.history.map((rule) => (
+                  <div key={rule.id}>
+                    <strong>Revision {rule.revision}</strong>{" "}
+                    <span>· {rule.status}</span>{" "}
+                    <small>
+                      ·{" "}
+                      {new Date(rule.createdAt).toLocaleString("en-IN", {
+                        timeZone: "Asia/Kolkata",
+                      })}{" "}
+                      IST
+                    </small>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </>
       )}
     </>
