@@ -21,6 +21,14 @@ Current category defaults intentionally preserve existing customer behaviour. Pr
 
 Original browser uploads are bounded to 8 MB / 25 MP. Cropping is non-destructive; source crop, pan and zoom remain in the JSON. PNG export does not include customer contact information. WhatsApp links cannot attach files: customers download/share the preview and attach their original artwork separately.
 
+## Rule-driven editor UI
+
+The customer editor now reads quantity limits, artwork requirements, accepted image MIME types, AI background-removal permission, legacy text-compatible fields and additional scalar fields from the shared customization definition.
+
+`RuleField.tsx` renders serialisable field rules as customer controls for text, name, date, QR, color, choice and number values. Conditional extra fields use the same visibility rules as server validation. The current single artwork pipeline continues to handle the rule-mapped photo/logo field so existing crop, preview, upload and proof behaviour remains compatible.
+
+Category defaults intentionally preserve the existing storefront. Product-specific seed rules should only be added after the underlying catalogue record is verified; no price, size or production values should be inferred from UI labels.
+
 ## Backend
 
 Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.
