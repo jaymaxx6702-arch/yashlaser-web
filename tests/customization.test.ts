@@ -596,7 +596,7 @@ test("TEMP pilot source audit", () => {
   const source = JSON.parse(
     fs.readFileSync("migration/source/products.json", "utf8"),
   ) as Array<Record<string, unknown>>;
-  const ids = new Set(["yl-33214839", "yl-31748751", "yl-31593509"]);
+  const ids = new Set(["33214839", "31748751", "31593509"]);
   const rows = source.filter((item) => ids.has(String(item.id)));
   console.log("PILOT_SOURCE_AUDIT_START");
   console.log(JSON.stringify(rows));
