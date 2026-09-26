@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin";
+import { products } from "@/data/catalog";
 import { getSupabase } from "@/lib/supabase";
 import {
   nextCustomizationRuleRevision,
@@ -33,6 +34,10 @@ export async function saveCustomizationRuleDraft(form: FormData) {
   await requireAdmin();
   const product = productId(form);
   const parsed = definition(form);
+  const catalogueProduct = products.find((item) => item.id === product);
+  if (!catalogueProduct) throw new Error("Unknown product id.");
+  if (parsed.categoryId !== catalogueProduct.categoryId)
+    throw new Error("Rule category does not match product category.");
   const db = getSupabase();
 
   const { data: rows, error: readError } = await db
@@ -74,22 +79,17 @@ export async function publishCustomizationRule(form: FormData) {
   if (error || !data) throw new Error("Customization rule not found.");
   const rule = parseStoredCustomizationRule(data);
 
-  const { error: archiveError } = await db
-    .from("shop_customization_rules")
-    .update({ status: "archived" })
-    .eq("product_id", rule.productId)
-    .eq("status", "published")
-    .neq("id", rule.id);
-  if (archiveError) throw new Error("Unable to archive previous rule.");
+  const catalogueProduct = products.find(
+    (item) => item.id === rule.productId,
+  );
+  if (!catalogueProduct) throw new Error("Unknown product id.");
+  if (rule.definition.categoryId !== catalogueProduct.categoryId)
+    throw new Error("Rule category does not match product category.");
 
-  const { error: publishError } = await db
-    .from("shop_customization_rules")
-    .update({
-      status: "published",
-      published_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", rule.id);
+  const { error: publishError } = await db.rpc(
+    "publish_shop_customization_rule",
+    { p_rule_id: rule.id },
+  );
   if (publishError) throw new Error("Unable to publish customization rule.");
 
   revalidatePath("/admin/customization-rules");
