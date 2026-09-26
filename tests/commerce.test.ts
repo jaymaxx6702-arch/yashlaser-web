@@ -347,3 +347,17 @@ test("order asset migration is additive, private and versioned", () => {
   assert.match(migration, /revoke all on public\.shop_order_assets from anon, authenticated/);
   assert.match(migration, /grant all on public\.shop_order_assets to service_role/);
 });
+
+
+test("approved customer proofs are locked before upload and before version creation", () => {
+  for (const path of [
+    "app/api/admin/proofs/upload-session/route.ts",
+    "app/api/admin/proofs/route.ts",
+  ]) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(source, /status === "approved"/);
+    assert.match(source, /APPROVED_PROOF_LOCKED/);
+    assert.match(source, /readJsonBody/);
+    assert.doesNotMatch(source, /request\.json\(/);
+  }
+});
