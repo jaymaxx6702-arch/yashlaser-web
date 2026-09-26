@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import {
   catalogueDraftsToCsv,
+  inspectCatalogueCsv,
   parseCatalogueCsv,
 } from "../lib/catalogue-csv";
 
@@ -72,7 +74,6 @@ test("catalogue CSV inspection reports multiple product issues without creating 
     '"good-two","","Good Two","same-slug","other","","fixed","100","100","","","","","","",""',
   ].join("\\r\\n");
 
-  const { inspectCatalogueCsv } = require("../lib/catalogue-csv") as typeof import("../lib/catalogue-csv");
   const result = inspectCatalogueCsv(csv);
   assert.ok(result.issues.length >= 2);
   assert.ok(result.issues.some((issue) => issue.productKey === "bad-one"));
@@ -80,7 +81,6 @@ test("catalogue CSV inspection reports multiple product issues without creating 
 });
 
 test("catalogue import endpoint only creates draft revisions after server validation", () => {
-  const fs = require("node:fs") as typeof import("node:fs");
   const source = fs.readFileSync("app/api/admin/products/import-drafts/route.ts", "utf8");
   assert.match(source, /requireAdmin/);
   assert.match(source, /inspectCatalogueCsv/);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Preview = {
@@ -116,7 +117,9 @@ export function CatalogueCsvManager() {
             every change, then import only as private draft revisions.
           </p>
         </div>
-        <a href="/api/admin/products/export">Download current CSV</a>
+        <Link href="/api/admin/products/export" prefetch={false}>
+          Download current CSV
+        </Link>
       </div>
 
       <label>
