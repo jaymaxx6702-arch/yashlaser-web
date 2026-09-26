@@ -378,3 +378,33 @@ test("saved design checkout uses signed handoff and immutable order asset copies
   const form = fs.readFileSync("components/CustomizationForm.tsx", "utf8");
   assert.match(form, /designToken: success\.designToken/);
 });
+
+
+test("proof workflow keeps shop_order_assets synchronized with proof state", () => {
+  const createProof = fs.readFileSync("app/api/admin/proofs/route.ts", "utf8");
+  assert.match(createProof, /registerProofAsset/);
+  assert.match(createProof, /supersedePreviousProofAssets/);
+  assert.match(createProof, /shop_order_assets/);
+
+  const approve = fs.readFileSync(
+    "app/api/proofs/[token]/approve/route.ts",
+    "utf8",
+  );
+  assert.match(approve, /syncProofAssetState\(proof\.id, "approved", now\)/);
+  assert.match(approve, /status: "ready", approved_at: null/);
+
+  const changes = fs.readFileSync(
+    "app/api/proofs/[token]/request-changes/route.ts",
+    "utf8",
+  );
+  assert.match(
+    changes,
+    /syncProofAssetState\(proof\.id, "changes_requested"\)/,
+  );
+  assert.match(changes, /status: "ready"/);
+
+  const helper = fs.readFileSync("lib/proof-assets.ts", "utf8");
+  assert.match(helper, /asset_kind: "proof"/);
+  assert.match(helper, /storage_bucket: "shop-proofs"/);
+  assert.match(helper, /approved_at/);
+});
