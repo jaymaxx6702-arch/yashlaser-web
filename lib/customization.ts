@@ -35,17 +35,26 @@ export function resolveSelection(
   };
 }
 
-export const fieldLabels = Object.fromEntries(
-  Object.entries(categoryCustomizationDefinitions).map(
-    ([categoryId, definition]) => {
-      const [first, second] = legacyTextFields(definition);
-      return [
-        categoryId,
-        [
-          first?.label ?? "Personalisation text",
-          second?.label ?? "Additional text (optional)",
-        ],
-      ];
-    },
-  ),
-) as Record<Product["categoryId"], readonly [string, string]>;
+function labelsFor(
+  categoryId: Product["categoryId"],
+): readonly [string, string] {
+  const [first, second] = legacyTextFields(
+    categoryCustomizationDefinitions[categoryId],
+  );
+  return [
+    first?.label ?? "Personalisation text",
+    second?.label ?? "Additional text (optional)",
+  ];
+}
+
+export const fieldLabels: Record<
+  Product["categoryId"],
+  readonly [string, string]
+> = {
+  standees: labelsFor("standees"),
+  awards: labelsFor("awards"),
+  keychains: labelsFor("keychains"),
+  "id-cards": labelsFor("id-cards"),
+  "name-plates": labelsFor("name-plates"),
+  other: labelsFor("other"),
+};
