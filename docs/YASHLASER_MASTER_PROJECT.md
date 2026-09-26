@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.7 |
+| Master File Version | 1.8 |
 | Last Updated | 26 September 2026 |
-| Current Active Task | **YL-042 - Rule-driven customer customisation UI + YL-023 pilot validation** |
-| Overall State | Wave 1 foundation PR #6 productionમાં merged; rule-driven UI/pilot data PR #7માં verification ચાલુ |
+| Current Active Task | **YL-110 foundation - Admin Customisation Field/Rule Builder** |
+| Overall State | PR #6 અને #7 productionમાં merged; YL-110 Admin Rule Builder foundation draft PR #8માં verification ચાલુ |
 
 ---
 
@@ -542,6 +542,21 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 1.8 - 26 September 2026
+
+- PR #7 productionમાં merge/deploy થયેલું verify કર્યું; rule-driven customer UI અને 3 pilot catalogue fixtures mainમાં છે.
+- YL-023 original-source audit પૂર્ણ: source numeric IDs/URLs three pilot fixtures સાથે lock કર્યા. Source recordsમાં weight અને production lead-time data નથી, એટલે આ values business confirmation વગર guess કર્યાં નથી; YL-023 હજી Done નથી.
+- YL-110 foundation માટે draft PR #8 (`yl-110-admin-rule-builder`) બનાવ્યો.
+- Admin `/admin/customization-rules` page + product search + reusable Rule Builder UI ઉમેર્યું.
+- Builder quantity, templates, photo/logo/text/name/date/QR/color/choice/number, required rules, limits, AI permissions અને conditional visibility configure કરે છે.
+- Admin API shared YL-042 validator reuse કરે છે અને bounded JSON + admin auth enforce કરે છે.
+- Additive `shop_customization_rules` migration: immutable revisions, one published revision per product, RLS, anon/authenticated revoke, service-role access અને transaction-safe advisory-lock writer.
+- Supabase security review પછી writer `SECURITY INVOKER` રાખ્યો; public `SECURITY DEFINER` privilege escalation ટાળ્યો.
+- v1 contract hardening: photo/logo field single artwork legacy slot bypass કરી શકતું નથી.
+- Published rule storage હજુ customer runtimeને activate કરતું નથી; runtime loader separate rollout step છે.
+- Live DB migration હજી apply નથી: exact shop Supabase runtime target environment-level verify કરવો બાકી છે. Active YashFlow database shop database નથી.
+- Dashboard task counts unchanged; YL-110 foundationને full YL-110 Done તરીકે mark કરેલ નથી.
+
 ### Version 1.7 - 26 September 2026
 
 - PR #6 main/productionમાં successfully merge/deploy થયું; Wave 1 shared contract, asset lifecycle અને AI provider foundation live codebaseમાં છે.
@@ -633,7 +648,7 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ### Current handoff
 
-- Active: **YL-042 - Rule-driven customer customisation UI + YL-023 pilot validation.**\n- PR #6 Wave 1 foundation productionમાં merged/deployed છે. Current working branch: **`yl-042-dynamic-fields-ui`**, draft PR **#7**.
+- Active: **YL-110 foundation - Admin Customisation Field/Rule Builder.**\n- PR #6 અને PR #7 productionમાં merged/deployed છે. Current working branch: **`yl-110-admin-rule-builder`**, draft PR **#8**.
 - Current Wave: **Wave 1 shared foundation** — YL-023, YL-041/042, YL-046/047, YL-108, YL-110 foundation.
 - Next Wave: **Wave 2 AI Photo Engine** — YL-101 to YL-106, YL-109; YL-107 પછી.
 - Pilot product: **Photo Standee**, પછી વધુ 2 seed products; engine reusable રાખવો.

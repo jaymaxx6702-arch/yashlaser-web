@@ -347,3 +347,74 @@ test("order asset migration is additive, private and versioned", () => {
   assert.match(migration, /revoke all on public\.shop_order_assets from anon, authenticated/);
   assert.match(migration, /grant all on public\.shop_order_assets to service_role/);
 });
+
+
+test("admin customization rule storage is private, versioned and transaction-safe", () => {
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609260016_customization_rules.sql",
+    "utf8",
+  );
+  assert.match(migration, /create table if not exists public\.shop_customization_rules/);
+  assert.match(migration, /unique\(product_id, revision\)/);
+  assert.match(migration, /shop_customization_rules_one_published_uidx/);
+  assert.match(migration, /where status = 'published'/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /write_shop_customization_rule/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all on public\.shop_customization_rules from anon, authenticated/);
+  assert.match(migration, /grant all on public\.shop_customization_rules to service_role/);
+});
+
+test("admin customization rule API reuses the shared contract and bounded authenticated writes", () => {
+  const route = fs.readFileSync(
+    "app/api/admin/customization-rules/route.ts",
+    "utf8",
+  );
+  assert.match(route, /requireAdmin/);
+  assert.match(route, /readJsonBody/);
+  assert.doesNotMatch(route, /request\.json\(/);
+  assert.match(route, /validateProductCustomizationDefinition/);
+  assert.match(route, /writeCustomizationRule/);
+
+  const server = fs.readFileSync(
+    "lib/customization/rules-server.ts",
+    "utf8",
+  );
+  assert.match(server, /validateCustomizationDefinition/);
+  assert.match(server, /shop_customization_rules/);
+  assert.match(server, /write_shop_customization_rule/);
+  assert.match(server, /getPublishedCustomizationDefinition/);
+});
+
+test("admin customization builder exposes product search, draft and publish controls", () => {
+  const page = fs.readFileSync(
+    "app/admin/customization-rules/page.tsx",
+    "utf8",
+  );
+  const builder = fs.readFileSync(
+    "components/CustomizationRuleBuilder.tsx",
+    "utf8",
+  );
+  const nav = fs.readFileSync("components/AdminNav.tsx", "utf8");
+
+  assert.match(page, /requireAdmin/);
+  assert.match(page, /getCustomizationRuleState/);
+  assert.match(page, /CustomizationRuleBuilder/);
+  assert.match(builder, /Save Draft/);
+  assert.match(builder, /Publish/);
+  for (const kind of [
+    "photo",
+    "logo",
+    "text",
+    "name",
+    "date",
+    "qr",
+    "color",
+    "choice",
+    "number",
+  ]) {
+    assert.match(builder, new RegExp('"' + kind + '"'));
+  }
+  assert.match(builder, /Conditional visibility/);
+  assert.match(nav, /\/admin\/customization-rules/);
+});

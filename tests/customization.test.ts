@@ -102,6 +102,7 @@ test("field visibility rules are deterministic and rule types include future inp
         kind: "logo",
         label: "Logo",
         required: false,
+        legacySlot: "artwork",
         allowedMimeTypes: ["image/png", "image/webp"],
       },
     ],
@@ -588,5 +589,43 @@ test("three customization pilot products stay aligned with the generated catalog
       })),
       seed.variants,
     );
+  }
+});
+
+
+test("version 1 image fields cannot bypass the single artwork pipeline", () => {
+  assert.throws(
+    () =>
+      validateCustomizationDefinition({
+        version: 1,
+        categoryId: "other",
+        templates: ["keepsake"],
+        quantity: { min: 1, max: 10 },
+        fields: [
+          {
+            id: "second-photo",
+            kind: "photo",
+            label: "Second photo",
+            required: false,
+          },
+        ],
+      }),
+    /must use the artwork legacy slot/,
+  );
+});
+
+
+test("customization pilot provenance stays aligned with the original source records", () => {
+  const source = JSON.parse(
+    fs.readFileSync("migration/source/products.json", "utf8"),
+  ) as Array<Record<string, unknown>>;
+
+  for (const seed of customizationSeeds) {
+    const original = source.find(
+      (item) => String(item.id) === String(seed.sourceId),
+    );
+    assert.ok(original, "missing original source for " + seed.id);
+    assert.equal(original.sourceUrl, seed.sourceUrl);
+    assert.equal(original.name, seed.name);
   }
 });

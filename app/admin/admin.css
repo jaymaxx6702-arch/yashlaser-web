@@ -141,3 +141,60 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+.admin-rule-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.admin-rule-products .admin-card {
+  margin: 0;
+  text-decoration: none;
+  display: grid;
+  gap: 6px;
+}
+.admin-rule-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.admin-rule-field {
+  border: 1px solid #ded8cd;
+  border-radius: 10px;
+  padding: 18px;
+  margin: 16px 0;
+}
+.admin-rule-fieldset {
+  border: 1px solid #ded8cd;
+  border-radius: 8px;
+  padding: 14px;
+  margin: 16px 0;
+}
+.admin-rule-fieldset legend {
+  font-weight: 700;
+  padding: 0 6px;
+}
+.admin-rule-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.admin-rule-checks label,
+.admin-rule-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.admin-rule-checks input,
+.admin-rule-inline input {
+  width: auto;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .admin-rule-products,
+  .admin-rule-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,8 @@
 export const customizationSeeds = [
   {
     id: "yl-33214839",
+    sourceId: 33214839,
+    sourceUrl: "https://www.yashlaser.in/product/couple-hd-photo-cutout",
     slug: "couple-standee-photo-cut-out",
     name: "Couple standee photo cut out",
     categoryId: "standees",
@@ -29,6 +31,8 @@ export const customizationSeeds = [
   },
   {
     id: "yl-31748751",
+    sourceId: 31748751,
+    sourceUrl: "https://www.yashlaser.in/product/custom-acrylic-name-plate",
     slug: "custom-elegant-acrylic-name-plate-12x4",
     name: "Custom Elegant Acrylic Name Plate (12x4\")",
     categoryId: "name-plates",
@@ -45,6 +49,8 @@ export const customizationSeeds = [
   },
   {
     id: "yl-31593509",
+    sourceId: 31593509,
+    sourceUrl: "https://www.yashlaser.in/product/427-premium-acrylic-award-medal-plaque-memento-shield",
     slug: "427-premium-acrylic-award-medal-plaque-memento-shield",
     name: "427 - Premium Acrylic Award Medal Plaque Memento Shield",
     categoryId: "awards",
