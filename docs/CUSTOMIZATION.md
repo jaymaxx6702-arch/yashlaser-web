@@ -29,6 +29,16 @@ The customer editor now reads quantity limits, artwork requirements, accepted im
 
 Category defaults intentionally preserve the existing storefront. Product-specific seed rules should only be added after the underlying catalogue record is verified; no price, size or production values should be inferred from UI labels.
 
+## Published product rules
+
+YL-110 foundation stores per-product customisation definitions in `shop_customization_rules` with draft, published and archived revisions. Admin writes are validated by the same `validateCustomizationDefinition` contract used by the customer editor.
+
+Publishing is performed by the database function `publish_shop_customization_rule` so archiving the previous live revision and promoting the selected draft happen atomically.
+
+Customer customisation pages use `getPublishedCustomizationDefinition` on the server. A valid published definition is attached to the serialised product and becomes the active rule source for selection, document validation and the editor. If rule storage is unavailable, missing or invalid, the loader falls back to the existing category definition instead of failing the storefront.
+
+The migration remains additive and must be applied before the Admin rule screen is used in production.
+
 ## Backend
 
 Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.

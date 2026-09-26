@@ -213,7 +213,11 @@ export const categoryCustomizationDefinitions: Record<
   },
 };
 
-type DefinitionProduct = { id: string; categoryId: CategoryId };
+type DefinitionProduct = {
+  id: string;
+  categoryId: CategoryId;
+  customizationDefinition?: CustomizationDefinition;
+};
 
 const productOverrides: Record<
   string,
@@ -508,15 +512,26 @@ export function validateCustomizationDefinition(
     }
   }
 
-  for (const field of fields)
+  const fieldsById = new Map(fields.map((field) => [field.id, field] as const));
+  for (const field of fields) {
+    if (field.legacySlot && field.visibility?.length)
+      throw new Error(
+        `Legacy customization field cannot use conditional visibility: ${field.id}`,
+      );
     for (const condition of field.visibility ?? []) {
       if (condition.fieldId === field.id)
         throw new Error(`Customization field cannot depend on itself: ${field.id}`);
-      if (!ids.has(condition.fieldId))
+      const dependency = fieldsById.get(condition.fieldId);
+      if (!dependency)
         throw new Error(
           `Unknown visibility dependency ${condition.fieldId} for ${field.id}`,
         );
+      if (dependency.legacySlot)
+        throw new Error(
+          `Visibility dependency must use a dynamic field: ${condition.fieldId}`,
+        );
     }
+  }
 
   return {
     version: 1,
@@ -530,6 +545,15 @@ export function validateCustomizationDefinition(
 export function getCustomizationDefinition(
   product: DefinitionProduct,
 ): CustomizationDefinition {
+  if (product.customizationDefinition) {
+    const published = validateCustomizationDefinition(
+      product.customizationDefinition,
+    );
+    if (published.categoryId !== product.categoryId)
+      throw new Error("Customization definition category does not match product.");
+    return published;
+  }
+
   const base = categoryCustomizationDefinitions[product.categoryId];
   const override = productOverrides[product.id];
   return validateCustomizationDefinition(
