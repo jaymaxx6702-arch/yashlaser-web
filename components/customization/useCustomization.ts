@@ -15,6 +15,10 @@ import {
 } from "@/lib/customization/model";
 import { inspectArtwork } from "@/lib/customization/artwork";
 import {
+  analyzeBitmapQuality,
+  type PhotoQualityReport,
+} from "@/lib/customization/quality";
+import {
   loadDraft,
   saveDraft,
   saveSelection,
@@ -116,7 +120,8 @@ export function useCustomization(
     createDocument(product, selection),
   );
   const [artwork, setArtwork] = useState<Blob | null>(null),
-    [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
+    [bitmap, setBitmap] = useState<ImageBitmap | null>(null),
+    [photoQuality, setPhotoQuality] = useState<PhotoQualityReport | null>(null);
   const [ready, setReady] = useState(false),
     [processing, setProcessing] = useState(false),
     [storageMessage, setStorageMessage] = useState<string>(t.loading),
@@ -207,6 +212,14 @@ export function useCustomization(
               inspected.bitmap.close();
               throw new Error(t.mismatch);
             }
+            const quality = await analyzeBitmapQuality(inspected.bitmap).catch(
+              () => null,
+            );
+            if (cancelled) {
+              inspected.bitmap.close();
+              return;
+            }
+            setPhotoQuality(quality);
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
           } else if (checked.artwork) {
@@ -288,6 +301,11 @@ export function useCustomization(
         next.bitmap.close();
         return;
       }
+      const quality = await analyzeBitmapQuality(next.bitmap).catch(() => null);
+      if (token !== operation.current) {
+        next.bitmap.close();
+        return;
+      }
 
       const d = current.current.document;
       const nextDocument: CustomizationDocument = {
@@ -319,6 +337,7 @@ export function useCustomization(
       }
 
       current.current = { document: nextDocument, artwork: file };
+      setPhotoQuality(quality);
       replaceBitmap(next.bitmap);
       setArtwork(file);
       setDocument(nextDocument);
@@ -335,6 +354,7 @@ export function useCustomization(
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setPhotoQuality(null);
 
     const clean = createDocument(productRef.current, {
       variantId: current.current.document.variantId,
@@ -386,6 +406,7 @@ export function useCustomization(
     setDocument,
     artwork,
     bitmap,
+    photoQuality,
     ready,
     processing,
     storageMessage,
