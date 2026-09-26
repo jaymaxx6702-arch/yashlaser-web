@@ -31,6 +31,7 @@ type CartInput = {
   variantId?: string;
   quantity?: number;
   designId?: string;
+  designToken?: string;
   notes?: string;
 };
 
@@ -124,6 +125,7 @@ export async function POST(request: Request) {
         quantity: qty,
         unitPriceMinor: unit,
         designId: text(raw.designId, 100),
+        designToken: text(raw.designToken, 2048),
         notes: text(raw.notes, 500),
       };
     });
@@ -156,6 +158,7 @@ export async function POST(request: Request) {
           unitPriceMinor: item.unitPriceMinor,
           pricingMode: item.product.pricingMode,
           designId: item.designId || null,
+          designToken: item.designToken || null,
           configuration: { notes: item.notes || null },
         })),
       });
