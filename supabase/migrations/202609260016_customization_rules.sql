@@ -43,8 +43,8 @@ create or replace function public.write_shop_customization_rule(
 )
 returns public.shop_customization_rules
 language plpgsql
-security definer
-set search_path = public
+security invoker
+set search_path = ''
 as $$
 declare
   v_revision integer;
