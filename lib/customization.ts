@@ -2,6 +2,7 @@ import type { Product } from "@/data/catalog";
 import {
   categoryCustomizationDefinitions,
   legacyTextFields,
+  type CustomizationDefinition,
 } from "@/lib/customization/contract";
 
 export type CustomizationProduct = Pick<
@@ -14,7 +15,9 @@ export type CustomizationProduct = Pick<
   | "pricingMode"
   | "effectivePriceMinor"
   | "priceMinor"
->;
+> & {
+  customizationDefinition?: CustomizationDefinition;
+};
 
 export function resolveSelection(
   product: CustomizationProduct,
