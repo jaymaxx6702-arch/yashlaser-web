@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { fieldLabels, type CustomizationProduct } from "@/lib/customization";
+import type { CustomizationProduct } from "@/lib/customization";
 import {
   categoryTemplates,
   clamp,
@@ -12,6 +12,13 @@ import { cropPreset } from "@/lib/customization/geometry";
 import { CanvasPreview } from "./CanvasPreview";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
 import type { UiLanguage } from "@/lib/i18n";
+import {
+  getCustomizationDefinition,
+  isFieldVisible,
+  legacyTextFields,
+  type FieldValue,
+} from "@/lib/customization/contract";
+import { RuleField } from "./RuleField";
 
 const copy = {
   en: {
@@ -52,6 +59,7 @@ const copy = {
     horizontal: "Horizontal position",
     vertical: "Vertical position",
     personalText: "3. Personal text",
+    additionalDetails: "Additional details",
     textLine: "Text line",
     line: "Line",
     font: "font",
@@ -104,6 +112,7 @@ const copy = {
     horizontal: "આડું સ્થાન",
     vertical: "ઊભું સ્થાન",
     personalText: "3. વ્યક્તિગત લખાણ",
+    additionalDetails: "વધારાની વિગતો",
     textLine: "લખાણ લાઇન",
     line: "લાઇન",
     font: "ફોન્ટ",
@@ -156,6 +165,7 @@ const copy = {
     horizontal: "क्षैतिज स्थिति",
     vertical: "ऊर्ध्व स्थिति",
     personalText: "3. व्यक्तिगत टेक्स्ट",
+    additionalDetails: "अतिरिक्त विवरण",
     textLine: "टेक्स्ट लाइन",
     line: "लाइन",
     font: "फॉन्ट",
@@ -208,6 +218,7 @@ const copy = {
     horizontal: "आडवे स्थान",
     vertical: "उभे स्थान",
     personalText: "3. वैयक्तिक मजकूर",
+    additionalDetails: "अतिरिक्त माहिती",
     textLine: "मजकूर ओळ",
     line: "ओळ",
     font: "फॉन्ट",
@@ -260,6 +271,24 @@ export function CustomizationEditor({
   const currentVariant = product.variants.find((v) => v.id === doc.variantId);
   const price =
     currentVariant?.effectivePriceMinor ?? product.effectivePriceMinor;
+  const definition = getCustomizationDefinition(product);
+  const textRules = legacyTextFields(definition);
+  const artworkRule = definition.fields.find(
+    (field) => field.legacySlot === "artwork",
+  );
+  const dynamicFields = definition.fields.filter(
+    (field) =>
+      !field.legacySlot &&
+      field.kind !== "photo" &&
+      field.kind !== "logo" &&
+      isFieldVisible(field, doc.fieldValues),
+  );
+  const setFieldValue = (fieldId: string, value: FieldValue) => {
+    const fieldValues = { ...doc.fieldValues };
+    if (value === null || value === "") delete fieldValues[fieldId];
+    else fieldValues[fieldId] = value;
+    onChange({ ...doc, fieldValues });
+  };
 
   return (
     <div className="advanced-editor">
@@ -325,15 +354,21 @@ export function CustomizationEditor({
               {t.quantity}
               <input
                 type="number"
-                min={1}
-                max={10000}
+                min={definition.quantity.min}
+                max={definition.quantity.max}
                 step={1}
                 value={doc.quantity}
                 onChange={(e) => {
                   const n = e.target.valueAsNumber;
                   onChange({
                     ...doc,
-                    quantity: Number.isInteger(n) ? clamp(n, 1, 10000) : 1,
+                    quantity: Number.isInteger(n)
+                      ? clamp(
+                          n,
+                          definition.quantity.min,
+                          definition.quantity.max,
+                        )
+                      : definition.quantity.min,
                   });
                 }}
               />
@@ -378,14 +413,20 @@ export function CustomizationEditor({
           )}
         </section>
 
+        {artworkRule && (
         <section>
           <h2>{t.photoLogo}</h2>
           <label>
-            {t.uploadPhoto}
+            {artworkRule.label}{artworkRule.required ? " *" : ""}
             <input
               key={fileKey}
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept={(artworkRule.allowedMimeTypes ?? [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+              ]).join(",")}
+              required={artworkRule.required && !doc.artwork}
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) {
@@ -400,7 +441,7 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
-          {adapter && (
+          {adapter && artworkRule.ai?.backgroundRemoval === "optional" && (
             <button
               type="button"
               className="text-link"
@@ -559,31 +600,29 @@ export function CustomizationEditor({
             </>
           )}
         </section>
+        )}
 
         <section>
           <h2>{t.personalText}</h2>
-          {doc.text.map((layer, i) => (
-            <div className="text-layer-controls" key={i}>
-              <label>
-                {lang === "en"
-                  ? fieldLabels[product.categoryId][i]
-                  : t.textLine + " " + (i + 1)}
-                <textarea
-                  rows={2}
-                  maxLength={i === 0 ? 120 : 180}
-                  value={layer.text}
-                  onChange={(e) =>
-                    onChange({
-                      ...doc,
-                      text: doc.text.map((textLayer, n) =>
-                        n === i
-                          ? { ...textLayer, text: e.target.value }
-                          : textLayer,
-                      ) as CustomizationDocument["text"],
-                    })
-                  }
-                />
-              </label>
+          {doc.text.map((layer, i) => {
+            const rule = textRules[i];
+            if (!rule) return null;
+            return (
+            <div className="text-layer-controls" key={rule.id}>
+              <RuleField
+                field={rule}
+                value={layer.text}
+                onChange={(value) =>
+                  onChange({
+                    ...doc,
+                    text: doc.text.map((textLayer, n) =>
+                      n === i
+                        ? { ...textLayer, text: String(value ?? "") }
+                        : textLayer,
+                    ) as CustomizationDocument["text"],
+                  })
+                }
+              />
               <div className="option-fields">
                 <label>
                   {t.line} {i + 1} {t.font}
@@ -653,9 +692,26 @@ export function CustomizationEditor({
                 />
               </label>
             </div>
-          ))}
+            );
+          })}
           <p className="muted">{t.longText}</p>
         </section>
+
+        {dynamicFields.length > 0 && (
+          <section>
+            <h2>{t.additionalDetails}</h2>
+            <div className="option-fields">
+              {dynamicFields.map((field) => (
+                <RuleField
+                  key={field.id}
+                  field={field}
+                  value={doc.fieldValues[field.id]}
+                  onChange={(value) => setFieldValue(field.id, value)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         <button
           className="text-link"
