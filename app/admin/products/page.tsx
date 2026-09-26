@@ -8,6 +8,13 @@ import type { ProductAdminDraft } from "@/lib/product-admin";
 function seedDraft(baseId: string | undefined): ProductAdminDraft {
   const product = products.find((item) => item.id === baseId);
   if (product) {
+    const pricingMode =
+      product.pricingMode === "fixed" ||
+      product.pricingMode === "from" ||
+      product.pricingMode === "quote_required"
+        ? product.pricingMode
+        : "quote_required";
+
     return {
       productKey: product.id,
       baseProductId: product.id,
@@ -15,7 +22,7 @@ function seedDraft(baseId: string | undefined): ProductAdminDraft {
       name: product.name,
       categoryId: product.categoryId,
       subcategoryId: product.subcategoryId,
-      pricingMode: product.pricingMode,
+      pricingMode,
       currency: "INR",
       priceMinor: product.priceMinor,
       effectivePriceMinor: product.effectivePriceMinor,
