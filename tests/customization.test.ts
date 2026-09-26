@@ -564,27 +564,46 @@ test("TEMP seed product audit", () => {
     fs.readFileSync("migration/reports/manual-review.json", "utf8"),
   ) as Array<{ id: string }>;
   const flagged = new Set(manual.map((item) => item.id));
-  const rows = raw
-    .filter(
-      (product) =>
-        ["standees", "awards", "name-plates"].includes(
-          String(product.categoryId),
-        ) && !flagged.has(String(product.id)),
-    )
-    .slice(0, 80)
-    .map((product) => ({
-      id: product.id,
-      slug: product.slug,
-      name: product.name,
-      categoryId: product.categoryId,
-      subcategoryId: product.subcategoryId,
-      pricingMode: product.pricingMode,
-      variants: Array.isArray(product.variants)
-        ? product.variants.slice(0, 5)
-        : [],
-    }));
+
+  const compact = (categoryId: string) =>
+    raw
+      .filter(
+        (product) =>
+          String(product.categoryId) === categoryId &&
+          !flagged.has(String(product.id)),
+      )
+      .slice(0, 8)
+      .map((product) => ({
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        categoryId: product.categoryId,
+        subcategoryId: product.subcategoryId,
+        pricingMode: product.pricingMode,
+        variants: Array.isArray(product.variants)
+          ? product.variants.slice(0, 4).map((variant) => {
+              const v = variant as Record<string, unknown>;
+              return {
+                id: v.id,
+                name: v.name,
+                available: v.available,
+                effectivePriceMinor: v.effectivePriceMinor,
+              };
+            })
+          : [],
+      }));
+
   console.log("SEED_AUDIT_START");
-  console.log(JSON.stringify(rows));
+  console.log(
+    JSON.stringify({
+      standees: compact("standees"),
+      namePlates: compact("name-plates"),
+      awards: compact("awards"),
+    }),
+  );
   console.log("SEED_AUDIT_END");
-  assert.ok(rows.length > 0);
+  assert.ok(compact("standees").length > 0);
+  assert.ok(compact("name-plates").length > 0);
+  assert.ok(compact("awards").length > 0);
 });
+
