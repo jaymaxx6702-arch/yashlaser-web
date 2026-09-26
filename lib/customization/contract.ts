@@ -421,7 +421,6 @@ function parseField(value: unknown): CustomizationFieldRule {
 
   if (
     (kind === "photo" || kind === "logo") &&
-    legacySlot !== undefined &&
     legacySlot !== "artwork"
   )
     throw new Error("Version 1 image fields must use the artwork legacy slot.");
