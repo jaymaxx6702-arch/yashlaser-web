@@ -5,6 +5,7 @@ import { findProduct } from "@/data/catalog";
 import { CustomizationForm } from "@/components/CustomizationForm";
 import { submissionEnabled } from "@/lib/supabase";
 import { resolveSelection } from "@/lib/customization";
+import { getPublishedCustomizationDefinition } from "@/lib/customization/server-rules";
 import { isUiLanguage } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,8 @@ export default async function LocalizedCustomizePage({
 
   const query = await searchParams;
   const selection = resolveSelection(p, query.variant, query.quantity);
+  const customizationDefinition =
+    await getPublishedCustomizationDefinition(p);
   const t = copy[lang];
   const prefix = "/" + lang;
   const {
@@ -83,6 +86,7 @@ export default async function LocalizedCustomizePage({
           pricingMode,
           effectivePriceMinor,
           priceMinor,
+          ...(customizationDefinition ? { customizationDefinition } : {}),
         }}
         onlineSubmission={submissionEnabled()}
       />
