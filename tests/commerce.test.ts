@@ -361,3 +361,20 @@ test("approved customer proofs are locked before upload and before version creat
     assert.doesNotMatch(source, /request\.json\(/);
   }
 });
+
+
+test("saved design checkout uses signed handoff and immutable order asset copies", () => {
+  const checkout = fs.readFileSync("app/api/checkout/route.ts", "utf8");
+  assert.match(checkout, /designToken/);
+
+  const commerce = fs.readFileSync("lib/commerce-server.ts", "utf8");
+  assert.match(commerce, /resolveDesignHandoff/);
+  assert.match(commerce, /\.copy\(link\.handoff\.artworkPath, originalPath\)/);
+  assert.match(commerce, /\.copy\(link\.handoff\.previewPath, previewPath\)/);
+  assert.match(commerce, /asset_kind: "original"/);
+  assert.match(commerce, /asset_kind: "preview"/);
+  assert.match(commerce, /source_asset_id/);
+
+  const form = fs.readFileSync("components/CustomizationForm.tsx", "utf8");
+  assert.match(form, /designToken: success\.designToken/);
+});
