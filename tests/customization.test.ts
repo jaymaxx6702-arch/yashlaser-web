@@ -592,6 +592,27 @@ test("three customization pilot products stay aligned with the generated catalog
 });
 
 
+test("version 1 image fields cannot bypass the single artwork pipeline", () => {
+  assert.throws(
+    () =>
+      validateCustomizationDefinition({
+        version: 1,
+        categoryId: "other",
+        templates: ["keepsake"],
+        quantity: { min: 1, max: 10 },
+        fields: [
+          {
+            id: "second-photo",
+            kind: "photo",
+            label: "Second photo",
+            required: false,
+          },
+        ],
+      }),
+    /must use the artwork legacy slot/,
+  );
+});
+
 test("TEMP pilot source audit", () => {
   const source = JSON.parse(
     fs.readFileSync("migration/source/products.json", "utf8"),
