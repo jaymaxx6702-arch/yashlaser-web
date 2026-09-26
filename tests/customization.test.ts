@@ -21,6 +21,12 @@ import {
 } from "../lib/customization/templates";
 import { removeBackground } from "../lib/customization/background-removal";
 import {
+  assertAiOperationAllowed,
+  runAiOperation,
+  supportsAiCapability,
+  validateAiProviderPolicy,
+} from "../lib/customization/ai-provider";
+import {
   categoryCustomizationDefinitions,
   getCustomizationDefinition,
   legacyTextFields,
@@ -451,5 +457,71 @@ test("background removal is injected, cancellable, and requires transparent-capa
       new Blob(),
       new AbortController().signal,
     ),
+  );
+});
+
+
+test("AI provider policy is vendor-neutral and enforces privacy, limits and capabilities", async () => {
+  const policy = validateAiProviderPolicy({
+    id: "self-hosted-test",
+    model: "test-model",
+    execution: "server",
+    hosting: "first-party",
+    capabilities: ["background-removal", "enhancement"],
+    consentRequired: true,
+    retention: { mode: "ephemeral", maxHours: 1 },
+    maxInputBytes: 8 * 1024 * 1024,
+    timeoutMs: 5000,
+    retries: 1,
+    estimatedCostMinor: 0,
+  });
+
+  assert.equal(supportsAiCapability(policy, "background-removal"), true);
+  assert.equal(supportsAiCapability(policy, "smart-crop"), false);
+  assert.doesNotThrow(() =>
+    assertAiOperationAllowed(policy, "background-removal", {
+      bytes: 1024,
+      consent: true,
+    }),
+  );
+  assert.throws(() =>
+    assertAiOperationAllowed(policy, "background-removal", {
+      bytes: 1024,
+      consent: false,
+    }),
+  );
+  assert.throws(() =>
+    assertAiOperationAllowed(policy, "smart-crop", {
+      bytes: 1024,
+      consent: true,
+    }),
+  );
+  assert.throws(() =>
+    assertAiOperationAllowed(policy, "enhancement", {
+      bytes: 9 * 1024 * 1024,
+      consent: true,
+    }),
+  );
+
+  let attempts = 0;
+  const result = await runAiOperation(policy, async () => {
+    attempts++;
+    if (attempts === 1) throw new Error("retry");
+    return "ok";
+  });
+  assert.equal(result, "ok");
+  assert.equal(attempts, 2);
+
+  assert.throws(() =>
+    validateAiProviderPolicy({
+      ...policy,
+      capabilities: ["background-removal", "background-removal"],
+    }),
+  );
+  assert.throws(() =>
+    validateAiProviderPolicy({
+      ...policy,
+      retention: { mode: "ephemeral", maxHours: 0 },
+    }),
   );
 });
