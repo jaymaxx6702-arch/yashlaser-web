@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/admin";
+import { products } from "@/data/catalog";
 import { getSupabase } from "@/lib/supabase";
 import { categoryCustomizationDefinitions } from "@/lib/customization/contract";
 import { publishCustomizationRule, saveCustomizationRuleDraft } from "./actions";
@@ -24,8 +25,9 @@ export default async function CustomizationRulesAdmin({
   const selectedRows = (data ?? []).filter(
     (row) => !selected || row.product_id === selected,
   );
+  const selectedProduct = products.find((product) => product.id === selected);
   const defaultDefinition =
-    categoryCustomizationDefinitions.standees;
+    categoryCustomizationDefinitions[selectedProduct?.categoryId ?? "standees"];
 
   return (
     <>
@@ -53,7 +55,15 @@ export default async function CustomizationRulesAdmin({
               maxLength={160}
               defaultValue={selected}
               placeholder="yl-..."
+              list="customization-products"
             />
+            <datalist id="customization-products">
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </datalist>
           </label>
           <label>
             Rule definition JSON
