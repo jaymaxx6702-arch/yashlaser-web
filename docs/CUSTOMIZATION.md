@@ -37,6 +37,12 @@ The UI labels these measurements as screening heuristics rather than production 
 
 Face/person quality is deliberately `not-analyzed` until a configured YL-108 quality-analysis provider exists. The current foundation must not imply that face detection or AI quality assessment has run.
 
+## Original vs working artwork lineage (YL-109 foundation)
+
+The browser draft now distinguishes the first customer-supplied source from the current working image. Untouched uploads store only one blob; when a derived operation such as background removal replaces the working image, IndexedDB retains the original source separately for the remainder of the 24-hour local draft.
+
+This is deliberately a local lineage foundation, not the final production-file handoff. The current server enquiry upload still has a single artwork slot, so server-side original + processed dual-file retention must be added through the order-asset lifecycle before YL-109 can be marked complete. Existing drafts without `originalArtwork` remain compatible and treat their current artwork as the original.
+
 ## Backend
 
 Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.

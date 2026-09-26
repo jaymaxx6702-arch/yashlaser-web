@@ -2,7 +2,13 @@ import type { CustomizationDocument } from "./model";
 const TTL = 24 * 60 * 60 * 1000;
 export type Draft = {
   document: CustomizationDocument;
+  /** Current working image used by the editor. */
   artwork: Blob | null;
+  /**
+   * First customer-supplied source for this working lineage.
+   * Optional for backward compatibility with drafts saved before YL-109.
+   */
+  originalArtwork?: Blob | null;
   updatedAt: number;
 };
 const queues = new Map<string, Promise<unknown>>();

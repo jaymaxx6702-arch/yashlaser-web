@@ -120,6 +120,7 @@ export function useCustomization(
     createDocument(product, selection),
   );
   const [artwork, setArtwork] = useState<Blob | null>(null),
+    [originalArtwork, setOriginalArtwork] = useState<Blob | null>(null),
     [bitmap, setBitmap] = useState<ImageBitmap | null>(null),
     [photoQuality, setPhotoQuality] = useState<PhotoQualityReport | null>(null);
   const [ready, setReady] = useState(false),
@@ -127,7 +128,7 @@ export function useCustomization(
     [storageMessage, setStorageMessage] = useState<string>(t.loading),
     [error, setError] = useState("");
 
-  const current = useRef({ document, artwork });
+  const current = useRef({ document, artwork, originalArtwork });
   const activeBitmap = useRef<ImageBitmap | null>(null),
     operation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -135,9 +136,9 @@ export function useCustomization(
   const productRef = useRef(product);
 
   useEffect(() => {
-    current.current = { document, artwork };
+    current.current = { document, artwork, originalArtwork };
     productRef.current = product;
-  }, [document, artwork, product]);
+  }, [document, artwork, originalArtwork, product]);
 
   const initial = useRef({ selection, overrides });
 
@@ -222,6 +223,7 @@ export function useCustomization(
             setPhotoQuality(quality);
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
+            setOriginalArtwork(draft.originalArtwork ?? draft.artwork);
           } else if (checked.artwork) {
             throw new Error(t.unavailable);
           }
@@ -258,7 +260,14 @@ export function useCustomization(
         /* Artwork draft can still be saved when localStorage is disabled. */
       }
 
-      await saveDraft(product.id, { ...latest, updatedAt: Date.now() });
+      await saveDraft(product.id, {
+        ...latest,
+        originalArtwork:
+          latest.originalArtwork === latest.artwork
+            ? null
+            : latest.originalArtwork,
+        updatedAt: Date.now(),
+      });
       setStorageMessage(t.saved);
       return true;
     } catch {
@@ -308,6 +317,10 @@ export function useCustomization(
       }
 
       const d = current.current.document;
+      const nextOriginalArtwork =
+        adapter === null
+          ? file
+          : current.current.originalArtwork ?? current.current.artwork ?? file;
       const nextDocument: CustomizationDocument = {
         ...d,
         artwork: next.metadata,
@@ -325,6 +338,7 @@ export function useCustomization(
         await saveDraft(product.id, {
           document: nextDocument,
           artwork: file,
+          originalArtwork: adapter === null ? null : nextOriginalArtwork,
           updatedAt: Date.now(),
         });
       } catch {
@@ -336,10 +350,15 @@ export function useCustomization(
         return;
       }
 
-      current.current = { document: nextDocument, artwork: file };
+      current.current = {
+        document: nextDocument,
+        artwork: file,
+        originalArtwork: nextOriginalArtwork,
+      };
       setPhotoQuality(quality);
       replaceBitmap(next.bitmap);
       setArtwork(file);
+      setOriginalArtwork(nextOriginalArtwork);
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
@@ -354,6 +373,7 @@ export function useCustomization(
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setOriginalArtwork(null);
     setPhotoQuality(null);
 
     const clean = createDocument(productRef.current, {
@@ -361,12 +381,17 @@ export function useCustomization(
       quantity: current.current.document.quantity,
     });
 
-    current.current = { document: clean, artwork: null };
+    current.current = {
+      document: clean,
+      artwork: null,
+      originalArtwork: null,
+    };
     setDocument(clean);
 
     void saveDraft(product.id, {
       document: clean,
       artwork: null,
+      originalArtwork: null,
       updatedAt: Date.now(),
     }).catch(() => setStorageMessage(t.clearFailed));
 
@@ -405,6 +430,7 @@ export function useCustomization(
     document,
     setDocument,
     artwork,
+    originalArtwork,
     bitmap,
     photoQuality,
     ready,
