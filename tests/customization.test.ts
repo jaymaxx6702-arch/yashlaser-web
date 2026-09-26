@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import type { CustomizationProduct } from "../lib/customization";
 import { customizationSeeds } from "../data/customization-seeds";
+import { analyzePixelSamples } from "../lib/customization/quality";
 import {
   createDocument,
   validateDocument,
@@ -589,4 +590,97 @@ test("three customization pilot products stay aligned with the generated catalog
       seed.variants,
     );
   }
+});
+
+
+function solidSample(
+  width: number,
+  height: number,
+  value: number,
+): Uint8ClampedArray {
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  for (let index = 0; index < width * height; index++) {
+    const offset = index * 4;
+    rgba[offset] = value;
+    rgba[offset + 1] = value;
+    rgba[offset + 2] = value;
+    rgba[offset + 3] = 255;
+  }
+  return rgba;
+}
+
+test("photo quality screening distinguishes clean detail from weak source images", () => {
+  const sampledWidth = 16;
+  const sampledHeight = 16;
+  const detailed = new Uint8ClampedArray(sampledWidth * sampledHeight * 4);
+  for (let y = 0; y < sampledHeight; y++) {
+    for (let x = 0; x < sampledWidth; x++) {
+      const value = (x + y) % 2 === 0 ? 50 : 200;
+      const offset = (y * sampledWidth + x) * 4;
+      detailed[offset] = value;
+      detailed[offset + 1] = value;
+      detailed[offset + 2] = value;
+      detailed[offset + 3] = 255;
+    }
+  }
+
+  const clean = analyzePixelSamples({
+    width: 2000,
+    height: 1500,
+    sampledWidth,
+    sampledHeight,
+    rgba: detailed,
+  });
+  assert.equal(clean.level, "good");
+  assert.deepEqual(clean.issues, []);
+  assert.equal(clean.printSuitability.status, "needs-physical-dimensions");
+  assert.equal(clean.subjectAssessment.status, "not-analyzed");
+
+  const weak = analyzePixelSamples({
+    width: 500,
+    height: 500,
+    sampledWidth,
+    sampledHeight,
+    rgba: solidSample(sampledWidth, sampledHeight, 20),
+  });
+  assert.equal(weak.level, "poor");
+  assert.ok(weak.issues.some((issue) => issue.code === "very-low-resolution"));
+  assert.ok(weak.issues.some((issue) => issue.code === "underexposed"));
+  assert.ok(weak.issues.some((issue) => issue.code === "low-contrast"));
+  assert.ok(weak.issues.some((issue) => issue.code === "soft-image"));
+});
+
+test("photo quality screening flags overexposure without pretending to know print DPI", () => {
+  const report = analyzePixelSamples({
+    width: 1600,
+    height: 1200,
+    sampledWidth: 12,
+    sampledHeight: 12,
+    rgba: solidSample(12, 12, 245),
+  });
+
+  assert.ok(report.issues.some((issue) => issue.code === "overexposed"));
+  assert.equal(report.printSuitability.status, "needs-physical-dimensions");
+  assert.equal(report.subjectAssessment.reason, "provider-not-configured");
+});
+
+test("photo quality UI is wired into upload and draft-restore paths", () => {
+  const hook = fs.readFileSync(
+    "components/customization/useCustomization.ts",
+    "utf8",
+  );
+  const editor = fs.readFileSync(
+    "components/customization/CustomizationEditor.tsx",
+    "utf8",
+  );
+  const panel = fs.readFileSync(
+    "components/customization/PhotoQualityPanel.tsx",
+    "utf8",
+  );
+
+  assert.ok((hook.match(/analyzeBitmapQuality/g) ?? []).length >= 3);
+  assert.match(hook, /photoQuality/);
+  assert.match(editor, /PhotoQualityPanel/);
+  assert.match(panel, /print-ready DPI/);
+  assert.match(panel, /Face\/person AI analysis/);
 });
