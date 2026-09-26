@@ -1,4 +1,9 @@
 import type { Product } from "@/data/catalog";
+import {
+  categoryCustomizationDefinitions,
+  legacyTextFields,
+} from "@/lib/customization/contract";
+
 export type CustomizationProduct = Pick<
   Product,
   | "id"
@@ -10,6 +15,7 @@ export type CustomizationProduct = Pick<
   | "effectivePriceMinor"
   | "priceMinor"
 >;
+
 export function resolveSelection(
   product: CustomizationProduct,
   variant?: string | string[],
@@ -28,11 +34,18 @@ export function resolveSelection(
       Number.isInteger(parsed) && parsed >= 1 && parsed <= 10000 ? parsed : 1,
   };
 }
-export const fieldLabels = {
-  standees: ["Your message (optional)", "Occasion / date (optional)"],
-  awards: ["Recipient / organisation", "Achievement / award message"],
-  keychains: ["Name / short message", "Additional text (optional)"],
-  "id-cards": ["Display name", "Organisation / designation"],
-  "name-plates": ["Name / family / business", "House number / designation"],
-  other: ["Personalisation text", "Additional text (optional)"],
-} as const;
+
+export const fieldLabels = Object.fromEntries(
+  Object.entries(categoryCustomizationDefinitions).map(
+    ([categoryId, definition]) => {
+      const [first, second] = legacyTextFields(definition);
+      return [
+        categoryId,
+        [
+          first?.label ?? "Personalisation text",
+          second?.label ?? "Additional text (optional)",
+        ],
+      ];
+    },
+  ),
+) as Record<Product["categoryId"], readonly [string, string]>;
