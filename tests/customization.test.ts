@@ -20,12 +20,226 @@ import {
   relativeBox,
 } from "../lib/customization/templates";
 import { removeBackground } from "../lib/customization/background-removal";
+import {
+  assertAiOperationAllowed,
+  runAiOperation,
+  supportsAiCapability,
+  validateAiProviderPolicy,
+} from "../lib/customization/ai-provider";
+import {
+  categoryCustomizationDefinitions,
+  getCustomizationDefinition,
+  legacyTextFields,
+  requiredArtworkField,
+  validateCustomizationDefinition,
+  isFieldVisible,
+  validateFieldValues,
+} from "../lib/customization/contract";
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
 ) as CustomizationProduct[];
 const p = products.find(
   (p) => p.categoryId === "standees" && p.variants.length > 1,
 )!;
+test("universal customization definitions are valid and preserve v1 legacy slots", () => {
+  for (const [categoryId, definition] of Object.entries(
+    categoryCustomizationDefinitions,
+  )) {
+    assert.deepEqual(validateCustomizationDefinition(definition), definition);
+    assert.equal(definition.categoryId, categoryId);
+    assert.ok(definition.templates.length > 0);
+    assert.ok(definition.quantity.min >= 1);
+    assert.ok(definition.quantity.max <= 10000);
+    const [first, second] = legacyTextFields(definition);
+    assert.equal(first?.legacySlot, "text-1");
+    assert.equal(second?.legacySlot, "text-2");
+  }
+
+  const standee = getCustomizationDefinition(p);
+  assert.equal(standee.categoryId, "standees");
+  assert.equal(requiredArtworkField(standee)?.kind, "photo");
+  assert.equal(requiredArtworkField(standee)?.required, true);
+});
+
+test("field visibility rules are deterministic and rule types include future inputs", () => {
+  const conditional = validateCustomizationDefinition({
+    version: 1,
+    categoryId: "other",
+    templates: ["keepsake"],
+    quantity: { min: 1, max: 100 },
+    fields: [
+      {
+        id: "mode",
+        kind: "choice",
+        label: "Mode",
+        required: true,
+        choices: ["text", "qr"],
+      },
+      {
+        id: "qr-value",
+        kind: "qr",
+        label: "QR value",
+        required: false,
+        maxLength: 500,
+        visibility: [{ fieldId: "mode", operator: "equals", value: "qr" }],
+      },
+      {
+        id: "event-date",
+        kind: "date",
+        label: "Event date",
+        required: false,
+      },
+      {
+        id: "person-name",
+        kind: "name",
+        label: "Name",
+        required: false,
+        maxLength: 120,
+      },
+      {
+        id: "brand-logo",
+        kind: "logo",
+        label: "Logo",
+        required: false,
+        allowedMimeTypes: ["image/png", "image/webp"],
+      },
+    ],
+  });
+  const qr = conditional.fields.find((field) => field.id === "qr-value")!;
+  assert.equal(isFieldVisible(qr, { mode: "text" }), false);
+  assert.equal(isFieldVisible(qr, { mode: "qr" }), true);
+  assert.deepEqual(
+    conditional.fields.map((field) => field.kind),
+    ["choice", "qr", "date", "name", "logo"],
+  );
+});
+
+test("rule-driven field values validate, persist and remain backward compatible", () => {
+  const dynamic = validateCustomizationDefinition({
+    version: 1,
+    categoryId: "other",
+    templates: ["keepsake"],
+    quantity: { min: 1, max: 20 },
+    fields: [
+      {
+        id: "mode",
+        kind: "choice",
+        label: "Mode",
+        required: true,
+        choices: ["text", "qr"],
+      },
+      {
+        id: "qr-value",
+        kind: "qr",
+        label: "QR value",
+        required: true,
+        maxLength: 500,
+        visibility: [{ fieldId: "mode", operator: "equals", value: "qr" }],
+      },
+      {
+        id: "event-date",
+        kind: "date",
+        label: "Event date",
+        required: false,
+      },
+      {
+        id: "brand-color",
+        kind: "color",
+        label: "Brand colour",
+        required: false,
+      },
+    ],
+  });
+
+  assert.deepEqual(
+    validateFieldValues(dynamic, {
+      mode: "qr",
+      "qr-value": "https://yashlaser.in",
+      "event-date": "2026-09-26",
+      "brand-color": "#112233",
+    }),
+    {
+      mode: "qr",
+      "qr-value": "https://yashlaser.in",
+      "event-date": "2026-09-26",
+      "brand-color": "#112233",
+    },
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "qr" }, { requireRequired: true }),
+  );
+  assert.deepEqual(
+    validateFieldValues(
+      dynamic,
+      { mode: "text" },
+      { requireRequired: true },
+    ),
+    { mode: "text" },
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "text", unknown: "x" }),
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "qr", "qr-value": "x".repeat(501) }),
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "text", "event-date": "26/09/2026" }),
+  );
+  assert.throws(() =>
+    validateFieldValues(dynamic, { mode: "text", "brand-color": "red" }),
+  );
+
+  const current = createDocument(p);
+  assert.deepEqual(current.fieldValues, {});
+  const legacy = JSON.parse(JSON.stringify(current));
+  delete legacy.fieldValues;
+  assert.deepEqual(validateDocument(legacy, p).fieldValues, {});
+});
+
+test("field-rule contract rejects duplicate ids, slots and invalid dependencies", () => {
+  const base = categoryCustomizationDefinitions.standees;
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: [...base.fields, { ...base.fields[1] }],
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: [
+        ...base.fields,
+        {
+          id: "third-line",
+          kind: "text",
+          label: "Third line",
+          required: false,
+          legacySlot: "text-1",
+          maxLength: 80,
+        },
+      ],
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: base.fields.map((field, index) =>
+        index === 1
+          ? {
+              ...field,
+              visibility: [
+                {
+                  fieldId: "missing-field",
+                  operator: "present" as const,
+                },
+              ],
+            }
+          : field,
+      ),
+    }),
+  );
+});
+
 test("catalogue selections create valid versioned documents without prices or customer contact data", () => {
   for (const product of products) {
     if (product.variants.length && !product.variants.some((v) => v.available))
@@ -243,5 +457,71 @@ test("background removal is injected, cancellable, and requires transparent-capa
       new Blob(),
       new AbortController().signal,
     ),
+  );
+});
+
+
+test("AI provider policy is vendor-neutral and enforces privacy, limits and capabilities", async () => {
+  const policy = validateAiProviderPolicy({
+    id: "self-hosted-test",
+    model: "test-model",
+    execution: "server",
+    hosting: "first-party",
+    capabilities: ["background-removal", "enhancement"],
+    consentRequired: true,
+    retention: { mode: "ephemeral", maxHours: 1 },
+    maxInputBytes: 8 * 1024 * 1024,
+    timeoutMs: 5000,
+    retries: 1,
+    estimatedCostMinor: 0,
+  });
+
+  assert.equal(supportsAiCapability(policy, "background-removal"), true);
+  assert.equal(supportsAiCapability(policy, "smart-crop"), false);
+  assert.doesNotThrow(() =>
+    assertAiOperationAllowed(policy, "background-removal", {
+      bytes: 1024,
+      consent: true,
+    }),
+  );
+  assert.throws(() =>
+    assertAiOperationAllowed(policy, "background-removal", {
+      bytes: 1024,
+      consent: false,
+    }),
+  );
+  assert.throws(() =>
+    assertAiOperationAllowed(policy, "smart-crop", {
+      bytes: 1024,
+      consent: true,
+    }),
+  );
+  assert.throws(() =>
+    assertAiOperationAllowed(policy, "enhancement", {
+      bytes: 9 * 1024 * 1024,
+      consent: true,
+    }),
+  );
+
+  let attempts = 0;
+  const result = await runAiOperation(policy, async () => {
+    attempts++;
+    if (attempts === 1) throw new Error("retry");
+    return "ok";
+  });
+  assert.equal(result, "ok");
+  assert.equal(attempts, 2);
+
+  assert.throws(() =>
+    validateAiProviderPolicy({
+      ...policy,
+      capabilities: ["background-removal", "background-removal"],
+    }),
+  );
+  assert.throws(() =>
+    validateAiProviderPolicy({
+      ...policy,
+      retention: { mode: "ephemeral", maxHours: 0 },
+    }),
   );
 });

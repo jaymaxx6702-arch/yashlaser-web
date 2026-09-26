@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.5 |
-| Last Updated | 22 September 2026 |
+| Master File Version | 1.6 |
+| Last Updated | 26 September 2026 |
 | Current Active Task | **YL-041 - Universal customisation data contract/rule foundation freeze કરવું** |
-| Overall State | Planning locked; Stage 19 audited અને productionમાં merged; launch-readiness ચાલુ |
+| Overall State | Wave 1 foundation implementation PR #6માં verified; main/production merge pending |
 
 ---
 
@@ -542,6 +542,18 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 1.6 - 26 September 2026
+
+- Wave 1 foundation માટે draft PR #6 (`yl-041-customization-contract`) બનાવ્યો; main branch અને production deployment untouched રાખ્યાં.
+- YL-041/042 foundationમાં versioned universal customisation rule contract ઉમેર્યો: photo, logo, text, name, date, QR, color, choice અને number field types; required/optional rules, limits, conditional visibility અને runtime-safe Admin/API validation.
+- Existing customizer v1ને break કર્યા વગર template, quantity, text અને artwork validation shared contract પરથી ચલાવ્યું; generic `fieldValues` bridge ઉમેર્યો અને legacy saved drafts without `fieldValues` restore-compatible રાખ્યાં.
+- YL-046/047 foundation માટે additive `shop_order_assets` schema અને lifecycle model ઉમેર્યું જેથી original, preview, proof અને production assets અલગ version/stateમાં track થઈ શકે; RLS/service-role-only access rules ઉમેર્યાં.
+- Existing customer-artwork, proof અને project upload flows replace કર્યા નથી; production file format/provider details verify થયા વગર guess કર્યા નથી.
+- YL-108 foundation માટે vendor-neutral AI provider policy ઉમેર્યો: capabilities, browser/server execution, first/third-party hosting, consent, retention, max input, timeout, retry અને estimated-cost contract.
+- Regression tests ઉમેર્યાં અને draft PR CIમાં lint, production build, offline verification, production-server boot અને route/API smoke verification **success** થયા.
+- Vercel branch builds Ignored Build Stepથી cancel થયા; production deploy થયો નથી.
+- YL-041/042/046/047/108ને હજી Done mark કર્યા નથી; customer-visible dynamic field UI, live DB migration/apply, production upload path, 3 verified seed products અને provider-specific integration બાકી હોવાથી statuses unchanged રાખ્યાં.
+
 ### Version 1.5 - 22 September 2026
 
 - 123-task checklistના IDs/status બદલીયા વગર dependency-based locked execution roadmap ઉમેર્યો જેથી repeated schema/UI/API rewrites ઓછા થાય.
@@ -609,7 +621,7 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ### Current handoff
 
-- Active: **YL-041 - Universal customisation data contract/rule foundation freeze.**
+- Active: **YL-041 - Universal customisation data contract/rule foundation freeze.**\n- Working branch: **`yl-041-customization-contract`**, draft PR **#6**; latest Wave 1 foundation CI green, main merge pending.
 - Current Wave: **Wave 1 shared foundation** — YL-023, YL-041/042, YL-046/047, YL-108, YL-110 foundation.
 - Next Wave: **Wave 2 AI Photo Engine** — YL-101 to YL-106, YL-109; YL-107 પછી.
 - Pilot product: **Photo Standee**, પછી વધુ 2 seed products; engine reusable રાખવો.
