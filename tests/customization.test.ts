@@ -613,14 +613,18 @@ test("version 1 image fields cannot bypass the single artwork pipeline", () => {
   );
 });
 
-test("TEMP pilot source audit", () => {
+
+test("customization pilot provenance stays aligned with the original source records", () => {
   const source = JSON.parse(
     fs.readFileSync("migration/source/products.json", "utf8"),
   ) as Array<Record<string, unknown>>;
-  const ids = new Set(["33214839", "31748751", "31593509"]);
-  const rows = source.filter((item) => ids.has(String(item.id)));
-  console.log("PILOT_SOURCE_AUDIT_START");
-  console.log(JSON.stringify(rows));
-  console.log("PILOT_SOURCE_AUDIT_END");
-  assert.equal(rows.length, 3);
+
+  for (const seed of customizationSeeds) {
+    const original = source.find(
+      (item) => String(item.id) === String(seed.sourceId),
+    );
+    assert.ok(original, "missing original source for " + seed.id);
+    assert.equal(original.sourceUrl, seed.sourceUrl);
+    assert.equal(original.name, seed.name);
+  }
 });
