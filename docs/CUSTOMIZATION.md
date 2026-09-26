@@ -1,6 +1,16 @@
 # Customization engine
 
-- model.ts: versioned document, strict shared validation, limits and category/template allowlist.
+## Universal rule contract
+
+`lib/customization/contract.ts` is the single rule source for the reusable customisation engine. Contract version 1 defines category templates, quantity limits, field types, required/optional state, validation limits, conditional visibility and per-image AI permissions.
+
+Supported rule-driven field kinds are: `photo`, `logo`, `text`, `name`, `date`, `qr`, `color`, `choice` and `number`. Definitions are plain serialisable data so the same validator can later be reused by the Admin Field/Rule Builder and API without hard-coding a provider or UI.
+
+The validator accepts untrusted input and rejects unknown categories/templates/kinds, duplicate field IDs or legacy slots, invalid text/numeric/file limits, duplicate choices, broken visibility dependencies and self-dependencies. Existing document version 1 remains supported through explicit legacy slots (`artwork`, `text-1`, `text-2`) so the current renderer can migrate incrementally without breaking saved drafts.
+
+Current category defaults intentionally preserve existing customer behaviour. Product-specific rules will be added through the same contract after the three seed products are verified; unverified prices, dimensions or production rules must not be guessed.
+
+- model.ts: versioned document validation driven by the universal contract, including template, quantity, text and artwork limits.
 - templates.ts: normalized category frames; changing variant updates the selected size without inventing physical dimensions.
 - geometry.ts: normalized source crop, cover/contain scaling and bounded pan.
 - render.ts: single 1000 × 1000 canvas renderer for live preview and snapshot export.
