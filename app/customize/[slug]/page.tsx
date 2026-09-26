@@ -5,6 +5,7 @@ import { findProduct } from "@/data/catalog";
 import { CustomizationForm } from "@/components/CustomizationForm";
 import { submissionEnabled } from "@/lib/supabase";
 import { resolveSelection } from "@/lib/customization";
+import { getPublishedCustomizationDefinition } from "@/lib/customization/server-rules";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Personalise & enquire",
@@ -24,6 +25,8 @@ export default async function CustomizePage({
   if (!p) notFound();
   const query = await searchParams;
   const selection = resolveSelection(p, query.variant, query.quantity);
+  const customizationDefinition =
+    await getPublishedCustomizationDefinition(p);
   const {
     id,
     slug,
@@ -66,6 +69,7 @@ export default async function CustomizePage({
           pricingMode,
           effectivePriceMinor,
           priceMinor,
+          ...(customizationDefinition ? { customizationDefinition } : {}),
         }}
         onlineSubmission={submissionEnabled()}
       />
