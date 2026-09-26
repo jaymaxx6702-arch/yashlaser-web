@@ -590,3 +590,34 @@ test("three customization pilot products stay aligned with the generated catalog
     );
   }
 });
+
+
+test("admin customization rule storage is versioned, private and contract validated", () => {
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609261600_customization_rules.sql",
+    "utf8",
+  );
+  const actions = fs.readFileSync(
+    "app/admin/customization-rules/actions.ts",
+    "utf8",
+  );
+  const page = fs.readFileSync(
+    "app/admin/customization-rules/page.tsx",
+    "utf8",
+  );
+
+  assert.match(migration, /shop_customization_rules/);
+  assert.match(migration, /unique \(product_id, revision\)/);
+  assert.match(migration, /where status = 'published'/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all .* anon, authenticated/);
+  assert.match(migration, /grant all .* service_role/);
+
+  assert.match(actions, /requireAdmin\(\)/);
+  assert.match(actions, /validateCustomizationDefinition\(parsed\)/);
+  assert.match(actions, /nextCustomizationRuleRevision/);
+  assert.match(actions, /status: "archived"/);
+  assert.match(actions, /status: "published"/);
+  assert.match(page, /Save draft revision/);
+  assert.match(page, /Publish this revision/);
+});
