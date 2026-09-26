@@ -29,6 +29,14 @@ The customer editor now reads quantity limits, artwork requirements, accepted im
 
 Category defaults intentionally preserve the existing storefront. Product-specific seed rules should only be added after the underlying catalogue record is verified; no price, size or production values should be inferred from UI labels.
 
+## Photo quality screening (YL-101 foundation)
+
+Uploaded and restored artwork is screened on-device before editing. `lib/customization/quality.ts` downsamples the local bitmap to a bounded sample and computes source pixel resolution, luminance/exposure, tonal contrast and a Laplacian-based sharpness heuristic. The analysis does not upload the image and does not block the customer from continuing.
+
+The UI labels these measurements as screening heuristics rather than production approval. Print-ready DPI is deliberately reported as unknown until the selected product has verified physical print dimensions; the engine does not infer physical width/height from incomplete catalogue labels.
+
+Face/person quality is deliberately `not-analyzed` until a configured YL-108 quality-analysis provider exists. The current foundation must not imply that face detection or AI quality assessment has run.
+
 ## Backend
 
 Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.
