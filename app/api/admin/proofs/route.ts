@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { registerProofAsset } from "@/lib/proof-assets";
 
 type ProofBody = {
   orderId?: unknown;
@@ -75,12 +76,6 @@ export async function POST(request: Request) {
 
   const version = (latest?.version_no || 0) + 1;
 
-  await db
-    .from("shop_proofs")
-    .update({ status: "superseded" })
-    .eq("order_id", orderId)
-    .in("status", ["ready", "changes_requested"]);
-
   const token = newAccessToken();
   const { data: proof, error } = await db
     .from("shop_proofs")
@@ -102,6 +97,39 @@ export async function POST(request: Request) {
       { error: error?.message || "Unable to save proof." },
       { status: 500 },
     );
+
+  try {
+    await registerProofAsset({
+      orderId,
+      proofId: proof.id,
+      versionNo: version,
+      filePath,
+      fileName: fileName || null,
+      mimeType: mimeType || null,
+    });
+  } catch {
+    await db.from("shop_proofs").delete().eq("id", proof.id);
+    return NextResponse.json(
+      { error: "Unable to register proof asset." },
+      { status: 500 },
+    );
+  }
+
+  const { error: supersedeError } = await db
+    .from("shop_proofs")
+    .update({ status: "superseded" })
+    .eq("order_id", orderId)
+    .neq("id", proof.id)
+    .in("status", ["ready", "changes_requested"]);
+
+  if (supersedeError) {
+    await db.from("shop_order_assets").delete().eq("proof_id", proof.id);
+    await db.from("shop_proofs").delete().eq("id", proof.id);
+    return NextResponse.json(
+      { error: "Unable to supersede the previous proof." },
+      { status: 500 },
+    );
+  }
 
   await db
     .from("shop_orders")
