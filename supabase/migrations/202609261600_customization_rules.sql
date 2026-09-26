@@ -27,7 +27,7 @@ grant all on table public.shop_customization_rules to service_role;
 create or replace function public.publish_shop_customization_rule(p_rule_id uuid)
 returns public.shop_customization_rules
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
