@@ -684,3 +684,22 @@ test("photo quality UI is wired into upload and draft-restore paths", () => {
   assert.match(panel, /print-ready DPI/);
   assert.match(panel, /Face\/person AI analysis/);
 });
+
+
+test("local customization drafts preserve the original separately only after derived edits", () => {
+  const persistence = fs.readFileSync(
+    "lib/customization/persistence.ts",
+    "utf8",
+  );
+  const hook = fs.readFileSync(
+    "components/customization/useCustomization.ts",
+    "utf8",
+  );
+
+  assert.match(persistence, /originalArtwork\?: Blob \| null/);
+  assert.match(hook, /draft\.originalArtwork \?\? draft\.artwork/);
+  assert.match(hook, /current\.current\.originalArtwork \?\? current\.current\.artwork \?\? file/);
+  assert.match(hook, /adapter === null \? null : nextOriginalArtwork/);
+  assert.match(hook, /latest\.originalArtwork === latest\.artwork/);
+  assert.match(hook, /originalArtwork,/);
+});
