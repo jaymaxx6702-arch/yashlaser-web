@@ -32,15 +32,15 @@ export function resolveSelection(
     typeof quantity === "string" && /^\d+$/.test(quantity)
       ? Number(quantity)
       : 1;
-  const quantity = getCustomizationDefinition(product).quantity;
+  const quantityRule = getCustomizationDefinition(product).quantity;
   return {
     variantId: selected?.id ?? "",
     quantity:
       Number.isInteger(parsed) &&
-      parsed >= quantity.min &&
-      parsed <= quantity.max
+      parsed >= quantityRule.min &&
+      parsed <= quantityRule.max
         ? parsed
-        : quantity.min,
+        : quantityRule.min,
   };
 }
 
