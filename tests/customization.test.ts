@@ -268,6 +268,44 @@ test("field-rule contract rejects duplicate ids, slots and invalid dependencies"
       ),
     }),
   );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: base.fields.map((field, index) =>
+        index === 1
+          ? {
+              ...field,
+              visibility: [
+                {
+                  fieldId: "occasion",
+                  operator: "present" as const,
+                },
+              ],
+            }
+          : field,
+      ),
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: [
+        ...base.fields,
+        {
+          id: "dynamic-note",
+          kind: "text",
+          label: "Dynamic note",
+          required: false,
+          visibility: [
+            {
+              fieldId: "message",
+              operator: "present" as const,
+            },
+          ],
+        },
+      ],
+    }),
+  );
 });
 
 test("catalogue selections create valid versioned documents without prices or customer contact data", () => {
@@ -634,6 +672,10 @@ test("admin customization rule storage is versioned, private and contract valida
     "app/admin/customization-rules/page.tsx",
     "utf8",
   );
+  const builder = fs.readFileSync(
+    "components/admin/CustomizationRuleBuilder.tsx",
+    "utf8",
+  );
 
   assert.match(migration, /shop_customization_rules/);
   assert.match(migration, /unique \(product_id, revision\)/);
@@ -651,8 +693,15 @@ test("admin customization rule storage is versioned, private and contract valida
   assert.match(actions, /nextCustomizationRuleRevision/);
   assert.match(actions, /Rule category does not match product category/);
   assert.match(actions, /publish_shop_customization_rule/);
-  assert.match(page, /Save draft revision/);
+  assert.match(page, /CustomizationRuleBuilder/);
   assert.match(page, /Publish this revision/);
+  assert.match(builder, /Save draft revision/);
+  assert.match(builder, /Add field/);
+  assert.match(builder, /Add photo \/ logo field/);
+  assert.match(builder, /Minimum quantity/);
+  assert.match(builder, /Maximum quantity/);
+  assert.match(builder, /Background removal/);
+  assert.match(builder, /Conditional visibility/);
 });
 
 test("customer customization pages use published rules with a safe fallback", () => {
