@@ -8,6 +8,13 @@ import {
   readJsonBody,
 } from "../lib/request-security";
 import { categories, products } from "../data/catalog";
+import {
+  assertOrderAssetTransition,
+  assertOrderAssetVersion,
+  canTransitionOrderAsset,
+  isOrderAssetKind,
+  isOrderAssetState,
+} from "../lib/order-assets";
 
 test("all supported UI languages expose the same copy keys", () => {
   const englishKeys = Object.keys(uiCopy.en).sort();
@@ -295,4 +302,48 @@ test("public JSON write APIs use bounded body readers", () => {
       path + " must not use unbounded request.json()",
     );
   }
+});
+
+
+test("order asset lifecycle keeps original, preview, proof and production versions explicit", () => {
+  for (const kind of ["original", "preview", "proof", "production"])
+    assert.equal(isOrderAssetKind(kind), true);
+  assert.equal(isOrderAssetKind("final"), false);
+
+  for (const state of [
+    "draft",
+    "ready",
+    "changes_requested",
+    "approved",
+    "superseded",
+  ])
+    assert.equal(isOrderAssetState(state), true);
+
+  assert.equal(canTransitionOrderAsset("draft", "ready"), true);
+  assert.equal(canTransitionOrderAsset("ready", "approved"), true);
+  assert.equal(canTransitionOrderAsset("approved", "superseded"), true);
+  assert.equal(canTransitionOrderAsset("superseded", "ready"), false);
+  assert.throws(() => assertOrderAssetTransition("superseded", "ready"));
+  assert.equal(assertOrderAssetVersion(1), 1);
+  assert.throws(() => assertOrderAssetVersion(0));
+  assert.throws(() => assertOrderAssetVersion(1.5));
+});
+
+test("order asset migration is additive, private and versioned", () => {
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609260015_order_assets.sql",
+    "utf8",
+  );
+  assert.match(migration, /create table if not exists public\.shop_order_assets/);
+  assert.match(migration, /'original','preview','proof','production'/);
+  assert.match(
+    migration,
+    /'draft','ready','changes_requested','approved','superseded'/,
+  );
+  assert.match(migration, /shop_order_assets_scope_version_uidx/);
+  assert.match(migration, /references public\.shop_order_items/);
+  assert.match(migration, /references public\.shop_proofs/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all on public\.shop_order_assets from anon, authenticated/);
+  assert.match(migration, /grant all on public\.shop_order_assets to service_role/);
 });
