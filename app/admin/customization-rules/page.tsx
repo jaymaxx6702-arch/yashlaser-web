@@ -1,8 +1,12 @@
 import { requireAdmin } from "@/lib/admin";
 import { products } from "@/data/catalog";
 import { getSupabase } from "@/lib/supabase";
-import { categoryCustomizationDefinitions } from "@/lib/customization/contract";
-import { publishCustomizationRule, saveCustomizationRuleDraft } from "./actions";
+import {
+  categoryCustomizationDefinitions,
+  validateCustomizationDefinition,
+} from "@/lib/customization/contract";
+import { CustomizationRuleBuilder } from "@/components/admin/CustomizationRuleBuilder";
+import { publishCustomizationRule } from "./actions";
 
 export default async function CustomizationRulesAdmin({
   searchParams,
@@ -14,6 +18,7 @@ export default async function CustomizationRulesAdmin({
   const read = (key: string) =>
     typeof params[key] === "string" ? String(params[key]) : "";
   const selected = read("product_id").slice(0, 160);
+  const selectedProduct = products.find((product) => product.id === selected);
   const db = getSupabase();
 
   const { data, error } = await db
@@ -25,9 +30,22 @@ export default async function CustomizationRulesAdmin({
   const selectedRows = (data ?? []).filter(
     (row) => !selected || row.product_id === selected,
   );
-  const selectedProduct = products.find((product) => product.id === selected);
-  const defaultDefinition =
-    categoryCustomizationDefinitions[selectedProduct?.categoryId ?? "standees"];
+
+  let initialDefinition = selectedProduct
+    ? categoryCustomizationDefinitions[selectedProduct.categoryId]
+    : categoryCustomizationDefinitions.standees;
+
+  if (selectedProduct && selectedRows.length) {
+    try {
+      const candidate = validateCustomizationDefinition(
+        selectedRows[0].definition,
+      );
+      if (candidate.categoryId === selectedProduct.categoryId)
+        initialDefinition = candidate;
+    } catch {
+      // Keep the known-safe category definition if a stored row is invalid.
+    }
+  }
 
   return (
     <>
@@ -35,8 +53,8 @@ export default async function CustomizationRulesAdmin({
         <div>
           <h1>Customisation Rules</h1>
           <p className="muted">
-            Save validated drafts first. Publishing archives the previous live
-            revision for the same product.
+            Build and save a draft first. Publishing is a separate action and
+            replaces the previous live revision atomically.
           </p>
         </div>
       </header>
@@ -45,8 +63,8 @@ export default async function CustomizationRulesAdmin({
       {read("published") === "1" && <p role="status">Rule published.</p>}
 
       <section className="admin-card">
-        <h2>New rule draft</h2>
-        <form action={saveCustomizationRuleDraft}>
+        <h2>Select product</h2>
+        <form method="get">
           <label>
             Product ID
             <input
@@ -65,29 +83,38 @@ export default async function CustomizationRulesAdmin({
               ))}
             </datalist>
           </label>
-          <label>
-            Rule definition JSON
-            <textarea
-              name="definition"
-              required
-              rows={24}
-              defaultValue={JSON.stringify(defaultDefinition, null, 2)}
-            />
-          </label>
-          <p className="muted">
-            The server validates this JSON against the same contract used by
-            the customer customiser before it can be stored.
-          </p>
-          <button type="submit">Save draft revision</button>
+          <button type="submit">Load product</button>
         </form>
       </section>
 
+      {selected && !selectedProduct && (
+        <p role="alert">That product ID is not in the current catalogue.</p>
+      )}
+
+      {selectedProduct && (
+        <section className="admin-card">
+          <h2>Build rule draft</h2>
+          {error && (
+            <p role="alert">
+              Rule storage is not available yet. The builder can be reviewed,
+              but apply the matching database migration before saving.
+            </p>
+          )}
+          <CustomizationRuleBuilder
+            key={selectedProduct.id}
+            productId={selectedProduct.id}
+            productName={selectedProduct.name}
+            initialDefinition={initialDefinition}
+          />
+        </section>
+      )}
+
       <section>
-        <h2>Recent revisions</h2>
+        <h2>{selected ? "Product revisions" : "Recent revisions"}</h2>
         {error ? (
           <p role="alert">
-            Rule storage is not available yet. Apply the matching database
-            migration before using this admin screen.
+            Rule revisions are unavailable until the database migration is
+            applied.
           </p>
         ) : (
           <div className="admin-list">
@@ -105,7 +132,7 @@ export default async function CustomizationRulesAdmin({
                   IST
                 </small>
                 <details>
-                  <summary>Definition</summary>
+                  <summary>Definition JSON</summary>
                   <pre>{JSON.stringify(row.definition, null, 2)}</pre>
                 </details>
                 {row.status === "draft" && (
