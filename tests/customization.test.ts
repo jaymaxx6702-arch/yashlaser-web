@@ -20,12 +20,83 @@ import {
   relativeBox,
 } from "../lib/customization/templates";
 import { removeBackground } from "../lib/customization/background-removal";
+import {
+  categoryCustomizationDefinitions,
+  getCustomizationDefinition,
+  legacyTextFields,
+  requiredArtworkField,
+  validateCustomizationDefinition,
+} from "../lib/customization/contract";
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
 ) as CustomizationProduct[];
 const p = products.find(
   (p) => p.categoryId === "standees" && p.variants.length > 1,
 )!;
+test("universal customization definitions are valid and preserve v1 legacy slots", () => {
+  for (const [categoryId, definition] of Object.entries(
+    categoryCustomizationDefinitions,
+  )) {
+    assert.equal(validateCustomizationDefinition(definition), definition);
+    assert.equal(definition.categoryId, categoryId);
+    assert.ok(definition.templates.length > 0);
+    assert.ok(definition.quantity.min >= 1);
+    assert.ok(definition.quantity.max <= 10000);
+    const [first, second] = legacyTextFields(definition);
+    assert.equal(first?.legacySlot, "text-1");
+    assert.equal(second?.legacySlot, "text-2");
+  }
+
+  const standee = getCustomizationDefinition(p);
+  assert.equal(standee.categoryId, "standees");
+  assert.equal(requiredArtworkField(standee)?.kind, "photo");
+  assert.equal(requiredArtworkField(standee)?.required, true);
+});
+
+test("field-rule contract rejects duplicate ids, slots and invalid dependencies", () => {
+  const base = categoryCustomizationDefinitions.standees;
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: [...base.fields, { ...base.fields[1] }],
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: [
+        ...base.fields,
+        {
+          id: "third-line",
+          kind: "text",
+          label: "Third line",
+          required: false,
+          legacySlot: "text-1",
+          maxLength: 80,
+        },
+      ],
+    }),
+  );
+  assert.throws(() =>
+    validateCustomizationDefinition({
+      ...base,
+      fields: base.fields.map((field, index) =>
+        index === 1
+          ? {
+              ...field,
+              visibility: [
+                {
+                  fieldId: "missing-field",
+                  operator: "present" as const,
+                },
+              ],
+            }
+          : field,
+      ),
+    }),
+  );
+});
+
 test("catalogue selections create valid versioned documents without prices or customer contact data", () => {
   for (const product of products) {
     if (product.variants.length && !product.variants.some((v) => v.available))
