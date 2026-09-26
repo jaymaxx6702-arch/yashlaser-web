@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import type { CustomizationProduct } from "../lib/customization";
+import { customizationSeeds } from "../data/customization-seeds";
 import {
   createDocument,
   validateDocument,
@@ -556,7 +557,7 @@ test("customization editor renders controls from the shared rule contract", () =
 });
 
 
-test("TEMP seed product audit", () => {
+test("three customization pilot products stay aligned with the generated catalogue and manual review exclusions", () => {
   const raw = JSON.parse(
     fs.readFileSync("data/generated/products.json", "utf8"),
   ) as Array<Record<string, unknown>>;
@@ -565,45 +566,27 @@ test("TEMP seed product audit", () => {
   ) as Array<{ id: string }>;
   const flagged = new Set(manual.map((item) => item.id));
 
-  const compact = (categoryId: string) =>
-    raw
-      .filter(
-        (product) =>
-          String(product.categoryId) === categoryId &&
-          !flagged.has(String(product.id)),
-      )
-      .slice(0, 8)
-      .map((product) => ({
-        id: product.id,
-        slug: product.slug,
-        name: product.name,
-        categoryId: product.categoryId,
-        subcategoryId: product.subcategoryId,
-        pricingMode: product.pricingMode,
-        variants: Array.isArray(product.variants)
-          ? product.variants.slice(0, 4).map((variant) => {
-              const v = variant as Record<string, unknown>;
-              return {
-                id: v.id,
-                name: v.name,
-                available: v.available,
-                effectivePriceMinor: v.effectivePriceMinor,
-              };
-            })
-          : [],
-      }));
+  for (const seed of customizationSeeds) {
+    assert.equal(flagged.has(seed.id), false, seed.id + " must not be manually flagged");
+    const product = raw.find((item) => item.id === seed.id);
+    assert.ok(product, "missing seed product " + seed.id);
+    assert.equal(product.slug, seed.slug);
+    assert.equal(product.name, seed.name);
+    assert.equal(product.categoryId, seed.categoryId);
+    assert.equal(product.subcategoryId, seed.subcategoryId);
+    assert.equal(product.pricingMode, seed.pricingMode);
 
-  console.log("SEED_AUDIT_START");
-  console.log(
-    JSON.stringify({
-      standees: compact("standees"),
-      namePlates: compact("name-plates"),
-      awards: compact("awards"),
-    }),
-  );
-  console.log("SEED_AUDIT_END");
-  assert.ok(compact("standees").length > 0);
-  assert.ok(compact("name-plates").length > 0);
-  assert.ok(compact("awards").length > 0);
+    const variants = Array.isArray(product.variants)
+      ? (product.variants as Array<Record<string, unknown>>)
+      : [];
+    assert.deepEqual(
+      variants.map((variant) => ({
+        id: variant.id,
+        name: variant.name,
+        available: variant.available,
+        effectivePriceMinor: variant.effectivePriceMinor,
+      })),
+      seed.variants,
+    );
+  }
 });
-
