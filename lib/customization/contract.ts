@@ -640,20 +640,23 @@ export function validateFieldValues(
     if (!allowed.has(key))
       throw new Error(`Unknown customization field value: ${key}`);
 
+  const visibilityValues: Record<string, FieldValue> = {};
+  for (const [key, value] of Object.entries(values)) {
+    if (
+      allowed.has(key) &&
+      (typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean" ||
+        value === null)
+    )
+      visibilityValues[key] = value;
+  }
+
   const parsed: Record<string, FieldValue> = {};
   for (const field of allowed.values()) {
     const visible = isFieldVisible(field, {
+      ...visibilityValues,
       ...parsed,
-      ...Object.fromEntries(
-        Object.entries(values).filter(
-          ([key, value]) =>
-            allowed.has(key) &&
-            (typeof value === "string" ||
-              typeof value === "number" ||
-              typeof value === "boolean" ||
-              value === null),
-        ),
-      ),
     });
     if (!visible) continue;
 
