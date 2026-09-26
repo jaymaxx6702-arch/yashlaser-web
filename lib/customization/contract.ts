@@ -579,3 +579,99 @@ export function isFieldVisible(
     return value !== (rule.value ?? null);
   });
 }
+
+function scalarFieldValue(
+  field: CustomizationFieldRule,
+  value: unknown,
+): FieldValue {
+  if (field.kind === "number") {
+    if (typeof value !== "number" || !Number.isFinite(value))
+      throw new Error(`Invalid value for customization field: ${field.id}`);
+    if (field.min !== undefined && value < field.min)
+      throw new Error(`Value is below minimum for customization field: ${field.id}`);
+    if (field.max !== undefined && value > field.max)
+      throw new Error(`Value is above maximum for customization field: ${field.id}`);
+    return value;
+  }
+
+  if (
+    field.kind === "photo" ||
+    field.kind === "logo"
+  )
+    throw new Error(
+      `Image customization field ${field.id} must use the artwork pipeline.`,
+    );
+
+  if (typeof value !== "string")
+    throw new Error(`Invalid value for customization field: ${field.id}`);
+
+  const minLength = field.minLength ?? 0;
+  const maxLength = field.maxLength ?? (field.kind === "qr" ? 1000 : 500);
+  if (value.length < minLength || value.length > maxLength)
+    throw new Error(`Invalid length for customization field: ${field.id}`);
+
+  if (field.kind === "choice" && !field.choices?.includes(value))
+    throw new Error(`Invalid choice for customization field: ${field.id}`);
+  if (field.kind === "date" && value && !/^\d{4}-\d{2}-\d{2}$/.test(value))
+    throw new Error(`Invalid date for customization field: ${field.id}`);
+  if (
+    field.kind === "color" &&
+    value &&
+    !/^#[0-9a-f]{6}$/i.test(value)
+  )
+    throw new Error(`Invalid color for customization field: ${field.id}`);
+
+  return value;
+}
+
+export function validateFieldValues(
+  definition: CustomizationDefinition,
+  input: unknown,
+  options: { requireRequired?: boolean } = {},
+): Record<string, FieldValue> {
+  const values = record(input, "Invalid customization field values.");
+  const allowed = new Map(
+    definition.fields
+      .filter((field) => !field.legacySlot)
+      .map((field) => [field.id, field] as const),
+  );
+
+  for (const key of Object.keys(values))
+    if (!allowed.has(key))
+      throw new Error(`Unknown customization field value: ${key}`);
+
+  const parsed: Record<string, FieldValue> = {};
+  for (const field of allowed.values()) {
+    const visible = isFieldVisible(field, {
+      ...parsed,
+      ...Object.fromEntries(
+        Object.entries(values).filter(
+          ([key, value]) =>
+            allowed.has(key) &&
+            (typeof value === "string" ||
+              typeof value === "number" ||
+              typeof value === "boolean" ||
+              value === null),
+        ),
+      ),
+    });
+    if (!visible) continue;
+
+    const value = values[field.id];
+    const missing =
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      value === false;
+
+    if (missing) {
+      if (options.requireRequired && field.required)
+        throw new Error(`Required customization field is missing: ${field.id}`);
+      continue;
+    }
+
+    parsed[field.id] = scalarFieldValue(field, value);
+  }
+
+  return parsed;
+}
