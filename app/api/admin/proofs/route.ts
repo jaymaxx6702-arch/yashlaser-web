@@ -3,7 +3,10 @@ import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
-import { registerProofAsset } from "@/lib/proof-assets";
+import {
+  registerProofAsset,
+  supersedePreviousProofAssets,
+} from "@/lib/proof-assets";
 
 type ProofBody = {
   orderId?: unknown;
@@ -127,6 +130,24 @@ export async function POST(request: Request) {
     await db.from("shop_proofs").delete().eq("id", proof.id);
     return NextResponse.json(
       { error: "Unable to supersede the previous proof." },
+      { status: 500 },
+    );
+  }
+
+  try {
+    await supersedePreviousProofAssets(orderId, proof.id);
+  } catch {
+    if (latest) {
+      await db
+        .from("shop_proofs")
+        .update({ status: latest.status })
+        .eq("id", latest.id)
+        .eq("status", "superseded");
+    }
+    await db.from("shop_order_assets").delete().eq("proof_id", proof.id);
+    await db.from("shop_proofs").delete().eq("id", proof.id);
+    return NextResponse.json(
+      { error: "Unable to synchronize previous proof assets." },
       { status: 500 },
     );
   }
