@@ -525,3 +525,32 @@ test("AI provider policy is vendor-neutral and enforces privacy, limits and capa
     }),
   );
 });
+
+
+test("customization editor renders controls from the shared rule contract", () => {
+  const editor = fs.readFileSync(
+    "components/customization/CustomizationEditor.tsx",
+    "utf8",
+  );
+  const field = fs.readFileSync(
+    "components/customization/RuleField.tsx",
+    "utf8",
+  );
+
+  assert.match(editor, /getCustomizationDefinition\(product\)/);
+  assert.match(editor, /definition\.quantity\.min/);
+  assert.match(editor, /definition\.quantity\.max/);
+  assert.match(editor, /artworkRule\.allowedMimeTypes/);
+  assert.match(editor, /artworkRule\.required/);
+  assert.match(editor, /isFieldVisible\(field, doc\.fieldValues\)/);
+  assert.match(editor, /doc\.fieldValues\[field\.id\]/);
+  assert.doesNotMatch(editor, /fieldLabels\[product\.categoryId\]/);
+
+  assert.match(field, /field\.kind === "choice"/);
+  assert.match(field, /field\.kind === "number"/);
+  assert.match(field, /field\.kind === "date"/);
+  assert.match(field, /field\.kind === "color"/);
+  assert.match(field, /field\.kind === "qr"/);
+  assert.match(field, /field\.required/);
+  assert.match(field, /field\.maxLength/);
+});
