@@ -102,6 +102,7 @@ test("field visibility rules are deterministic and rule types include future inp
         kind: "logo",
         label: "Logo",
         required: false,
+        legacySlot: "artwork",
         allowedMimeTypes: ["image/png", "image/webp"],
       },
     ],
