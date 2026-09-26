@@ -74,7 +74,13 @@ export function createDocument(
     templateId: definition.templates[0],
     variantId:
       selection?.variantId ?? p.variants.find((v) => v.available)?.id ?? "",
-    quantity: selection?.quantity ?? definition.quantity.min,
+    quantity: selection
+      ? clamp(
+          Math.round(selection.quantity),
+          definition.quantity.min,
+          definition.quantity.max,
+        )
+      : definition.quantity.min,
     artwork: null,
     image: {
       crop: { x: 0, y: 0, width: 1, height: 1 },
