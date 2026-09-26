@@ -156,7 +156,7 @@ export function CustomizationRuleBuilder({
       };
       if (!response.ok) throw new Error(data.error || "Unable to save rule.");
       setStatus(
-        `${ruleStatus === "published" ? "Published" : "Draft saved"} as revision ${data.rule?.revision ?? "?"}.`,
+        `${ruleStatus === "published" ? "Published rule" : "Draft saved"} as revision ${data.rule?.revision ?? "?"}${ruleStatus === "published" ? "; storefront activation is not wired yet" : ""}.`,
       );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to save rule.");
