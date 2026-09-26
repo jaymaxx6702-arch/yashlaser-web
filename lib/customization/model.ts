@@ -4,6 +4,8 @@ import {
   getCustomizationDefinition,
   legacyTextFields,
   requiredArtworkField,
+  validateFieldValues,
+  type FieldValue,
   type TemplateId,
 } from "./contract";
 
@@ -47,6 +49,7 @@ export type CustomizationDocument = {
     fit: "contain" | "cover";
   };
   text: [TextLayer, TextLayer];
+  fieldValues: Record<string, FieldValue>;
   backgroundRemoval: { adapter: string | null };
 };
 
@@ -84,6 +87,7 @@ export function createDocument(
       { text: "", fontSize: 32, align: "center", font: "sans" },
       { text: "", fontSize: 24, align: "center", font: "sans" },
     ],
+    fieldValues: {},
     backgroundRemoval: { adapter: null },
   };
 }
@@ -205,6 +209,11 @@ export function validateDocument(
       throw new Error("Invalid artwork metadata.");
   }
 
+  const fieldValues = validateFieldValues(
+    definition,
+    d.fieldValues === undefined ? {} : d.fieldValues,
+  );
+
   const removal = record(d.backgroundRemoval);
   const adapter = removal.adapter === null ? null : string(removal.adapter, 80);
 
@@ -224,13 +233,16 @@ export function validateDocument(
       fit: member(image.fit, ["contain", "cover"]),
     },
     text,
+    fieldValues,
     backgroundRemoval: { adapter },
   };
 }
 
 export function requireReadyDocument(input: unknown, p: CustomizationProduct) {
   const d = validateDocument(input, p);
-  const requiredArtwork = requiredArtworkField(getCustomizationDefinition(p));
+  const definition = getCustomizationDefinition(p);
+  validateFieldValues(definition, d.fieldValues, { requireRequired: true });
+  const requiredArtwork = requiredArtworkField(definition);
   if (requiredArtwork && !d.artwork) {
     const label = requiredArtwork.label.toLowerCase();
     throw new Error(
