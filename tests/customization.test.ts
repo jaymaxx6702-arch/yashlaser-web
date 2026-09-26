@@ -26,6 +26,7 @@ import {
   legacyTextFields,
   requiredArtworkField,
   validateCustomizationDefinition,
+  isFieldVisible,
 } from "../lib/customization/contract";
 const products = JSON.parse(
   fs.readFileSync("data/generated/products.json", "utf8"),
@@ -37,7 +38,7 @@ test("universal customization definitions are valid and preserve v1 legacy slots
   for (const [categoryId, definition] of Object.entries(
     categoryCustomizationDefinitions,
   )) {
-    assert.equal(validateCustomizationDefinition(definition), definition);
+    assert.deepEqual(validateCustomizationDefinition(definition), definition);
     assert.equal(definition.categoryId, categoryId);
     assert.ok(definition.templates.length > 0);
     assert.ok(definition.quantity.min >= 1);
@@ -51,6 +52,59 @@ test("universal customization definitions are valid and preserve v1 legacy slots
   assert.equal(standee.categoryId, "standees");
   assert.equal(requiredArtworkField(standee)?.kind, "photo");
   assert.equal(requiredArtworkField(standee)?.required, true);
+});
+
+test("field visibility rules are deterministic and rule types include future inputs", () => {
+  const conditional = validateCustomizationDefinition({
+    version: 1,
+    categoryId: "other",
+    templates: ["keepsake"],
+    quantity: { min: 1, max: 100 },
+    fields: [
+      {
+        id: "mode",
+        kind: "choice",
+        label: "Mode",
+        required: true,
+        choices: ["text", "qr"],
+      },
+      {
+        id: "qr-value",
+        kind: "qr",
+        label: "QR value",
+        required: false,
+        maxLength: 500,
+        visibility: [{ fieldId: "mode", operator: "equals", value: "qr" }],
+      },
+      {
+        id: "event-date",
+        kind: "date",
+        label: "Event date",
+        required: false,
+      },
+      {
+        id: "person-name",
+        kind: "name",
+        label: "Name",
+        required: false,
+        maxLength: 120,
+      },
+      {
+        id: "brand-logo",
+        kind: "logo",
+        label: "Logo",
+        required: false,
+        allowedMimeTypes: ["image/png", "image/webp"],
+      },
+    ],
+  });
+  const qr = conditional.fields.find((field) => field.id === "qr-value")!;
+  assert.equal(isFieldVisible(qr, { mode: "text" }), false);
+  assert.equal(isFieldVisible(qr, { mode: "qr" }), true);
+  assert.deepEqual(
+    conditional.fields.map((field) => field.kind),
+    ["choice", "qr", "date", "name", "logo"],
+  );
 });
 
 test("field-rule contract rejects duplicate ids, slots and invalid dependencies", () => {
