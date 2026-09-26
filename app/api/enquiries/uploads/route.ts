@@ -10,13 +10,24 @@ import {
 } from "@/lib/enquiry-server";
 import { MAX_PREVIEW_BYTES } from "@/lib/enquiry-limits";
 import { signTicket } from "@/lib/upload-ticket";
+import { createDesignHandoffForRequest } from "@/lib/enquiry-handoff-server";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const data = await enquiryJson(request),
       input = parseEnquiry(data);
     const reference = await checkQuota(input);
-    if (reference) return Response.json({ reference });
+    if (reference) {
+      const designToken = await createDesignHandoffForRequest({
+        requestId: input.requestId,
+        designId: input.designId,
+        productId: input.product.id,
+      });
+      return Response.json({
+        reference,
+        ...(designToken ? { designToken } : {}),
+      });
+    }
     const preview = data.preview as
       { bytes?: number; sha256?: string } | undefined;
     if (
