@@ -42,16 +42,6 @@ export default async function CustomizePage({
     query.variant,
     query.quantity,
   );
-  const {
-    id,
-    slug,
-    name,
-    categoryId,
-    variants,
-    pricingMode,
-    effectivePriceMinor,
-    priceMinor,
-  } = p;
   return (
     <main id="main-content" className="container customize-page">
       <nav className="breadcrumbs" aria-label="Breadcrumb">
