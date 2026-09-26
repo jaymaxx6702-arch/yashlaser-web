@@ -554,3 +554,37 @@ test("customization editor renders controls from the shared rule contract", () =
   assert.match(field, /field\.required/);
   assert.match(field, /field\.maxLength/);
 });
+
+
+test("TEMP seed product audit", () => {
+  const raw = JSON.parse(
+    fs.readFileSync("data/generated/products.json", "utf8"),
+  ) as Array<Record<string, unknown>>;
+  const manual = JSON.parse(
+    fs.readFileSync("migration/reports/manual-review.json", "utf8"),
+  ) as Array<{ id: string }>;
+  const flagged = new Set(manual.map((item) => item.id));
+  const rows = raw
+    .filter(
+      (product) =>
+        ["standees", "awards", "name-plates"].includes(
+          String(product.categoryId),
+        ) && !flagged.has(String(product.id)),
+    )
+    .slice(0, 80)
+    .map((product) => ({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      categoryId: product.categoryId,
+      subcategoryId: product.subcategoryId,
+      pricingMode: product.pricingMode,
+      variants: Array.isArray(product.variants)
+        ? product.variants.slice(0, 5)
+        : [],
+    }));
+  console.log("SEED_AUDIT_START");
+  console.log(JSON.stringify(rows));
+  console.log("SEED_AUDIT_END");
+  assert.ok(rows.length > 0);
+});
