@@ -29,6 +29,16 @@ The customer editor now reads quantity limits, artwork requirements, accepted im
 
 Category defaults intentionally preserve the existing storefront. Product-specific seed rules should only be added after the underlying catalogue record is verified; no price, size or production values should be inferred from UI labels.
 
+## Admin rule store foundation
+
+YL-110 foundation adds an authenticated Admin Rule Builder at `/admin/customization-rules`. It edits the same validated contract used by the customer editor and supports quantity limits, templates, field types, required/optional rules, constraints, AI permissions and conditional visibility.
+
+Rules are stored as immutable revisions in `shop_customization_rules` by migration `202609260016_customization_rules.sql`. The table is RLS-enabled, inaccessible to `anon` and `authenticated`, and writable only through the server-side service role. The atomic writer runs as `SECURITY INVOKER`, archives the prior published revision and assigns the next revision under a per-product advisory lock.
+
+Draft/published storage is intentionally separate from storefront activation in this foundation. Customer pages still use the existing safe category defaults until a published-rule loader is explicitly rolled out. Do not apply the migration to an unverified database target.
+
+The three pilot products also retain original-source provenance. Their original source records confirm the imported product identity, URLs, prices/variants and availability data. Weight and production lead-time are not present in those source records, so those business values remain unverified rather than inferred.
+
 ## Backend
 
 Apply both SQL migrations in order. The API validates the versioned document against the selected catalogue product, compares the uploaded artwork SHA-256/dimensions, bounds the preview, strips metadata and stores artwork + preview privately. Design settings and design_id are saved on enquiry_items. Prices come from the server catalogue, never the design JSON. Live Supabase verification is pending project credentials.
