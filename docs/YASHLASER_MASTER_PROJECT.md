@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.6 |
+| Master File Version | 1.7 |
 | Last Updated | 26 September 2026 |
-| Current Active Task | **YL-041 - Universal customisation data contract/rule foundation freeze કરવું** |
-| Overall State | Wave 1 foundation implementation PR #6માં verified; main/production merge pending |
+| Current Active Task | **YL-042 - Rule-driven customer customisation UI + YL-023 pilot validation** |
+| Overall State | Wave 1 foundation PR #6 productionમાં merged; rule-driven UI/pilot data PR #7માં verification ચાલુ |
 
 ---
 
@@ -542,6 +542,18 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 1.7 - 26 September 2026
+
+- PR #6 main/productionમાં successfully merge/deploy થયું; Wave 1 shared contract, asset lifecycle અને AI provider foundation live codebaseમાં છે.
+- YL-042 માટે draft PR #7 (`yl-042-dynamic-fields-ui`) શરૂ કર્યો: quantity, artwork requirement/MIME/AI permission, legacy text-compatible fields અને additional scalar fields હવે shared rule contract પરથી render થાય છે.
+- Reusable `RuleField` UI text, name, date, QR, color, choice અને number controls support કરે છે; conditional visibility `fieldValues` સાથે જોડાઈ છે.
+- Existing single artwork/crop/preview pipeline preserve કર્યો; unverified multi-image/product production rules invent કર્યા નથી.
+- YL-023 pilot માટે generated catalogue + manual-review exclusions સામે 3 clean records freeze કર્યા: Photo Standee `yl-33214839`, Name Plate `yl-31748751`, Acrylic Award `yl-31593509`.
+- Pilot fixture raw imported slug/name/category/subcategory/pricing-mode/variant IDs/names/availability/effective prices જ freeze કરે છે; unit, weight, lead-time અથવા production details infer કર્યા નથી.
+- Seed records regression testમાં lock કર્યા જેથી future catalogue migration drift CIમાં detect થાય.
+- YL-023 હજી Done નથી: complete end-to-end validationમાં weight, lead-time અને production/business confirmation બાકી છે.
+- Dashboard task counts unchanged રાખ્યા; કોઈ partially verified task Done mark કર્યો નથી.
+
 ### Version 1.6 - 26 September 2026
 
 - Wave 1 foundation માટે draft PR #6 (`yl-041-customization-contract`) બનાવ્યો; main branch અને production deployment untouched રાખ્યાં.
@@ -621,7 +633,7 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ### Current handoff
 
-- Active: **YL-041 - Universal customisation data contract/rule foundation freeze.**\n- Working branch: **`yl-041-customization-contract`**, draft PR **#6**; latest Wave 1 foundation CI green, main merge pending.
+- Active: **YL-042 - Rule-driven customer customisation UI + YL-023 pilot validation.**\n- PR #6 Wave 1 foundation productionમાં merged/deployed છે. Current working branch: **`yl-042-dynamic-fields-ui`**, draft PR **#7**.
 - Current Wave: **Wave 1 shared foundation** — YL-023, YL-041/042, YL-046/047, YL-108, YL-110 foundation.
 - Next Wave: **Wave 2 AI Photo Engine** — YL-101 to YL-106, YL-109; YL-107 પછી.
 - Pilot product: **Photo Standee**, પછી વધુ 2 seed products; engine reusable રાખવો.
