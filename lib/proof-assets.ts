@@ -25,19 +25,22 @@ export async function registerProofAsset(input: {
     proof_id: input.proofId,
   });
   if (error) throw new Error("Unable to register proof asset.");
-
-  const { error: supersedeError } = await db
+}
+ 
+export async function supersedePreviousProofAssets(
+  orderId: string,
+  proofId: string,
+) {
+  const db = getSupabase();
+  const { error } = await db
     .from("shop_order_assets")
     .update({ state: "superseded", updated_at: new Date().toISOString() })
-    .eq("order_id", input.orderId)
+    .eq("order_id", orderId)
     .eq("asset_kind", "proof")
-    .neq("proof_id", input.proofId)
+    .neq("proof_id", proofId)
     .in("state", ["ready", "changes_requested"]);
 
-  if (supersedeError) {
-    await db.from("shop_order_assets").delete().eq("proof_id", input.proofId);
-    throw new Error("Unable to supersede previous proof assets.");
-  }
+  if (error) throw new Error("Unable to supersede previous proof assets.");
 }
 
 export async function syncProofAssetState(
