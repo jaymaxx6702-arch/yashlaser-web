@@ -260,7 +260,14 @@ export function useCustomization(
         /* Artwork draft can still be saved when localStorage is disabled. */
       }
 
-      await saveDraft(product.id, { ...latest, updatedAt: Date.now() });
+      await saveDraft(product.id, {
+        ...latest,
+        originalArtwork:
+          latest.originalArtwork === latest.artwork
+            ? null
+            : latest.originalArtwork,
+        updatedAt: Date.now(),
+      });
       setStorageMessage(t.saved);
       return true;
     } catch {
@@ -331,7 +338,7 @@ export function useCustomization(
         await saveDraft(product.id, {
           document: nextDocument,
           artwork: file,
-          originalArtwork: nextOriginalArtwork,
+          originalArtwork: adapter === null ? null : nextOriginalArtwork,
           updatedAt: Date.now(),
         });
       } catch {
