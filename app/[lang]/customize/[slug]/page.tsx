@@ -37,9 +37,24 @@ export default async function LocalizedCustomizePage({
   if (!p) notFound();
 
   const query = await searchParams;
-  const selection = resolveSelection(p, query.variant, query.quantity);
   const customizationDefinition =
     await getPublishedCustomizationDefinition(p);
+  const customizationProduct = {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    categoryId: p.categoryId,
+    variants: p.variants,
+    pricingMode: p.pricingMode,
+    effectivePriceMinor: p.effectivePriceMinor,
+    priceMinor: p.priceMinor,
+    ...(customizationDefinition ? { customizationDefinition } : {}),
+  };
+  const selection = resolveSelection(
+    customizationProduct,
+    query.variant,
+    query.quantity,
+  );
   const t = copy[lang];
   const prefix = "/" + lang;
   const {
@@ -77,17 +92,7 @@ export default async function LocalizedCustomizePage({
         }}
         key={`${p.id}-${selection.variantId}-${selection.quantity}`}
         initialSelection={selection}
-        product={{
-          id,
-          slug,
-          name,
-          categoryId,
-          variants,
-          pricingMode,
-          effectivePriceMinor,
-          priceMinor,
-          ...(customizationDefinition ? { customizationDefinition } : {}),
-        }}
+        product={customizationProduct}
         onlineSubmission={submissionEnabled()}
       />
     </main>
