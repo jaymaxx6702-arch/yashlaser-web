@@ -15,6 +15,10 @@ import {
 } from "@/lib/customization/model";
 import { inspectArtwork } from "@/lib/customization/artwork";
 import {
+  analyzePhotoQuality,
+  type PhotoQualityReport,
+} from "@/lib/customization/photo-quality";
+import {
   loadDraft,
   saveDraft,
   saveSelection,
@@ -116,7 +120,8 @@ export function useCustomization(
     createDocument(product, selection),
   );
   const [artwork, setArtwork] = useState<Blob | null>(null),
-    [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
+    [bitmap, setBitmap] = useState<ImageBitmap | null>(null),
+    [quality, setQuality] = useState<PhotoQualityReport | null>(null);
   const [ready, setReady] = useState(false),
     [processing, setProcessing] = useState(false),
     [storageMessage, setStorageMessage] = useState<string>(t.loading),
@@ -207,6 +212,15 @@ export function useCustomization(
               inspected.bitmap.close();
               throw new Error(t.mismatch);
             }
+            if (!checked.backgroundRemoval.adapter) {
+              try {
+                setQuality(await analyzePhotoQuality(inspected.bitmap));
+              } catch {
+                setQuality(null);
+              }
+            } else {
+              setQuality(null);
+            }
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
           } else if (checked.artwork) {
@@ -289,6 +303,19 @@ export function useCustomization(
         return;
       }
 
+      let qualityReport: PhotoQualityReport | null = null;
+      if (adapter === null) {
+        try {
+          qualityReport = await analyzePhotoQuality(next.bitmap);
+        } catch {
+          qualityReport = null;
+        }
+      }
+      if (token !== operation.current) {
+        next.bitmap.close();
+        return;
+      }
+
       const d = current.current.document;
       const nextDocument: CustomizationDocument = {
         ...d,
@@ -321,6 +348,7 @@ export function useCustomization(
       current.current = { document: nextDocument, artwork: file };
       replaceBitmap(next.bitmap);
       setArtwork(file);
+      if (adapter === null) setQuality(qualityReport);
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
@@ -335,6 +363,7 @@ export function useCustomization(
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setQuality(null);
 
     const clean = createDocument(productRef.current, {
       variantId: current.current.document.variantId,
@@ -386,6 +415,7 @@ export function useCustomization(
     setDocument,
     artwork,
     bitmap,
+    quality,
     ready,
     processing,
     storageMessage,

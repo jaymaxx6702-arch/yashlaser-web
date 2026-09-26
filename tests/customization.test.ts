@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import type { CustomizationProduct } from "../lib/customization";
 import { customizationSeeds } from "../data/customization-seeds";
+import { analyzePixelSample } from "../lib/customization/photo-quality";
 import {
   createDocument,
   validateDocument,
@@ -527,6 +528,97 @@ test("AI provider policy is vendor-neutral and enforces privacy, limits and capa
   );
 });
 
+
+test("photo quality screening reports resolution, blur, exposure, contrast and optional DPI deterministically", () => {
+  const solid = (value: number, width = 16, height = 16) => {
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = value;
+      data[i + 1] = value;
+      data[i + 2] = value;
+      data[i + 3] = 255;
+    }
+    return data;
+  };
+  const patterned = (width = 16, height = 16) => {
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++)
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4;
+        const value = (x + y) % 2 ? 64 : 192;
+        data[i] = value;
+        data[i + 1] = value;
+        data[i + 2] = value;
+        data[i + 3] = 255;
+      }
+    return data;
+  };
+
+  const dark = analyzePixelSample({
+    data: solid(0),
+    width: 16,
+    height: 16,
+    sourceWidth: 2000,
+    sourceHeight: 2000,
+  });
+  assert.equal(dark.resolution, "good");
+  assert.equal(dark.blur, "poor");
+  assert.equal(dark.exposure, "poor");
+  assert.equal(dark.contrast, "poor");
+  assert.equal(dark.subject, "not-checked");
+  assert.ok(dark.issues.includes("underexposed"));
+  assert.ok(dark.issues.includes("blur-likely"));
+
+  const detailed = analyzePixelSample({
+    data: patterned(),
+    width: 16,
+    height: 16,
+    sourceWidth: 2000,
+    sourceHeight: 1600,
+  });
+  assert.equal(detailed.resolution, "good");
+  assert.equal(detailed.blur, "good");
+  assert.equal(detailed.exposure, "good");
+  assert.equal(detailed.contrast, "good");
+  assert.equal(detailed.dpi, null);
+
+  const lowResolution = analyzePixelSample({
+    data: patterned(),
+    width: 16,
+    height: 16,
+    sourceWidth: 600,
+    sourceHeight: 1000,
+    targetWidthInches: 10,
+  });
+  assert.equal(lowResolution.resolution, "poor");
+  assert.equal(lowResolution.dpi, 60);
+  assert.ok(lowResolution.issues.includes("resolution-low"));
+  assert.ok(lowResolution.issues.includes("dpi-low"));
+});
+
+test("photo quality UI stays private and labels face/person analysis as not checked", () => {
+  const quality = fs.readFileSync(
+    "lib/customization/photo-quality.ts",
+    "utf8",
+  );
+  const summary = fs.readFileSync(
+    "components/customization/PhotoQualitySummary.tsx",
+    "utf8",
+  );
+  const hook = fs.readFileSync(
+    "components/customization/useCustomization.ts",
+    "utf8",
+  );
+
+  assert.match(quality, /document\.createElement\("canvas"\)/);
+  assert.doesNotMatch(quality, /fetch\(/);
+  assert.doesNotMatch(quality, /XMLHttpRequest/);
+  assert.match(summary, /Not checked yet/);
+  assert.match(summary, /હજુ ચેક થયું નથી/);
+  assert.match(summary, /final print quality/);
+  assert.match(hook, /analyzePhotoQuality\(next\.bitmap\)/);
+  assert.match(hook, /adapter === null/);
+});
 
 test("customization editor renders controls from the shared rule contract", () => {
   const editor = fs.readFileSync(

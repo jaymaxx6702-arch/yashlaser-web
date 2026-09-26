@@ -19,6 +19,8 @@ import {
   type FieldValue,
 } from "@/lib/customization/contract";
 import { RuleField } from "./RuleField";
+import { PhotoQualitySummary } from "./PhotoQualitySummary";
+import type { PhotoQualityReport } from "@/lib/customization/photo-quality";
 
 const copy = {
   en: {
@@ -238,6 +240,7 @@ const copy = {
 export function CustomizationEditor({
   document: doc,
   bitmap,
+  quality,
   product,
   onChange,
   onUpload,
@@ -251,6 +254,7 @@ export function CustomizationEditor({
 }: {
   document: CustomizationDocument;
   bitmap: ImageBitmap | null;
+  quality: PhotoQualityReport | null;
   product: CustomizationProduct;
   onChange: (d: CustomizationDocument) => void;
   onUpload: (file: File) => void;
@@ -441,6 +445,7 @@ export function CustomizationEditor({
             {t.fileHelp}{" "}
             {doc.artwork ? t.selected + " " + doc.artwork.name : t.noPhoto}
           </p>
+          {quality && <PhotoQualitySummary report={quality} lang={lang} />}
           {adapter && artworkRule.ai?.backgroundRemoval === "optional" && (
             <button
               type="button"
