@@ -15,6 +15,7 @@ export type CustomizationFieldKind =
   | "photo"
   | "logo"
   | "text"
+  | "name"
   | "date"
   | "qr"
   | "color"
@@ -22,11 +23,12 @@ export type CustomizationFieldKind =
   | "number";
 
 export type LegacySlot = "artwork" | "text-1" | "text-2";
+export type FieldValue = string | number | boolean | null;
 
 export type FieldVisibilityRule = {
   fieldId: string;
   operator: "equals" | "not-equals" | "present" | "not-present";
-  value?: string | number | boolean;
+  value?: FieldValue;
 };
 
 export type AiFieldPolicy = {
@@ -61,6 +63,47 @@ export type CustomizationDefinition = {
   fields: readonly CustomizationFieldRule[];
 };
 
+const categories: readonly CategoryId[] = [
+  "standees",
+  "awards",
+  "keychains",
+  "id-cards",
+  "name-plates",
+  "other",
+];
+
+const templateIds: readonly TemplateId[] = [
+  "standee",
+  "trophy",
+  "medal",
+  "keychain",
+  "id-card",
+  "name-plate",
+  "keepsake",
+];
+
+const fieldKinds: readonly CustomizationFieldKind[] = [
+  "photo",
+  "logo",
+  "text",
+  "name",
+  "date",
+  "qr",
+  "color",
+  "choice",
+  "number",
+];
+
+const legacySlots: readonly LegacySlot[] = ["artwork", "text-1", "text-2"];
+const visibilityOperators: readonly FieldVisibilityRule["operator"][] = [
+  "equals",
+  "not-equals",
+  "present",
+  "not-present",
+];
+const mimeTypes = ["image/jpeg", "image/png", "image/webp"] as const;
+const aiModes = ["disabled", "optional"] as const;
+
 const imagePolicy: AiFieldPolicy = {
   backgroundRemoval: "optional",
   enhancement: "optional",
@@ -76,7 +119,7 @@ const photo = (
   label,
   required,
   legacySlot: "artwork",
-  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+  allowedMimeTypes: mimeTypes,
   maxBytes: 8 * 1024 * 1024,
   maxPixels: 25_000_000,
   ai: imagePolicy,
@@ -87,9 +130,10 @@ const text = (
   label: string,
   slot: "text-1" | "text-2",
   maxLength: number,
+  kind: "text" | "name" = "text",
 ): CustomizationFieldRule => ({
   id,
-  kind: "text",
+  kind,
   label,
   required: false,
   legacySlot: slot,
@@ -119,7 +163,7 @@ export const categoryCustomizationDefinitions: Record<
     quantity: { min: 1, max: 10000 },
     fields: [
       photo("Photo / logo", false),
-      text("recipient", "Recipient / organisation", "text-1", 120),
+      text("recipient", "Recipient / organisation", "text-1", 120, "name"),
       text("achievement", "Achievement / award message", "text-2", 180),
     ],
   },
@@ -130,7 +174,7 @@ export const categoryCustomizationDefinitions: Record<
     quantity: { min: 1, max: 10000 },
     fields: [
       photo("Photo / logo", false),
-      text("name", "Name / short message", "text-1", 120),
+      text("name", "Name / short message", "text-1", 120, "name"),
       text("additional", "Additional text (optional)", "text-2", 180),
     ],
   },
@@ -141,7 +185,7 @@ export const categoryCustomizationDefinitions: Record<
     quantity: { min: 1, max: 10000 },
     fields: [
       photo("Photograph / logo", false),
-      text("display-name", "Display name", "text-1", 120),
+      text("display-name", "Display name", "text-1", 120, "name"),
       text("organisation", "Organisation / designation", "text-2", 180),
     ],
   },
@@ -152,7 +196,7 @@ export const categoryCustomizationDefinitions: Record<
     quantity: { min: 1, max: 10000 },
     fields: [
       photo("Logo / artwork", false),
-      text("name", "Name / family / business", "text-1", 120),
+      text("name", "Name / family / business", "text-1", 120, "name"),
       text("designation", "House number / designation", "text-2", 180),
     ],
   },
@@ -176,75 +220,311 @@ const productOverrides: Record<
   Partial<Omit<CustomizationDefinition, "version" | "categoryId">>
 > = {};
 
-function assertId(value: string, what: string) {
-  if (!/^[a-z0-9][a-z0-9-]{0,79}$/.test(value))
-    throw new Error(`Invalid ${what} id: ${value}`);
+function record(value: unknown, message: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error(message);
+  return value as Record<string, unknown>;
+}
+
+function member<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  message: string,
+): T {
+  if (typeof value !== "string" || !allowed.includes(value as T))
+    throw new Error(message);
+  return value as T;
+}
+
+function integer(
+  value: unknown,
+  min: number,
+  max: number,
+  message: string,
+): number {
+  if (
+    typeof value !== "number" ||
+    !Number.isInteger(value) ||
+    value < min ||
+    value > max
+  )
+    throw new Error(message);
+  return value;
+}
+
+function optionalInteger(
+  value: unknown,
+  min: number,
+  max: number,
+  message: string,
+) {
+  return value === undefined ? undefined : integer(value, min, max, message);
+}
+
+function id(value: unknown, what: string) {
+  if (
+    typeof value !== "string" ||
+    !/^[a-z0-9][a-z0-9-]{0,79}$/.test(value)
+  )
+    throw new Error(`Invalid ${what} id.`);
+  return value;
+}
+
+function fieldValue(value: unknown): FieldValue {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  )
+    return value;
+  throw new Error("Invalid field visibility value.");
+}
+
+function parseVisibility(value: unknown): FieldVisibilityRule[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length > 10)
+    throw new Error("Invalid field visibility rules.");
+  return value.map((entry) => {
+    const rule = record(entry, "Invalid field visibility rule.");
+    const operator = member(
+      rule.operator,
+      visibilityOperators,
+      "Invalid field visibility operator.",
+    );
+    return {
+      fieldId: id(rule.fieldId, "visibility field"),
+      operator,
+      ...(operator === "equals" || operator === "not-equals"
+        ? { value: fieldValue(rule.value) }
+        : {}),
+    };
+  });
+}
+
+function parseAi(value: unknown): AiFieldPolicy | undefined {
+  if (value === undefined) return undefined;
+  const ai = record(value, "Invalid AI field policy.");
+  return {
+    backgroundRemoval: member(
+      ai.backgroundRemoval,
+      aiModes,
+      "Invalid background-removal policy.",
+    ),
+    enhancement: member(
+      ai.enhancement,
+      aiModes,
+      "Invalid enhancement policy.",
+    ),
+    smartCrop: member(ai.smartCrop, aiModes, "Invalid smart-crop policy."),
+  };
+}
+
+function parseField(value: unknown): CustomizationFieldRule {
+  const field = record(value, "Invalid customization field rule.");
+  const fieldId = id(field.id, "field");
+  const kind = member(field.kind, fieldKinds, "Invalid customization field kind.");
+  if (
+    typeof field.label !== "string" ||
+    !field.label.trim() ||
+    field.label.length > 100
+  )
+    throw new Error(`Invalid label for customization field: ${fieldId}`);
+  if (typeof field.required !== "boolean")
+    throw new Error(`Invalid required rule for customization field: ${fieldId}`);
+
+  const legacySlot =
+    field.legacySlot === undefined
+      ? undefined
+      : member(field.legacySlot, legacySlots, "Invalid legacy slot.");
+
+  const minLength = optionalInteger(
+    field.minLength,
+    0,
+    2000,
+    `Invalid minLength for customization field: ${fieldId}`,
+  );
+  const maxLength = optionalInteger(
+    field.maxLength,
+    0,
+    2000,
+    `Invalid maxLength for customization field: ${fieldId}`,
+  );
+  if (
+    minLength !== undefined &&
+    maxLength !== undefined &&
+    maxLength < minLength
+  )
+    throw new Error(`Invalid text limits for customization field: ${fieldId}`);
+
+  let choices: string[] | undefined;
+  if (field.choices !== undefined) {
+    if (
+      !Array.isArray(field.choices) ||
+      field.choices.length < 1 ||
+      field.choices.length > 100 ||
+      field.choices.some(
+        (choice) =>
+          typeof choice !== "string" || !choice.trim() || choice.length > 100,
+      )
+    )
+      throw new Error(`Invalid choices for customization field: ${fieldId}`);
+    choices = [...new Set(field.choices as string[])];
+    if (choices.length !== field.choices.length)
+      throw new Error(`Duplicate choices for customization field: ${fieldId}`);
+  }
+  if (kind === "choice" && !choices)
+    throw new Error(`Choice field requires choices: ${fieldId}`);
+
+  const min =
+    field.min === undefined
+      ? undefined
+      : typeof field.min === "number" && Number.isFinite(field.min)
+        ? field.min
+        : NaN;
+  const max =
+    field.max === undefined
+      ? undefined
+      : typeof field.max === "number" && Number.isFinite(field.max)
+        ? field.max
+        : NaN;
+  if (
+    Number.isNaN(min) ||
+    Number.isNaN(max) ||
+    (min !== undefined && max !== undefined && max < min)
+  )
+    throw new Error(`Invalid numeric limits for customization field: ${fieldId}`);
+
+  let allowedMimeTypes:
+    | ("image/jpeg" | "image/png" | "image/webp")[]
+    | undefined;
+  if (field.allowedMimeTypes !== undefined) {
+    if (!Array.isArray(field.allowedMimeTypes) || !field.allowedMimeTypes.length)
+      throw new Error(`Invalid mime types for customization field: ${fieldId}`);
+    allowedMimeTypes = field.allowedMimeTypes.map((mime) =>
+      member(mime, mimeTypes, "Invalid customization image mime type."),
+    );
+  }
+
+  const maxBytes = optionalInteger(
+    field.maxBytes,
+    1,
+    50 * 1024 * 1024,
+    `Invalid maxBytes for customization field: ${fieldId}`,
+  );
+  const maxPixels = optionalInteger(
+    field.maxPixels,
+    1,
+    100_000_000,
+    `Invalid maxPixels for customization field: ${fieldId}`,
+  );
+
+  if (
+    (kind === "photo" || kind === "logo") &&
+    legacySlot !== undefined &&
+    legacySlot !== "artwork"
+  )
+    throw new Error("Version 1 image fields must use the artwork legacy slot.");
+  if (
+    (legacySlot === "text-1" || legacySlot === "text-2") &&
+    kind !== "text" &&
+    kind !== "name" &&
+    kind !== "date" &&
+    kind !== "qr"
+  )
+    throw new Error("Version 1 text slots require a text-compatible field.");
+
+  return {
+    id: fieldId,
+    kind,
+    label: field.label,
+    required: field.required,
+    ...(legacySlot ? { legacySlot } : {}),
+    ...(minLength !== undefined ? { minLength } : {}),
+    ...(maxLength !== undefined ? { maxLength } : {}),
+    ...(min !== undefined ? { min } : {}),
+    ...(max !== undefined ? { max } : {}),
+    ...(choices ? { choices } : {}),
+    ...(allowedMimeTypes ? { allowedMimeTypes } : {}),
+    ...(maxBytes !== undefined ? { maxBytes } : {}),
+    ...(maxPixels !== undefined ? { maxPixels } : {}),
+    ...(parseVisibility(field.visibility)
+      ? { visibility: parseVisibility(field.visibility) }
+      : {}),
+    ...(parseAi(field.ai) ? { ai: parseAi(field.ai) } : {}),
+  };
 }
 
 export function validateCustomizationDefinition(
-  input: CustomizationDefinition,
+  input: unknown,
 ): CustomizationDefinition {
-  if (input.version !== CUSTOMIZATION_CONTRACT_VERSION)
+  const definition = record(input, "Invalid customization definition.");
+  if (definition.version !== CUSTOMIZATION_CONTRACT_VERSION)
     throw new Error("Unsupported customization contract version.");
-  if (!input.templates.length)
-    throw new Error("Customization definition requires a template.");
+
+  const categoryId = member(
+    definition.categoryId,
+    categories,
+    "Invalid customization category.",
+  );
+
   if (
-    !Number.isInteger(input.quantity.min) ||
-    !Number.isInteger(input.quantity.max) ||
-    input.quantity.min < 1 ||
-    input.quantity.max < input.quantity.min ||
-    input.quantity.max > 10000
+    !Array.isArray(definition.templates) ||
+    definition.templates.length < 1 ||
+    definition.templates.length > templateIds.length
   )
+    throw new Error("Customization definition requires a valid template list.");
+  const templates = definition.templates.map((template) =>
+    member(template, templateIds, "Invalid customization template."),
+  );
+  if (new Set(templates).size !== templates.length)
+    throw new Error("Customization templates must be unique.");
+
+  const quantity = record(
+    definition.quantity,
+    "Invalid customization quantity rule.",
+  );
+  const quantityRule = {
+    min: integer(quantity.min, 1, 10000, "Invalid customization quantity rule."),
+    max: integer(quantity.max, 1, 10000, "Invalid customization quantity rule."),
+  };
+  if (quantityRule.max < quantityRule.min)
     throw new Error("Invalid customization quantity rule.");
+
+  if (!Array.isArray(definition.fields) || definition.fields.length > 50)
+    throw new Error("Invalid customization fields.");
+  const fields = definition.fields.map(parseField);
 
   const ids = new Set<string>();
   const slots = new Set<LegacySlot>();
-  for (const field of input.fields) {
-    assertId(field.id, "field");
+  for (const field of fields) {
     if (ids.has(field.id))
       throw new Error(`Duplicate customization field: ${field.id}`);
     ids.add(field.id);
-
-    if (!field.label.trim() || field.label.length > 100)
-      throw new Error(`Invalid label for customization field: ${field.id}`);
-
     if (field.legacySlot) {
       if (slots.has(field.legacySlot))
         throw new Error(`Duplicate legacy slot: ${field.legacySlot}`);
       slots.add(field.legacySlot);
     }
-
-    if (field.kind === "text") {
-      const min = field.minLength ?? 0;
-      const max = field.maxLength ?? 500;
-      if (
-        !Number.isInteger(min) ||
-        !Number.isInteger(max) ||
-        min < 0 ||
-        max < min ||
-        max > 2000
-      )
-        throw new Error(`Invalid text limits for customization field: ${field.id}`);
-    }
-
-    if ((field.kind === "photo" || field.kind === "logo") && field.legacySlot !== "artwork")
-      throw new Error("Version 1 image fields must use the artwork legacy slot.");
-
-    for (const condition of field.visibility ?? []) {
-      assertId(condition.fieldId, "visibility field");
-      if (condition.fieldId === field.id)
-        throw new Error(`Customization field cannot depend on itself: ${field.id}`);
-    }
   }
 
-  for (const field of input.fields)
-    for (const condition of field.visibility ?? [])
+  for (const field of fields)
+    for (const condition of field.visibility ?? []) {
+      if (condition.fieldId === field.id)
+        throw new Error(`Customization field cannot depend on itself: ${field.id}`);
       if (!ids.has(condition.fieldId))
         throw new Error(
           `Unknown visibility dependency ${condition.fieldId} for ${field.id}`,
         );
+    }
 
-  return input;
+  return {
+    version: 1,
+    categoryId,
+    templates,
+    quantity: quantityRule,
+    fields,
+  };
 }
 
 export function getCustomizationDefinition(
@@ -252,24 +532,28 @@ export function getCustomizationDefinition(
 ): CustomizationDefinition {
   const base = categoryCustomizationDefinitions[product.categoryId];
   const override = productOverrides[product.id];
-  const merged: CustomizationDefinition = override
-    ? {
-        ...base,
-        ...override,
-        version: 1,
-        categoryId: product.categoryId,
-        quantity: override.quantity ?? base.quantity,
-        templates: override.templates ?? base.templates,
-        fields: override.fields ?? base.fields,
-      }
-    : base;
-  return validateCustomizationDefinition(merged);
+  return validateCustomizationDefinition(
+    override
+      ? {
+          ...base,
+          ...override,
+          version: 1,
+          categoryId: product.categoryId,
+          quantity: override.quantity ?? base.quantity,
+          templates: override.templates ?? base.templates,
+          fields: override.fields ?? base.fields,
+        }
+      : base,
+  );
 }
 
 export function legacyTextFields(definition: CustomizationDefinition) {
   const bySlot = new Map(
     definition.fields
-      .filter((field) => field.legacySlot === "text-1" || field.legacySlot === "text-2")
+      .filter(
+        (field) =>
+          field.legacySlot === "text-1" || field.legacySlot === "text-2",
+      )
       .map((field) => [field.legacySlot, field] as const),
   );
   return [bySlot.get("text-1"), bySlot.get("text-2")] as const;
@@ -279,4 +563,19 @@ export function requiredArtworkField(definition: CustomizationDefinition) {
   return definition.fields.find(
     (field) => field.legacySlot === "artwork" && field.required,
   );
+}
+
+export function isFieldVisible(
+  field: CustomizationFieldRule,
+  values: Readonly<Record<string, FieldValue>>,
+) {
+  return (field.visibility ?? []).every((rule) => {
+    const value = values[rule.fieldId] ?? null;
+    if (rule.operator === "present")
+      return value !== null && value !== "" && value !== false;
+    if (rule.operator === "not-present")
+      return value === null || value === "" || value === false;
+    if (rule.operator === "equals") return value === (rule.value ?? null);
+    return value !== (rule.value ?? null);
+  });
 }
