@@ -1,6 +1,7 @@
 import type { Product } from "@/data/catalog";
 import {
   categoryCustomizationDefinitions,
+  getCustomizationDefinition,
   legacyTextFields,
   type CustomizationDefinition,
 } from "@/lib/customization/contract";
@@ -31,10 +32,15 @@ export function resolveSelection(
     typeof quantity === "string" && /^\d+$/.test(quantity)
       ? Number(quantity)
       : 1;
+  const quantity = getCustomizationDefinition(product).quantity;
   return {
     variantId: selected?.id ?? "",
     quantity:
-      Number.isInteger(parsed) && parsed >= 1 && parsed <= 10000 ? parsed : 1,
+      Number.isInteger(parsed) &&
+      parsed >= quantity.min &&
+      parsed <= quantity.max
+        ? parsed
+        : quantity.min,
   };
 }
 
