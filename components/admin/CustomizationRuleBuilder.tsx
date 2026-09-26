@@ -63,6 +63,13 @@ export function CustomizationRuleBuilder({
     () => definition.fields.map((field) => field.id),
     [definition.fields],
   );
+  const dynamicFieldIds = useMemo(
+    () =>
+      definition.fields
+        .filter((field) => !field.legacySlot)
+        .map((field) => field.id),
+    [definition.fields],
+  );
   const hasArtwork = definition.fields.some(
     (field) => field.legacySlot === "artwork",
   );
@@ -449,7 +456,7 @@ export function CustomizationRuleBuilder({
                 </>
               )}
 
-              {!artwork && (
+              {!field.legacySlot && (
                 <div className="option-fields">
                   <label>
                     Conditional visibility
@@ -464,8 +471,9 @@ export function CustomizationRuleBuilder({
                                   {
                                     fieldId:
                                       visibility?.fieldId ||
-                                      fieldIds.find((id) => id !== field.id) ||
-                                      "",
+                                      dynamicFieldIds.find(
+                                        (id) => id !== field.id,
+                                      ) || "",
                                     operator: operator as
                                       | "present"
                                       | "not-present",
@@ -501,7 +509,7 @@ export function CustomizationRuleBuilder({
                           )
                         }
                       >
-                        {fieldIds
+                        {dynamicFieldIds
                           .filter((id) => id !== field.id)
                           .map((id) => (
                             <option key={id} value={id}>
