@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.8 |
-| Last Updated | 26 September 2026 |
-| Current Active Task | **YL-110 - Admin Customisation Field/Rule Builder foundation + published-rule storefront loading** |
-| Overall State | PR #6 + PR #7 productionમાં merged; YL-110 draft PR #9માં admin rules + published-rule loader verification ચાલુ |
+| Master File Version | 1.9 |
+| Last Updated | 28 September 2026 |
+| Current Active Task | **Fastmode launch batch — AI Photo Studio visibility + YL-039/040 + YL-083→087 readiness/hardening** |
+| Overall State | main commit 7f59de65d37c15ce3ee0f75d5d6ff2e426e93f1b productionમાં live; AI Photo Engine + asset lineage deployed; fastmode-launch-batch પર launch-critical polish ચાલુ |
 
 ---
 
@@ -207,17 +207,19 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 31 |
-| In Progress | 10 |
+| Completed | 41 |
+| In Progress | 11 |
+| Ready to Enable | 2 |
 | Blocked | 4 |
-| Pending | 78 |
+| Pending | 65 |
 | **Total** | **123** |
 
-### Reconciled open-work count — 22 September 2026
+### Reconciled open-work count — 28 September 2026
 
-- Master checklistમાં કુલ **92 open tasks** છે: 10 In Progress + 78 Pending + 4 Blocked.
-- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **85 direct website tasks open** છે.
-- આ 85માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **81 actionable website tasks** અત્યારે આગળ લઈ શકાય.
+- Master checklistમાં કુલ **82 open tasks** છે: 11 In Progress + 2 Ready to Enable + 65 Pending + 4 Blocked.
+- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **75 direct website tasks open** છે.
+- આ 75માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **71 actionable website tasks** આગળ લઈ શકાય.
+- Ready to Enable tasks YL-083/YL-084 code + DB ready છે; Vercel production flags ON કર્યા પછી live verification બાકી છે.
 - YL-101 to YL-123 અગાઉની website planning/chatમાં ચર્ચાયેલા પણ 100-task masterમાં explicit ન રહેલા useful features ઉમેરે છે.
 - આ count conservative છે: code foundation થયેલા પરંતુ production flag/business approval/full browser QA વગરના tasks Done mark કર્યા નથી.
 
