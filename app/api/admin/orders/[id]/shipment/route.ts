@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 type ShipmentBody = {
   status?: unknown;
@@ -25,7 +26,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const { id } = await context.params;
   let body: ShipmentBody | null;
   try {
@@ -111,6 +112,14 @@ export async function POST(
       source: "admin",
     });
   }
+
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "shipment.update",
+    entityType: "order",
+    entityId: id,
+    payload: { status, courier: courier || null, awbSet: Boolean(awb) },
+  });
 
   return NextResponse.json({ ok: true });
 }
