@@ -12,9 +12,13 @@ export async function removeBackground(
   adapter: BackgroundRemovalAdapter,
   source: Blob,
   signal: AbortSignal,
+  onProgress?: (progress: number) => void,
 ): Promise<Blob> {
   signal.throwIfAborted();
-  const result = await adapter.removeBackground(source, { signal });
+  const result = await adapter.removeBackground(source, {
+    signal,
+    onProgress,
+  });
   signal.throwIfAborted();
   if (!["image/png", "image/webp"].includes(result.type))
     throw new Error("Background removal must return a PNG or WebP image.");
