@@ -52,3 +52,66 @@ test("localized public pages use self-canonical URLs and shared hreflang alterna
   assert.match(categories, /canonical: "\/" \+ lang \+ path/);
   assert.match(product, /canonical: "\/" \+ lang \+ path/);
 });
+
+
+test("project request flows provide secure create, file, tracking and admin follow-up foundations", () => {
+  const form = fs.readFileSync("components/ProjectRequestForm.tsx", "utf8");
+  const status = fs.readFileSync(
+    "components/ProjectRequestStatusClient.tsx",
+    "utf8",
+  );
+  const api = fs.readFileSync("app/api/project-requests/route.ts", "utf8");
+  const upload = fs.readFileSync(
+    "app/api/project-requests/[requestNo]/upload-session/route.ts",
+    "utf8",
+  );
+  const files = fs.readFileSync(
+    "app/api/project-requests/[requestNo]/files/route.ts",
+    "utf8",
+  );
+  const admin = fs.readFileSync(
+    "app/api/admin/projects/[id]/route.ts",
+    "utf8",
+  );
+
+  assert.match(form, /requestNo/);
+  assert.match(form, /project-request-status/);
+  assert.match(form, /upload-session/);
+  assert.match(status, /customerMessage/);
+  assert.match(api, /PROJECT_REQUESTS_ENABLED/);
+  assert.match(api, /newAccessToken/);
+  assert.match(upload, /createSignedUploadUrl/);
+  assert.match(files, /shop_project_files/);
+  assert.match(admin, /customer_message/);
+  assert.match(admin, /readJsonBody/);
+});
+
+test("reviews support moderation, verified badge and secure customer tracking", () => {
+  const reviews = fs.readFileSync("components/ReviewsClient.tsx", "utf8");
+  const moderation = fs.readFileSync(
+    "components/ReviewModeration.tsx",
+    "utf8",
+  );
+  const reviewApi = fs.readFileSync(
+    "app/api/admin/reviews/[id]/route.ts",
+    "utf8",
+  );
+  const support = fs.readFileSync("components/SupportForm.tsx", "utf8");
+  const supportTrack = fs.readFileSync(
+    "components/SupportTicketClient.tsx",
+    "utf8",
+  );
+  const supportAdmin = fs.readFileSync(
+    "app/api/admin/support/[id]/route.ts",
+    "utf8",
+  );
+
+  assert.match(reviews, /Verified purchase/);
+  assert.match(moderation, /Verified purchase badge/);
+  assert.match(reviewApi, /verified_purchase/);
+  assert.match(reviewApi, /readJsonBody/);
+  assert.match(support, /secure order tracking link/);
+  assert.match(supportTrack, /adminResponse/);
+  assert.match(supportAdmin, /admin_response/);
+  assert.match(supportAdmin, /readJsonBody/);
+});
