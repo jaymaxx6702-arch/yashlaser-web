@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 46 |
+| Completed | 48 |
 | In Progress | 7 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 56 |
+| Pending | 54 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -377,7 +377,7 @@ Known completed foundation:
 - [ ] [READY TO ENABLE] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો. — Event request, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
 - [ ] [READY TO ENABLE] **YL-050** Custom Acrylic request submit-to-admin workflow enable અને test કરવો. — Custom acrylic request, file upload, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
 - [ ] [READY TO ENABLE] **YL-051** Request number, customer confirmation અને admin follow-up flow test કરવો. — Request number + secure token, customer status page and admin message/status actions are implemented; live flag-enabled E2E remains.
-- [ ] **YL-052** Yash ID portal Phase-1 requirements અને repository plan separately freeze કરવો.
+- [x] **YL-052** Yash ID portal Phase-1 requirements અને repository plan separately freeze કરવો. — Separate-app scope, repository plan, data entities, import/matching, privacy, proof and YashFlow handoff are frozen in `docs/YASH_ID_PHASE1.md`.
 
 ### E. Orders, Customer Accounts, Payment and Shipping - YL-053 to YL-064
 
@@ -456,7 +456,7 @@ Known completed foundation:
 
 ### K. Advanced Commerce, Admin and Customer Experience - YL-110 to YL-121
 
-- [ ] **YL-110** Admin Customisation Field/Rule Builder બનાવવો જેથી developer વગર product માટે photo, text, name, date, logo, QR, size, colour, required/optional fields અને validation rules configure થઈ શકે.
+- [x] **YL-110** Admin Customisation Field/Rule Builder બનાવવો જેથી developer વગર product માટે photo, text, name, date, logo, QR, size, colour, required/optional fields અને validation rules configure થઈ શકે. — Versioned private rules, admin product picker/builder, validation and published storefront loading are live.
 - [ ] **YL-111** Name Plate advanced configurator: width × height/shape/material-based pricing rules, profession/business templates, multilingual preview અને minimum-size validation support કરવું.
 - [ ] **YL-112** Business QR Generator suite બનાવવી: UPI, Google Review, WhatsApp, website/menu/Wi-Fi QR types, QR preview/download અને QR-based acrylic product templates સાથે integration.
 - [ ] **YL-113** Advanced event personalisation: Winner/Runner-up/Participant/VIP/Guest/Committee વગેરે recipient groups, Same Design–Different Text, group quantities અને repeat-event reuse support કરવું.
