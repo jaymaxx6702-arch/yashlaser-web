@@ -520,6 +520,12 @@ test("order handoff prefers immutable original source and falls back for legacy 
   assert.match(migration, /add column if not exists source_artwork_path text/);
   assert.match(migration, /source_artwork_metadata jsonb/);
   assert.match(migration, /security invoker/);
-  assert.match(migration, /revoke all [\\s\\S]* public, anon, authenticated/);
-  assert.match(migration, /grant execute [\\s\\S]* service_role/);
+  assert.ok(
+    migration.includes("revoke all on function public.submit_enquiry(jsonb)"),
+  );
+  assert.ok(migration.includes("from public, anon, authenticated;"));
+  assert.ok(
+    migration.includes("grant execute on function public.submit_enquiry(jsonb)"),
+  );
+  assert.ok(migration.includes("to service_role;"));
 });
