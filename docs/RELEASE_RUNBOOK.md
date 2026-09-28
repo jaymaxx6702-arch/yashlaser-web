@@ -97,3 +97,34 @@ Record:
 - rollback target
 
 This record belongs in the Master Project change log or release note, never in a file containing secrets.
+
+
+## Issue priority matrix
+
+| Priority | Definition | Default action | Owner |
+| --- | --- | --- | --- |
+| **P0** | Security/privacy exposure, unauthorized admin access, corrupted/duplicate orders, checkout-wide outage | Disable affected feature or rollback immediately; preserve evidence and data | Website technical owner + Owner/Admin |
+| **P1** | Order creation, proof approval, YashFlow production handoff, dispatch or customer tracking materially broken | Stop affected operational step, use manual safe fallback, ship urgent fix | Owner/Admin + Website technical owner + Production/YashFlow owner |
+| **P2** | One product/category/language/device flow broken but safe workaround exists | Log, prioritize next consolidated patch, communicate workaround | Website technical owner |
+| **P3** | Cosmetic copy/layout polish or low-impact admin inconvenience | Batch into normal improvement release | Website technical owner / relevant business owner |
+
+Escalate a lower priority issue when it affects multiple orders, exposes private data, creates irreversible production work or has no safe workaround.
+
+## Support ownership
+
+- **Owner/Admin:** first owner for customer/order escalation, commercial decisions and production go/no-go.
+- **Website technical owner:** application defects, deployments, Supabase/Vercel, security, analytics and integrations.
+- **Production/YashFlow owner:** production stage correctness, YashFlow task/order mapping and production execution.
+- **Customer support/admin operator:** first response, ticket classification, order/reference verification and customer updates.
+- **Payment provider owner:** only after a production payment provider is selected; payment/refund incidents must not be guessed or manually fabricated.
+- **Courier/shipping owner:** only after a courier integration/provider is selected; AWB/tracking exceptions stay manual until then.
+
+## Incident handling
+
+1. Record the affected order/request/reference and exact time.
+2. Classify P0–P3.
+3. Do not delete or rewrite historical order/proof/asset/audit records to hide an incident.
+4. Use feature-flag disable or Vercel rollback for P0/P1 when safer than a forward fix.
+5. For YashFlow failures, keep the Shop order in the failed-sync queue, correct mapping/configuration, then retry with the same idempotency key.
+6. For private-file incidents, revoke/expire exposed access where possible, stop the affected route and treat as P0.
+7. Record final cause, corrective release and verification evidence.
