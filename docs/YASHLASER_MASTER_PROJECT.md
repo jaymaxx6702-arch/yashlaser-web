@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 42 |
+| Completed | 45 |
 | In Progress | 7 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 60 |
+| Pending | 57 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -367,9 +367,9 @@ Known completed foundation:
 
 - [ ] [IN PROGRESS] **YL-041** Universal product customisation engine complete કરવું.
 - [x] **YL-042** Text, name, date, logo, photo અને QR inputs product rulesથી ચલાવવા. — Shared rule contract અને dynamic field renderer current customizerમાં active છે.
-- [ ] **YL-043** Same for All અને Different for Each modes complete કરવું.
-- [ ] **YL-044** Excel/CSV bulk upload template અને validation complete કરવી.
-- [ ] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું.
+- [x] **YL-043** Same for All અને Different for Each modes complete કરવું. — Bulk request flow now supports common personalisation or per-recipient data mode.
+- [x] **YL-044** Excel/CSV bulk upload template અને validation complete કરવી. — Excel/Google Sheets-compatible CSV template, strict header/row validation, duplicate record detection and private attachment retention implemented.
+- [x] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું. — photo_filename matching, missing/duplicate/unreferenced-file diagnostics, preview and matched-photo upload implemented.
 - [x] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા. — Versioned preview/proof/approved/production asset states and lineage implemented.
 - [ ] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું.
   - AI photo-processing expansion YL-101 to YL-109માં separately tracked છે જેથી background removal/upscale/correction જેવી requirements broad taskમાં ખોવાય નહીં.
