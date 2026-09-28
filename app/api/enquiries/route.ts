@@ -10,6 +10,7 @@ import {
   serverSecret,
 } from "@/lib/enquiry-server";
 import { verifyTicket } from "@/lib/upload-ticket";
+import { createDesignHandoffForRequest } from "@/lib/enquiry-handoff-server";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 export async function POST(request: Request) {
@@ -17,7 +18,17 @@ export async function POST(request: Request) {
     const data = await enquiryJson(request),
       input = parseEnquiry(data);
     const reference = await checkQuota(input);
-    if (reference) return Response.json({ reference });
+    if (reference) {
+      const designToken = await createDesignHandoffForRequest({
+        requestId: input.requestId,
+        designId: input.designId,
+        productId: input.product.id,
+      });
+      return Response.json({
+        reference,
+        ...(designToken ? { designToken } : {}),
+      });
+    }
     let ticket;
     try {
       ticket = verifyTicket(
@@ -138,7 +149,18 @@ export async function POST(request: Request) {
     });
     if (result.error) throw new Error("Save failed");
     // Keep immutable files on ambiguous/retried commits. Orphan cleanup is separate.
-    return Response.json({ reference: result.data.reference }, { status: 201 });
+    const designToken = await createDesignHandoffForRequest({
+      requestId: input.requestId,
+      designId: input.designId,
+      productId: input.product.id,
+    });
+    return Response.json(
+      {
+        reference: result.data.reference,
+        ...(designToken ? { designToken } : {}),
+      },
+      { status: 201 },
+    );
   } catch (error) {
     return enquiryError(error);
   }

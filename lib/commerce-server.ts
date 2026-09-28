@@ -1,6 +1,10 @@
 import "server-only";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { getSupabase } from "@/lib/supabase";
+import {
+  resolveDesignHandoff,
+  type ResolvedDesignHandoff,
+} from "@/lib/enquiry-handoff-server";
 
 export type CommerceItemInput = {
   productId: string;
@@ -12,6 +16,7 @@ export type CommerceItemInput = {
   unitPriceMinor: number | null;
   pricingMode: string;
   designId?: string | null;
+  designToken?: string | null;
   configuration?: Record<string, unknown>;
 };
 
@@ -54,6 +59,7 @@ function commerceOrderToken(input: {
       unitPriceMinor: item.unitPriceMinor,
       pricingMode: item.pricingMode,
       designId: item.designId || null,
+      designToken: item.designToken || null,
       configuration: item.configuration || {},
     })),
   });
@@ -77,6 +83,18 @@ export async function createCommerceOrder(input: {
 }) {
   const db = getSupabase();
   const token = commerceOrderToken(input);
+
+  const handoffs: (ResolvedDesignHandoff | null)[] = await Promise.all(
+    input.items.map(async (item) => {
+      if (!item.designToken) return null;
+      if (!item.designId)
+        throw new Error("Saved design token is missing its design reference.");
+      return resolveDesignHandoff(item.designToken, {
+        designId: item.designId,
+        productId: item.productId,
+      });
+    }),
+  );
   const subtotal = input.items.reduce(
     (sum, item) =>
       sum + (item.unitPriceMinor ? item.unitPriceMinor * item.quantity : 0),
@@ -127,7 +145,7 @@ export async function createCommerceOrder(input: {
 
   if (error || !order) throw new Error(error?.message || "Order creation failed.");
 
-  const rows = input.items.map((item) => ({
+  const rows = input.items.map((item, index) => ({
     order_id: order.id,
     product_id: item.productId,
     product_slug: item.productSlug,
@@ -141,13 +159,173 @@ export async function createCommerceOrder(input: {
       : null,
     pricing_mode: item.pricingMode,
     design_id: item.designId || null,
-    configuration: item.configuration || {},
+    configuration: {
+      ...(item.configuration || {}),
+      ...(handoffs[index]
+        ? {
+            sourceEnquiryItemId: handoffs[index]!.enquiryItemId,
+            ...(handoffs[index]!.artworkMetadata
+              ? { sourceArtwork: handoffs[index]!.artworkMetadata }
+              : {}),
+          }
+        : {}),
+    },
   }));
 
-  const { error: itemError } = await db.from("shop_order_items").insert(rows);
-  if (itemError) {
+  const { data: orderItems, error: itemError } = await db
+    .from("shop_order_items")
+    .insert(rows)
+    .select("id,configuration");
+  if (itemError || !orderItems) {
     await db.from("shop_orders").delete().eq("id", order.id);
-    throw new Error(itemError.message);
+    throw new Error(itemError?.message || "Order items could not be saved.");
+  }
+
+  const handoffBySource = new Map(
+    handoffs
+      .filter((handoff): handoff is ResolvedDesignHandoff => Boolean(handoff))
+      .map((handoff) => [handoff.enquiryItemId, handoff]),
+  );
+  const copiedPaths: string[] = [];
+
+  try {
+    const linked = orderItems
+      .map((row) => {
+        const config =
+          row.configuration && typeof row.configuration === "object"
+            ? (row.configuration as Record<string, unknown>)
+            : {};
+        const source =
+          typeof config.sourceEnquiryItemId === "string"
+            ? config.sourceEnquiryItemId
+            : "";
+        const handoff = source ? handoffBySource.get(source) : undefined;
+        return handoff ? { orderItemId: row.id as string, handoff } : null;
+      })
+      .filter(
+        (
+          value,
+        ): value is {
+          orderItemId: string;
+          handoff: ResolvedDesignHandoff;
+        } => Boolean(value),
+      );
+
+    const copied: {
+      orderItemId: string;
+      originalPath: string | null;
+      previewPath: string;
+      originalMime: string | null;
+      originalBytes: number | null;
+      originalSha256: string | null;
+      originalWidth: number | null;
+      originalHeight: number | null;
+    }[] = [];
+
+    for (const link of linked) {
+      let originalPath: string | null = null;
+      let originalMime: string | null = null;
+      let originalBytes: number | null = null;
+      let originalSha256: string | null = null;
+      let originalWidth: number | null = null;
+      let originalHeight: number | null = null;
+
+      if (link.handoff.artworkPath) {
+        const extension = link.handoff.artworkPath.split(".").pop() || "webp";
+        originalPath =
+          `orders/${order.id}/${link.orderItemId}/original.${extension}`;
+        const originalCopy = await db.storage
+          .from("customer-artwork")
+          .copy(link.handoff.artworkPath, originalPath);
+        if (originalCopy.error)
+          throw new Error("Unable to preserve original artwork.");
+        copiedPaths.push(originalPath);
+        originalMime =
+          link.handoff.artworkMetadata?.mimeType ||
+          (extension === "jpg"
+            ? "image/jpeg"
+            : extension === "png"
+              ? "image/png"
+              : "image/webp");
+        originalBytes = link.handoff.artworkMetadata?.bytes || null;
+        originalSha256 = link.handoff.artworkMetadata?.sha256 || null;
+        originalWidth = link.handoff.artworkMetadata?.width || null;
+        originalHeight = link.handoff.artworkMetadata?.height || null;
+      }
+
+      const previewPath =
+        `orders/${order.id}/${link.orderItemId}/preview.png`;
+      const previewCopy = await db.storage
+        .from("customer-artwork")
+        .copy(link.handoff.previewPath, previewPath);
+      if (previewCopy.error)
+        throw new Error("Unable to preserve design preview.");
+      copiedPaths.push(previewPath);
+
+      copied.push({
+        orderItemId: link.orderItemId,
+        originalPath,
+        previewPath,
+        originalMime,
+        originalBytes,
+        originalSha256,
+        originalWidth,
+        originalHeight,
+      });
+    }
+
+    const originalRows = copied
+      .filter((asset) => asset.originalPath)
+      .map((asset) => ({
+        order_id: order.id,
+        order_item_id: asset.orderItemId,
+        asset_kind: "original",
+        version_no: 1,
+        state: "ready",
+        storage_bucket: "customer-artwork",
+        file_path: asset.originalPath!,
+        mime_type: asset.originalMime,
+        file_size: asset.originalBytes,
+        sha256: asset.originalSha256,
+      }));
+
+    const originalIds = new Map<string, string>();
+    if (originalRows.length) {
+      const { data: originals, error: originalError } = await db
+        .from("shop_order_assets")
+        .insert(originalRows)
+        .select("id,order_item_id");
+      if (originalError || !originals)
+        throw new Error("Unable to register original artwork.");
+      for (const asset of originals)
+        if (asset.order_item_id)
+          originalIds.set(asset.order_item_id, asset.id);
+    }
+
+    const previewRows = copied.map((asset) => ({
+      order_id: order.id,
+      order_item_id: asset.orderItemId,
+      asset_kind: "preview",
+      version_no: 1,
+      state: "ready",
+      storage_bucket: "customer-artwork",
+      file_path: asset.previewPath,
+      mime_type: "image/png",
+      source_asset_id: originalIds.get(asset.orderItemId) || null,
+    }));
+
+    if (previewRows.length) {
+      const { error: previewError } = await db
+        .from("shop_order_assets")
+        .insert(previewRows);
+      if (previewError)
+        throw new Error("Unable to register design previews.");
+    }
+  } catch (error) {
+    if (copiedPaths.length)
+      await db.storage.from("customer-artwork").remove(copiedPaths);
+    await db.from("shop_orders").delete().eq("id", order.id);
+    throw error;
   }
 
   await db.from("shop_order_events").insert({

@@ -347,3 +347,129 @@ test("order asset migration is additive, private and versioned", () => {
   assert.match(migration, /revoke all on public\.shop_order_assets from anon, authenticated/);
   assert.match(migration, /grant all on public\.shop_order_assets to service_role/);
 });
+
+
+test("approved customer proofs are locked before upload and before version creation", () => {
+  for (const path of [
+    "app/api/admin/proofs/upload-session/route.ts",
+    "app/api/admin/proofs/route.ts",
+  ]) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(source, /status === "approved"/);
+    assert.match(source, /APPROVED_PROOF_LOCKED/);
+    assert.match(source, /readJsonBody/);
+    assert.doesNotMatch(source, /request\.json\(/);
+  }
+});
+
+
+test("saved design checkout uses signed handoff and immutable order asset copies", () => {
+  const checkout = fs.readFileSync("app/api/checkout/route.ts", "utf8");
+  assert.match(checkout, /designToken/);
+
+  const commerce = fs.readFileSync("lib/commerce-server.ts", "utf8");
+  assert.match(commerce, /resolveDesignHandoff/);
+  assert.match(commerce, /\.copy\(link\.handoff\.artworkPath, originalPath\)/);
+  assert.match(commerce, /\.copy\(link\.handoff\.previewPath, previewPath\)/);
+  assert.match(commerce, /asset_kind: "original"/);
+  assert.match(commerce, /asset_kind: "preview"/);
+  assert.match(commerce, /source_asset_id/);
+
+  const form = fs.readFileSync("components/CustomizationForm.tsx", "utf8");
+  assert.match(form, /designToken: success\.designToken/);
+});
+
+
+test("proof workflow keeps shop_order_assets synchronized with proof state", () => {
+  const createProof = fs.readFileSync("app/api/admin/proofs/route.ts", "utf8");
+  assert.match(createProof, /registerProofAsset/);
+  assert.match(createProof, /supersedePreviousProofAssets/);
+  assert.match(createProof, /shop_order_assets/);
+
+  const approve = fs.readFileSync(
+    "app/api/proofs/[token]/approve/route.ts",
+    "utf8",
+  );
+  assert.match(approve, /syncProofAssetState\(proof\.id, "approved", now\)/);
+  assert.match(approve, /status: "ready", approved_at: null/);
+
+  const changes = fs.readFileSync(
+    "app/api/proofs/[token]/request-changes/route.ts",
+    "utf8",
+  );
+  assert.match(
+    changes,
+    /syncProofAssetState\(proof\.id, "changes_requested"\)/,
+  );
+  assert.match(changes, /status: "ready"/);
+
+  const helper = fs.readFileSync("lib/proof-assets.ts", "utf8");
+  assert.match(helper, /asset_kind: "proof"/);
+  assert.match(helper, /storage_bucket: "shop-proofs"/);
+  assert.match(helper, /approved_at/);
+});
+
+
+test("original artwork integrity metadata survives secure order handoff", () => {
+  const handoff = fs.readFileSync("lib/enquiry-handoff-server.ts", "utf8");
+  assert.match(handoff, /artworkMetadata/);
+  assert.match(handoff, /sha256/);
+  assert.match(handoff, /bytes/);
+  assert.match(handoff, /width/);
+  assert.match(handoff, /height/);
+
+  const commerce = fs.readFileSync("lib/commerce-server.ts", "utf8");
+  assert.match(commerce, /sourceArtwork/);
+  assert.match(commerce, /file_size: asset\.originalBytes/);
+  assert.match(commerce, /sha256: asset\.originalSha256/);
+});
+
+test("production source can only derive from the latest approved synchronized proof", () => {
+  const source = fs.readFileSync("lib/production-assets.ts", "utf8");
+  assert.match(source, /proof\.status !== "approved"/);
+  assert.match(source, /proofAsset\.state !== "approved"/);
+  assert.match(source, /source_asset_id: proofAsset\.id/);
+  assert.match(source, /\.copy\(proofAsset\.file_path, destination\)/);
+  assert.match(source, /asset_kind: "production"/);
+  assert.match(source, /state: "ready"/);
+  assert.match(source, /production_source_created/);
+  assert.match(source, /restorePreviousProductionStates/);
+});
+
+test("production handoff reports honest print-readiness limits without guessing DPI", () => {
+  const source = fs.readFileSync("lib/production-assets.ts", "utf8");
+  assert.match(source, /LOW_SOURCE_RESOLUTION/);
+  assert.match(source, /LEGACY_INTEGRITY_METADATA_MISSING/);
+  assert.match(source, /EXACT_DPI_PENDING/);
+  assert.match(source, /No DPI value is being guessed/);
+  assert.doesNotMatch(source, /300\s*dpi/i);
+
+  const component = fs.readFileSync(
+    "components/AdminProductionSource.tsx",
+    "utf8",
+  );
+  assert.match(component, /Print-readiness warnings/);
+});
+
+test("production handoff admin API is protected and bounded", () => {
+  const route = fs.readFileSync(
+    "app/api/admin/order-assets/production/route.ts",
+    "utf8",
+  );
+  assert.match(route, /requireAdmin/);
+  assert.match(route, /readJsonBody/);
+  assert.match(route, /createProductionSourceFromApprovedProof/);
+  assert.doesNotMatch(route, /request\.json\(/);
+
+  const page = fs.readFileSync("app/admin/proofs/page.tsx", "utf8");
+  assert.match(page, /AdminProductionSource/);
+});
+
+test("order asset migration indexes production lineage foreign keys", () => {
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609260015_order_assets.sql",
+    "utf8",
+  );
+  assert.match(migration, /shop_order_assets_source_asset_idx/);
+  assert.match(migration, /shop_order_assets_proof_idx/);
+});

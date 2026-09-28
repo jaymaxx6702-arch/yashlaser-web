@@ -310,6 +310,7 @@ export function CustomizationForm({
     reference: string;
     message: string;
     saved: boolean;
+    designToken?: string;
   } | null>(null);
   const requestKey = useRef({ fingerprint: "", id: "" });
   const uploadSession = useRef<{
@@ -363,7 +364,8 @@ export function CustomizationForm({
         website: String(new FormData(e.currentTarget).get("website") || ""),
       };
       let reference = "YL-DRAFT-" + requestId.slice(0, 8).toUpperCase(),
-        saved = false;
+        saved = false,
+        designToken = "";
       if (onlineSubmission) {
         setUploadStatus(t.prepareUpload);
         let session =
@@ -381,6 +383,8 @@ export function CustomizationForm({
           });
           if (signed.reference) {
             reference = signed.reference;
+            designToken =
+              typeof signed.designToken === "string" ? signed.designToken : "";
             saved = true;
           } else {
             session = signed as UploadSession;
@@ -406,6 +410,8 @@ export function CustomizationForm({
             uploadReceipt: session.receipt,
           });
           reference = result.reference;
+          designToken =
+            typeof result.designToken === "string" ? result.designToken : "";
         }
         saved = true;
       }
@@ -436,7 +442,12 @@ export function CustomizationForm({
           : "I will attach the downloaded design preview and original artwork in this conversation.",
         "Please confirm the quotation and final digital mockup before production.",
       ].join("\n");
-      setSuccess({ reference, message, saved });
+      setSuccess({
+        reference,
+        message,
+        saved,
+        ...(designToken ? { designToken } : {}),
+      });
       setUploadStatus("");
       setStep("success");
     } catch (e) {
@@ -464,6 +475,7 @@ export function CustomizationForm({
       unitPriceMinor,
       pricingMode: p.pricingMode,
       designId: snapshot.designId,
+      designToken: success.designToken,
       notes: "Saved enquiry " + success.reference,
     });
     router.push(prefix + "/cart");
