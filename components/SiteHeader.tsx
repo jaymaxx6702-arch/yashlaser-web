@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { CART_EVENT, cartCount } from "@/lib/cart";
 import { isUiLanguage, uiCopy } from "@/lib/i18n";
 import { Brand } from "./Brand";
@@ -93,6 +93,7 @@ function LanguageLinksFallback({ path }: { path: string }) {
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const path = usePathname();
   const firstSegment = path.split("/").filter(Boolean)[0] || "";
   const lang = isUiLanguage(firstSegment) ? firstSegment : "en";
@@ -100,6 +101,10 @@ export function SiteHeader() {
   const extra = announcementCopy[lang];
   const prefix = isUiLanguage(firstSegment) ? "/" + lang : "";
   const localHref = (value: string) => (lang === "en" ? value : prefix + value);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [path]);
 
   useEffect(() => {
     const sync = () => setCount(cartCount());
@@ -121,9 +126,11 @@ export function SiteHeader() {
         <div className="container header-inner">
           <Brand href={localHref("/")} />
           <button
+            ref={menuButton}
             className="menu-toggle"
             aria-expanded={open}
             aria-controls="main-navigation"
+            aria-label={open ? extra.close : extra.menu}
             onClick={() => setOpen(!open)}
           >
             {open ? extra.close : extra.menu}
@@ -134,7 +141,10 @@ export function SiteHeader() {
             aria-label="Main navigation"
             onClick={() => setOpen(false)}
             onKeyDown={(e) => {
-              if (e.key === "Escape") setOpen(false);
+              if (e.key === "Escape") {
+                setOpen(false);
+                menuButton.current?.focus();
+              }
             }}
           >
             <Link href={localHref("/")} aria-current={path === localHref("/") ? "page" : undefined}>
