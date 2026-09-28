@@ -36,10 +36,14 @@ export default async function Admin({
     query = query.gte("created_at", `${from}T00:00:00+05:30`);
   if (validDate(to))
     query = query.lte("created_at", `${to}T23:59:59.999+05:30`);
-  const { data, error, count } = await query.range(
-    (page - 1) * 25,
-    page * 25 - 1,
-  );
+  const [{ data, error, count }, { count: failedSyncCount }] =
+    await Promise.all([
+      query.range((page - 1) * 25, page * 25 - 1),
+      db
+        .from("shop_orders")
+        .select("id", { count: "exact", head: true })
+        .eq("yashflow_sync_status", "failed"),
+    ]);
   const pageLink = (p: number) =>
     "/admin?" + new URLSearchParams({ q, status, from, to, page: String(p) });
   return (
@@ -50,6 +54,19 @@ export default async function Admin({
           <button>Sign out</button>
         </form>
       </header>
+      {(failedSyncCount || 0) > 0 && (
+        <section className="admin-card" role="alert">
+          <strong>
+            {failedSyncCount} Shop order{failedSyncCount === 1 ? "" : "s"} need
+            YashFlow sync attention.
+          </strong>
+          <p>
+            <Link href="/admin/integrations">
+              Open failed-sync queue →
+            </Link>
+          </p>
+        </section>
+      )}
       <form className="admin-card admin-filters">
         <label>
           Reference, name or phone
