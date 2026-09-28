@@ -4,6 +4,7 @@ export type Draft = {
   document: CustomizationDocument;
   artwork: Blob | null;
   sourceArtwork?: Blob | null;
+  sourceMetadata?: import("./model").Artwork | null;
   derived?: boolean;
   enhanced?: boolean;
   updatedAt: number;
