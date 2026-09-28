@@ -91,3 +91,30 @@ test("catalogue import endpoint only creates draft revisions after server valida
   assert.match(importer, /state: "draft"/);
   assert.doesNotMatch(importer, /state: "published"/);
 });
+
+
+test("catalogue validation preview exposes a downloadable report and unchanged protection", () => {
+  const preview = fs.readFileSync(
+    "app/api/admin/products/import-preview/route.ts",
+    "utf8",
+  );
+  assert.match(preview, /report/);
+  assert.match(preview, /unchangedCount/);
+  assert.match(preview, /readyCount/);
+  assert.match(preview, /inspectCatalogueImportState/);
+
+  const manager = fs.readFileSync(
+    "components/admin/CatalogueCsvManager.tsx",
+    "utf8",
+  );
+  assert.match(manager, /Download validation report/);
+  assert.match(manager, /yashlaser-catalogue-validation-report\.csv/);
+  assert.match(manager, /Excel\/Google Sheets-compatible/);
+
+  const importer = fs.readFileSync(
+    "lib/catalogue-import-server.ts",
+    "utf8",
+  );
+  assert.match(importer, /skippedUnchanged/);
+  assert.match(importer, /canonicalJson/);
+});
