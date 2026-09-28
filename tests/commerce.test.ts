@@ -473,3 +473,53 @@ test("order asset migration indexes production lineage foreign keys", () => {
   assert.match(migration, /shop_order_assets_source_asset_idx/);
   assert.match(migration, /shop_order_assets_proof_idx/);
 });
+
+
+test("processed customizer artwork preserves a separately verified original source", () => {
+  const direct = fs.readFileSync("lib/direct-upload.ts", "utf8");
+  assert.match(direct, /sourceArtwork: Target \| null/);
+  assert.match(direct, /sourceArtworkDone/);
+
+  const ticket = fs.readFileSync("lib/upload-ticket.ts", "utf8");
+  assert.match(ticket, /sourceArtworkPath/);
+  assert.match(ticket, /source-artwork\\\.\(jpg\|png\|webp\)/);
+
+  const parser = fs.readFileSync("lib/enquiry-server.ts", "utf8");
+  assert.match(parser, /sourceArtwork/);
+  assert.match(parser, /MAX_UPLOAD_BYTES/);
+  assert.match(parser, /MAX_IMAGE_PIXELS/);
+
+  const uploads = fs.readFileSync(
+    "app/api/enquiries/uploads/route.ts",
+    "utf8",
+  );
+  assert.match(uploads, /source-artwork/);
+  assert.match(uploads, /sourceArtworkTarget/);
+
+  const submit = fs.readFileSync("app/api/enquiries/route.ts", "utf8");
+  assert.match(submit, /ticket\.sourceArtworkPath/);
+  assert.match(submit, /verifyArtwork/);
+  assert.match(submit, /source_artwork_metadata/);
+});
+
+test("order handoff prefers immutable original source and falls back for legacy enquiries", () => {
+  const handoff = fs.readFileSync("lib/enquiry-handoff-server.ts", "utf8");
+  assert.match(handoff, /source_artwork_path/);
+  assert.match(handoff, /source_artwork_metadata/);
+  assert.match(handoff, /const artworkPath = sourcePath \|\| currentPath/);
+  assert.match(
+    handoff,
+    /sourcePath\s*\? readMetadataRecord\(item\.source_artwork_metadata\)/,
+  );
+  assert.match(handoff, /readCurrentArtworkMetadata/);
+
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609280430_enquiry_source_artwork.sql",
+    "utf8",
+  );
+  assert.match(migration, /add column if not exists source_artwork_path text/);
+  assert.match(migration, /source_artwork_metadata jsonb/);
+  assert.match(migration, /security invoker/);
+  assert.match(migration, /revoke all .* public, anon, authenticated/s);
+  assert.match(migration, /grant execute .* service_role/s);
+});
