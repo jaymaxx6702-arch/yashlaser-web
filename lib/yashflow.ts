@@ -40,6 +40,16 @@ export async function syncShopOrderToYashFlow(orderId: string) {
     .order("created_at");
   if (itemError || !items?.length) throw new Error(itemError?.message || "Shop order has no items.");
 
+  const { data: lastEvent } = await db
+    .from("shop_integration_events")
+    .select("attempts")
+    .eq("kind", "yashflow_order_sync")
+    .eq("entity_id", orderId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const attempt = Math.max(1, Number(lastEvent?.attempts || 0) + 1);
+
   await db
     .from("shop_orders")
     .update({ yashflow_sync_status: "pending", yashflow_last_error: null })
@@ -70,7 +80,10 @@ export async function syncShopOrderToYashFlow(orderId: string) {
   try {
     const response = await fetch(`${baseUrl()}/api/integrations/shop/orders`, {
       method: "POST",
-      headers: authHeaders(),
+      headers: {
+        ...authHeaders(),
+        "idempotency-key": "shop-order:" + order.id,
+      },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(25000),
     });
@@ -111,9 +124,9 @@ export async function syncShopOrderToYashFlow(orderId: string) {
       entity_id: orderId,
       status: "success",
       payload: result,
-      attempts: 1,
+      attempts: attempt,
     });
-    return result;
+    return { ...result, syncAttempt: attempt };
   } catch (error) {
     const rawMessage = error instanceof Error ? error.message : "YashFlow sync failed.";
     const message = safeIntegrationError(rawMessage);
@@ -129,7 +142,7 @@ export async function syncShopOrderToYashFlow(orderId: string) {
       entity_id: orderId,
       status: "failed",
       error: message.slice(0, 2000),
-      attempts: 1,
+      attempts: attempt,
     });
     throw error;
   }
