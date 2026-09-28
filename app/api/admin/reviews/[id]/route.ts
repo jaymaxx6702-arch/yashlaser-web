@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+
+type ReviewUpdateBody = {
+  status?: unknown;
+  verifiedPurchase?: unknown;
+};
 
 export async function POST(
   request: Request,
@@ -8,11 +14,26 @@ export async function POST(
 ) {
   await requireAdmin();
   const { id } = await context.params;
-  const body = await request.json().catch(() => null);
+
+  let body: ReviewUpdateBody | null;
+  try {
+    body = await readJsonBody<ReviewUpdateBody>(request, 4 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
+
   const status =
     body?.status === "published" || body?.status === "rejected"
       ? body.status
       : "";
+  const verifiedPurchase =
+    typeof body?.verifiedPurchase === "boolean"
+      ? body.verifiedPurchase
+      : false;
 
   if (!/^[0-9a-f-]{36}$/i.test(id) || !status)
     return NextResponse.json(
@@ -21,7 +42,13 @@ export async function POST(
     );
 
   const db = getSupabase();
-  const { error } = await db.from("shop_reviews").update({ status }).eq("id", id);
+  const { error } = await db
+    .from("shop_reviews")
+    .update({
+      status,
+      verified_purchase: verifiedPurchase,
+    })
+    .eq("id", id);
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
