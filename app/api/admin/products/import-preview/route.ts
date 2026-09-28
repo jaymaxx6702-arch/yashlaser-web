@@ -40,7 +40,18 @@ export async function POST(request: Request) {
       importState.map((item) => [item.productKey, item]),
     );
 
-    const report = inspection.drafts.map((draft) => {
+    const report: Array<{
+      productKey: string;
+      name: string;
+      slug: string;
+      categoryId: string;
+      pricingMode: string;
+      variants: number;
+      latestRevision: number | null;
+      latestState: string | null;
+      status: "ready" | "unchanged" | "blocked";
+      issues: string[];
+    }> = inspection.drafts.map((draft) => {
       const state = stateByKey.get(draft.productKey);
       const productIssues = issues
         .filter((issue) => issue.productKey === draft.productKey)
