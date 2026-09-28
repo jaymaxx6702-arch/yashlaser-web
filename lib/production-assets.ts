@@ -2,10 +2,120 @@ import "server-only";
 
 import { getSupabase } from "@/lib/supabase";
 
+export type ProductionQualityWarning = {
+  code:
+    | "LOW_SOURCE_RESOLUTION"
+    | "LEGACY_INTEGRITY_METADATA_MISSING"
+    | "EXACT_DPI_PENDING";
+  message: string;
+  orderItemId?: string;
+};
+
 function safeExtension(path: string) {
   const match = path.toLowerCase().match(/\.([a-z0-9]{2,5})$/);
   const ext = match?.[1] || "bin";
   return ["jpg", "jpeg", "png", "webp", "pdf"].includes(ext) ? ext : "bin";
+}
+
+function readSourceArtwork(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const source = (value as Record<string, unknown>).sourceArtwork;
+  if (!source || typeof source !== "object" || Array.isArray(source)) return null;
+  const meta = source as Record<string, unknown>;
+  if (
+    typeof meta.width !== "number" ||
+    typeof meta.height !== "number" ||
+    typeof meta.bytes !== "number" ||
+    typeof meta.sha256 !== "string"
+  )
+    return null;
+  return {
+    width: meta.width,
+    height: meta.height,
+    bytes: meta.bytes,
+    sha256: meta.sha256,
+  };
+}
+
+async function collectProductionQualityWarnings(orderId: string) {
+  const db = getSupabase();
+  const [{ data: items, error: itemError }, { data: originals, error: assetError }] =
+    await Promise.all([
+      db
+        .from("shop_order_items")
+        .select("id,configuration")
+        .eq("order_id", orderId),
+      db
+        .from("shop_order_assets")
+        .select("order_item_id,file_size,sha256")
+        .eq("order_id", orderId)
+        .eq("asset_kind", "original")
+        .neq("state", "superseded"),
+    ]);
+
+  if (itemError || assetError)
+    throw new Error("Unable to validate production source integrity.");
+
+  const originalByItem = new Map(
+    (originals || [])
+      .filter((asset) => asset.order_item_id)
+      .map((asset) => [asset.order_item_id as string, asset]),
+  );
+  const warnings: ProductionQualityWarning[] = [];
+  let sawPhotoArtwork = false;
+
+  for (const item of items || []) {
+    const meta = readSourceArtwork(item.configuration);
+    if (!meta) continue;
+    sawPhotoArtwork = true;
+
+    const megapixels = (meta.width * meta.height) / 1_000_000;
+    if (megapixels < 1 || Math.min(meta.width, meta.height) < 700) {
+      warnings.push({
+        code: "LOW_SOURCE_RESOLUTION",
+        orderItemId: item.id,
+        message:
+          `Source artwork for order item ${item.id} is only ${meta.width}×${meta.height}px. Review print quality before manufacturing.`,
+      });
+    }
+
+    const original = originalByItem.get(item.id);
+    if (
+      !original ||
+      original.file_size !== meta.bytes ||
+      original.sha256 !== meta.sha256
+    ) {
+      warnings.push({
+        code: "LEGACY_INTEGRITY_METADATA_MISSING",
+        orderItemId: item.id,
+        message:
+          `Order item ${item.id} does not have a complete matching hash/size record for the preserved original. Verify the source manually before production.`,
+      });
+    }
+  }
+
+  if (sawPhotoArtwork) {
+    warnings.push({
+      code: "EXACT_DPI_PENDING",
+      message:
+        "Exact print DPI cannot be calculated until verified physical product dimensions are mapped in YL-013. No DPI value is being guessed.",
+    });
+  }
+
+  return warnings;
+}
+
+async function restorePreviousProductionStates(
+  rows: readonly { id: string; state: string }[],
+) {
+  const db = getSupabase();
+  for (const row of rows) {
+    await db
+      .from("shop_order_assets")
+      .update({ state: row.state, updated_at: new Date().toISOString() })
+      .eq("id", row.id)
+      .eq("state", "superseded");
+  }
 }
 
 export async function createProductionSourceFromApprovedProof(orderId: string) {
@@ -48,6 +158,8 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
   )
     throw new Error("Approved proof asset is not synchronized.");
 
+  const qualityWarnings = await collectProductionQualityWarnings(orderId);
+
   const { data: existing, error: existingError } = await db
     .from("shop_order_assets")
     .select("id,version_no,file_path,state")
@@ -68,7 +180,8 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
         .update({ status: "production", updated_at: new Date().toISOString() })
         .eq("id", orderId)
         .eq("status", "proof");
-      if (repairError) throw new Error("Unable to update order production status.");
+      if (repairError)
+        throw new Error("Unable to update order production status.");
     }
     return {
       id: existing.id as string,
@@ -76,22 +189,21 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
       filePath: existing.file_path as string,
       idempotent: true,
       sourceProofVersion: proof.version_no as number,
+      qualityWarnings,
     };
   }
 
-  const { data: latestProduction, error: latestProductionError } = await db
+  const { data: productionRows, error: productionRowsError } = await db
     .from("shop_order_assets")
-    .select("version_no")
+    .select("id,version_no,state")
     .eq("order_id", orderId)
     .eq("asset_kind", "production")
-    .order("version_no", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("version_no", { ascending: false });
 
-  if (latestProductionError)
+  if (productionRowsError)
     throw new Error("Unable to determine production asset version.");
 
-  const version = (latestProduction?.version_no || 0) + 1;
+  const version = ((productionRows || [])[0]?.version_no || 0) + 1;
   const extension = safeExtension(proofAsset.file_path);
   const destination =
     `production/${orderId}/v${version}/approved-proof.${extension}`;
@@ -99,7 +211,8 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
   const { error: copyError } = await db.storage
     .from("shop-proofs")
     .copy(proofAsset.file_path, destination);
-  if (copyError) throw new Error("Unable to preserve approved production source.");
+  if (copyError)
+    throw new Error("Unable to preserve approved production source.");
 
   const { data: productionAsset, error: assetError } = await db
     .from("shop_order_assets")
@@ -111,8 +224,7 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
       state: "ready",
       storage_bucket: "shop-proofs",
       file_path: destination,
-      file_name:
-        `production-${order.order_no}-v${version}.${extension}`,
+      file_name: `production-${order.order_no}-v${version}.${extension}`,
       mime_type: proofAsset.mime_type || proof.mime_type || null,
       source_asset_id: proofAsset.id,
       proof_id: proof.id,
@@ -124,6 +236,10 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
     await db.storage.from("shop-proofs").remove([destination]);
     throw new Error("Unable to register production source.");
   }
+
+  const previousProduction = (productionRows || [])
+    .filter((row) => ["draft", "ready", "approved"].includes(row.state))
+    .map((row) => ({ id: row.id as string, state: row.state as string }));
 
   const { error: supersedeError } = await db
     .from("shop_order_assets")
@@ -146,6 +262,7 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
     .in("status", ["proof", "production"]);
 
   if (orderUpdateError) {
+    await restorePreviousProductionStates(previousProduction);
     await db.from("shop_order_assets").delete().eq("id", productionAsset.id);
     await db.storage.from("shop-proofs").remove([destination]);
     throw new Error("Unable to move order into production.");
@@ -164,6 +281,7 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
       sourceProofId: proof.id,
       sourceProofVersion: proof.version_no,
       productionVersion: version,
+      qualityWarnings,
     },
   });
 
@@ -173,6 +291,7 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
       .update({ status: order.status, updated_at: new Date().toISOString() })
       .eq("id", orderId)
       .eq("status", "production");
+    await restorePreviousProductionStates(previousProduction);
     await db.from("shop_order_assets").delete().eq("id", productionAsset.id);
     await db.storage.from("shop-proofs").remove([destination]);
     throw new Error("Unable to record production handoff.");
@@ -184,5 +303,6 @@ export async function createProductionSourceFromApprovedProof(orderId: string) {
     filePath: destination,
     idempotent: false,
     sourceProofVersion: proof.version_no as number,
+    qualityWarnings,
   };
 }
