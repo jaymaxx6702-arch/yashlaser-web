@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { languageAlternates } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CategoryCard } from "@/components/CategoryCard";
@@ -27,6 +29,24 @@ const storyCopy = {
     text: "Yash Laser डिझाइन, अॅक्रिलिक कारागिरी आणि व्यवस्थित प्रॉडक्शन एकत्र करून व्यक्ती, शाळा, संस्था आणि इव्हेंटसाठी वैयक्तिक प्रॉडक्ट तयार करते.",
   },
 } as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isUiLanguage(lang)) return { title: "Page not found" };
+  const home = homeCopy[lang];
+  return {
+    title: home.title,
+    description: home.description,
+    alternates: {
+      canonical: "/" + lang,
+      languages: languageAlternates("/"),
+    },
+  };
+}
 
 export default async function LocalizedHome({
   params,
