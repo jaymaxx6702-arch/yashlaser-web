@@ -22,7 +22,7 @@ export async function generateMetadata({
     title: product.name,
     description: product.description.slice(0, 160),
     alternates: {
-      canonical: path,
+      canonical: "/" + lang + path,
       languages: languageAlternates(path),
     },
   };
