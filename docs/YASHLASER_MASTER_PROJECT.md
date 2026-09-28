@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 49 |
-| In Progress | 7 |
+| Completed | 50 |
+| In Progress | 9 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 53 |
+| Pending | 50 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -425,10 +425,10 @@ Known completed foundation:
 - [ ] [IN PROGRESS] **YL-085** Search, product view, add-to-cart, checkout અને order completion events verify કરવા. — page_view/search/product_view/add_to_cart instrumentation exists; production flag and end-to-end begin_checkout/checkout_complete verification remain.
 - [x] **YL-086** Titles, descriptions, canonical, Open Graph, sitemap અને robots verify કરવા. — Product metadata/OG, sitemap, robots and public-page canonical coverage implemented; deployment smoke remains part of YL-094.
 - [x] **YL-087** Multilingual canonical/hreflang અને duplicate-content strategy test કરવી. — EN/GU/HI/MR home, collection, category and product pages now use self-canonical URLs with shared hreflang/x-default alternates.
-- [ ] **YL-088** Core Web Vitals, images, lazy-loading અને JS bundle optimise કરવું.
-- [ ] **YL-089** Keyboard, form labels, focus, contrast, errors અને alt-text accessibility audit કરવી.
+- [ ] [IN PROGRESS] **YL-088** Core Web Vitals, images, lazy-loading અને JS bundle optimise કરવું. — Product cards/gallery use Next Image + responsive sizes and AI models load on demand; production Web Vitals/bundle measurement remains.
+- [ ] [IN PROGRESS] **YL-089** Keyboard, form labels, focus, contrast, errors અને alt-text accessibility audit કરવી. — Focus-visible, reduced-motion, labelled navigation/forms and image-alt patterns are regression-locked; interactive browser/contrast audit remains.
 - [x] **YL-090** Admin auth, RLS, role permissions, server-only secrets અને audit logs security test કરવું. — Admin allowlist/session checks, server-only credentials, cross-site write guards, bounded API bodies, live RLS verification and private service-role-only admin audit ledger/viewer are implemented and regression-locked.
-- [ ] **YL-091** Private uploads, signed URLs, file validation અને customer/org isolation test કરવું.
+- [x] **YL-091** Private uploads, signed URLs, file validation અને customer/org isolation test કરવું. — Live private-bucket/RLS audit plus account ownership, secret-token access, admin authorization and signed-URL regression checks verify current Shop isolation boundaries.
 - [ ] **YL-092** Android Chrome, Desktop Chrome, Edge અને common screen widths regression test કરવું.
 
 ### I. Deployment, Launch and Monitoring - YL-093 to YL-100
