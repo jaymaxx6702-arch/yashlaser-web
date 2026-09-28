@@ -208,10 +208,10 @@ Known completed foundation:
 | Status | Count |
 |---|---:|
 | Completed | 41 |
-| In Progress | 6 |
-| Ready to Enable | 8 |
+| In Progress | 7 |
+| Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 64 |
+| Pending | 61 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -385,9 +385,9 @@ Known completed foundation:
 - [x] **YL-054** Secure token-based Track Order foundation complete કરવી.
 - [x] **YL-055** Customer-facing order status foundation complete કરવી.
 - [x] **YL-056** Proof version, approve/reject અને approval status foundation complete કરવી.
-- [ ] **YL-057** Supabase Auth Site URL, redirect URLs અને production auth mode verify કરવો.
-- [ ] **YL-058** Guest order secure account-claim flow positive/negative cases સાથે test કરવો.
-- [ ] **YL-059** Account order history, proof, tracking, saved design અને reorder test કરવું.
+- [ ] [IN PROGRESS] **YL-057** Supabase Auth Site URL, redirect URLs અને production auth mode verify કરવો. — Login/signup/server session code exists; dashboard-level Site URL/redirect/auth-mode verification and CUSTOMER_ACCOUNTS_ENABLED rollout remain.
+- [ ] [READY TO ENABLE] **YL-058** Guest order secure account-claim flow positive/negative cases સાથે test કરવો. — Secure tracking-token validation, cross-account conflict guard, user/IP rate-limit hooks and automatic post-claim refresh implemented; live Auth-enabled E2E remains.
+- [ ] [READY TO ENABLE] **YL-059** Account order history, proof, tracking, saved design અને reorder test કરવું. — Account order history/detail, signed proof access, shipment/timeline and product revisit foundation implemented; live Auth-enabled E2E and dedicated saved-design/reorder acceptance remain.
 - [x] **YL-060** Admin commerce/order modules foundation complete કરવી.
 - [ ] [BLOCKED] **YL-061** Payment provider અને merchant account business decision final કરવો.
 - [ ] [BLOCKED] **YL-062** Payment keys, webhook, idempotency, failure/retry/refund flow implement અને test કરવો.
