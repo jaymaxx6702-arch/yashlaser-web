@@ -838,6 +838,9 @@ test("browser photo AI is opt-in, on-device and model capabilities stay explicit
 test("smart crop stays deterministic and manual crop remains available", () => {
   const source = fs.readFileSync("lib/customization/smart-crop.ts", "utf8");
   assert.match(source, /cropPreset/);
+  assert.match(source, /FaceDetector/);
+  assert.match(source, /fastMode: true/);
+  assert.match(source, /faceAware: true/);
   assert.match(source, /alpha <= 32/);
   assert.match(source, /subjectAware: false/);
   assert.match(source, /subjectAware: true/);
