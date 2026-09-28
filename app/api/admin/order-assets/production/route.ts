@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { createProductionSourceFromApprovedProof } from "@/lib/production-assets";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 type Body = { orderId?: unknown };
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   let body: Body | null;
   try {
@@ -24,6 +25,13 @@ export async function POST(request: Request) {
 
   try {
     const result = await createProductionSourceFromApprovedProof(orderId);
+    await recordAdminAudit({
+      adminUserId: admin.id,
+      action: "production_source.create",
+      entityType: "order",
+      entityId: orderId,
+      payload: { assetId: result.id ?? null },
+    });
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     const message =
