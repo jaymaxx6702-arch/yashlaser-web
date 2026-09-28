@@ -103,10 +103,6 @@ export function SiteHeader() {
   const localHref = (value: string) => (lang === "en" ? value : prefix + value);
 
   useEffect(() => {
-    setOpen(false);
-  }, [path]);
-
-  useEffect(() => {
     const sync = () => setCount(cartCount());
     sync();
     window.addEventListener(CART_EVENT, sync);
