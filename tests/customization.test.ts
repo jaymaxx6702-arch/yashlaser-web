@@ -744,12 +744,22 @@ test("photo quality screening is deterministic, advisory and never invents DPI",
     width: 600,
     height: 500,
     signals,
+    faceCount: 2,
   });
   assert.equal(report.status, "warning");
   assert.ok(report.issues.some((issue) => issue.code === "resolution-low"));
   assert.ok(report.issues.some((issue) => issue.code === "too-dark"));
   assert.ok(report.issues.some((issue) => issue.code === "contrast-low"));
   assert.ok(report.issues.some((issue) => issue.code === "blur-risk"));
+  assert.equal(report.faceCount, 2);
+  assert.equal(
+    assessPhotoQuality({
+      width: 1200,
+      height: 1200,
+      signals: { meanLuma: 128, contrast: 50, sharpness: 100 },
+    }).faceCount,
+    null,
+  );
 
   const source = fs.readFileSync(
     "lib/customization/photo-quality.ts",
@@ -757,6 +767,14 @@ test("photo quality screening is deterministic, advisory and never invents DPI",
   );
   assert.doesNotMatch(source, /\bdpi\b/i);
   assert.doesNotMatch(source, /\bppi\b/i);
+  assert.match(source, /FaceDetector/);
+  assert.match(source, /fastMode: true/);
+  const panel = fs.readFileSync(
+    "components/customization/PhotoQualityPanel.tsx",
+    "utf8",
+  );
+  assert.match(panel, /report\.faceCount/);
+  assert.match(panel, /Face check/);
 });
 
 test("manual cutout refinement bounds strokes and keeps original/processed roles explicit", () => {
@@ -820,6 +838,9 @@ test("browser photo AI is opt-in, on-device and model capabilities stay explicit
 test("smart crop stays deterministic and manual crop remains available", () => {
   const source = fs.readFileSync("lib/customization/smart-crop.ts", "utf8");
   assert.match(source, /cropPreset/);
+  assert.match(source, /FaceDetector/);
+  assert.match(source, /fastMode: true/);
+  assert.match(source, /faceAware: true/);
   assert.match(source, /alpha <= 32/);
   assert.match(source, /subjectAware: false/);
   assert.match(source, /subjectAware: true/);

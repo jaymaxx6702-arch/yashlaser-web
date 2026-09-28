@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 50 |
+| Completed | 53 |
 | In Progress | 9 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 50 |
+| Pending | 47 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -444,14 +444,14 @@ Known completed foundation:
 
 ### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
 
-- [ ] [IN PROGRESS] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી.
+- [x] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી. — On-device resolution/megapixel, exposure, contrast and Laplacian sharpness warnings are active; supported browsers now add optional native FaceDetector count without identification or external upload. Exact print DPI is intentionally not invented until verified physical size data exists under YL-013.
 - [x] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો. — On-device MODNet standee/portrait pilot with transparent output and safe failure fallback implemented.
 - [x] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું. — Non-destructive erase/restore, brush sizing, undo/reset and original/edited compare implemented.
 - [ ] **YL-104** AI image enhancement/upscale pipeline: resolution upscale, sharpness, noise reduction, lighting, white-balance/color correction અને face-safe enhancement implement કરવી; over-processing ટાળવું.
-- [ ] **YL-105** Subject/face-aware smart crop, auto-centering અને product safe-area positioning બનાવવું; customerને manual crop/zoom/position override હંમેશા આપવો.
-- [ ] **YL-106** AI-processed imageને existing customizer canvasમાં non-destructive રીતે integrate કરીને cutout/silhouette અને realistic product mockup preview બનાવવો.
+- [x] **YL-105** Subject/face-aware smart crop, auto-centering અને product safe-area positioning બનાવવું; customerને manual crop/zoom/position override હંમેશા આપવો. — Native FaceDetector is used when available, transparent-subject bounds are the fallback, deterministic centre crop is the final fallback, and crop/zoom/pan manual override remains available.
+- [ ] [IN PROGRESS] **YL-106** AI-processed imageને existing customizer canvasમાં non-destructive રીતે integrate કરીને cutout/silhouette અને realistic product mockup preview બનાવવો. — Processed artwork already feeds the existing canvas non-destructively while original source is retained; richer realistic product-mockup rendering remains.
 - [ ] **YL-107** Product/category પ્રમાણે optional AI design assistance: suitable template, layout, text placement અને style suggestions આપવી; customerની explicit selection વગર design auto-final ન કરવું.
-- [ ] **YL-108** AI provider/model abstraction, browser/server execution choice, privacy/consent, file-retention rules, cost/usage limits, timeout/retry અને provider-failure fallback define/test કરવું.
+- [x] **YL-108** AI provider/model abstraction, browser/server execution choice, privacy/consent, file-retention rules, cost/usage limits, timeout/retry અને provider-failure fallback define/test કરવું. — Vendor-neutral provider policy validates capabilities, browser/server execution, hosting, consent, retention, input limits, optional cost, timeout and bounded retries; current on-device worker remains a swappable adapter.
 - [x] **YL-109** AI preview અને production file વચ્ચે strict separation રાખીને final print-quality validation, original source retention, approved version lock અને proof handoff verify કરવું. — Original/preview/proof/approved/production lineage, hash/size retention, approved-proof lock, production-source handoff and honest print-readiness warnings completed; exact DPI remains dependent on verified physical sizes in YL-013.
 
 ### K. Advanced Commerce, Admin and Customer Experience - YL-110 to YL-121

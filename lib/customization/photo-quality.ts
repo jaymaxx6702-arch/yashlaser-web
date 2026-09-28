@@ -17,6 +17,7 @@ export type PhotoQualityReport = {
   meanLuma: number;
   contrast: number;
   sharpness: number;
+  faceCount: number | null;
   status: "good" | "warning";
   issues: PhotoQualityIssue[];
 };
@@ -35,8 +36,10 @@ export function assessPhotoQuality(input: {
   width: number;
   height: number;
   signals: PhotoQualitySignals;
+  faceCount?: number | null;
 }): PhotoQualityReport {
   const { width, height, signals } = input;
+  const faceCount = input.faceCount ?? null;
   if (
     !Number.isInteger(width) ||
     !Number.isInteger(height) ||
@@ -45,7 +48,9 @@ export function assessPhotoQuality(input: {
     !finite(signals.meanLuma, 0, 255) ||
     !finite(signals.contrast, 0, 255) ||
     !Number.isFinite(signals.sharpness) ||
-    signals.sharpness < 0
+    signals.sharpness < 0 ||
+    (faceCount !== null &&
+      (!Number.isInteger(faceCount) || faceCount < 0 || faceCount > 100))
   )
     throw new Error("Invalid photo quality data.");
 
@@ -70,6 +75,7 @@ export function assessPhotoQuality(input: {
     meanLuma: Math.round(signals.meanLuma * 10) / 10,
     contrast: Math.round(signals.contrast * 10) / 10,
     sharpness: Math.round(signals.sharpness * 10) / 10,
+    faceCount,
     status: issues.length ? "warning" : "good",
     issues,
   };
@@ -131,6 +137,33 @@ export function analyzePixelBuffer(
   return { meanLuma, contrast, sharpness };
 }
 
+type FaceDetectorConstructor = new (options?: {
+  maxDetectedFaces?: number;
+  fastMode?: boolean;
+}) => {
+  detect(source: ImageBitmap): Promise<unknown[]>;
+};
+
+async function detectFaceCount(bitmap: ImageBitmap): Promise<number | null> {
+  const FaceDetector = (
+    globalThis as typeof globalThis & {
+      FaceDetector?: FaceDetectorConstructor;
+    }
+  ).FaceDetector;
+  if (!FaceDetector) return null;
+
+  try {
+    const detector = new FaceDetector({
+      maxDetectedFaces: 20,
+      fastMode: true,
+    });
+    const faces = await detector.detect(bitmap);
+    return Array.isArray(faces) ? Math.min(faces.length, 100) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function analyzeBitmapQuality(
   bitmap: ImageBitmap,
 ): Promise<PhotoQualityReport> {
@@ -148,9 +181,11 @@ export async function analyzeBitmapQuality(
   if (!context) throw new Error("Photo quality analysis is unavailable.");
   context.drawImage(bitmap, 0, 0, width, height);
   const pixels = context.getImageData(0, 0, width, height);
+  const faceCount = await detectFaceCount(bitmap);
   return assessPhotoQuality({
     width: bitmap.width,
     height: bitmap.height,
     signals: analyzePixelBuffer(pixels.data, width, height),
+    faceCount,
   });
 }
