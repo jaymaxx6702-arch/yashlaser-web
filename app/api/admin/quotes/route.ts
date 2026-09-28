@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 type QuoteBody = {
   name?: unknown;
@@ -16,7 +17,7 @@ type QuoteBody = {
 };
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   let body: QuoteBody | null;
   try {
     body = await readJsonBody<QuoteBody>(request, 32 * 1024);
@@ -77,6 +78,21 @@ export async function POST(request: Request) {
       { error: error?.message || "Unable to create quote." },
       { status: 500 },
     );
+
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "quote.create",
+    entityType: "quote",
+    entityId: data.id,
+    payload: {
+      quoteNo: data.quote_no,
+      itemCount: items.length,
+      sourceType:
+        typeof body?.sourceType === "string"
+          ? body.sourceType.trim().slice(0, 40)
+          : "custom",
+    },
+  });
 
   return NextResponse.json({
     quoteNo: data.quote_no,
