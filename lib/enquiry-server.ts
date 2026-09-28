@@ -1,7 +1,12 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { products } from "@/data/catalog";
-import { requireReadyDocument } from "@/lib/customization/model";
+import {
+  MAX_IMAGE_PIXELS,
+  MAX_UPLOAD_BYTES,
+  requireReadyDocument,
+  type Artwork,
+} from "@/lib/customization/model";
 import { MAX_ENQUIRY_BYTES } from "./enquiry-limits";
 import { getSupabase, submissionEnabled } from "./supabase";
 import { consumeRequestRateLimit } from "@/lib/rate-limit";
@@ -116,6 +121,50 @@ export function parseEnquiry(data: Record<string, unknown>) {
       "Please check your product options and customization.",
     );
   }
+  let sourceArtwork: Artwork | null = null;
+  if (data.sourceArtwork !== null && data.sourceArtwork !== undefined) {
+    const value = data.sourceArtwork;
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      throw new EnquiryError("Invalid original artwork metadata.");
+    const source = value as Record<string, unknown>;
+    if (
+      typeof source.name !== "string" ||
+      !source.name.trim() ||
+      source.name.length > 180 ||
+      typeof source.mimeType !== "string" ||
+      !["image/jpeg", "image/png", "image/webp"].includes(source.mimeType) ||
+      typeof source.bytes !== "number" ||
+      !Number.isInteger(source.bytes) ||
+      source.bytes < 1 ||
+      source.bytes > MAX_UPLOAD_BYTES ||
+      typeof source.width !== "number" ||
+      !Number.isInteger(source.width) ||
+      source.width < 1 ||
+      typeof source.height !== "number" ||
+      !Number.isInteger(source.height) ||
+      source.height < 1 ||
+      source.width * source.height > MAX_IMAGE_PIXELS ||
+      typeof source.sha256 !== "string" ||
+      !/^[a-f0-9]{64}$/.test(source.sha256)
+    )
+      throw new EnquiryError("Invalid original artwork metadata.");
+
+    sourceArtwork = {
+      name: source.name.trim(),
+      mimeType: source.mimeType as Artwork["mimeType"],
+      bytes: source.bytes,
+      width: source.width,
+      height: source.height,
+      sha256: source.sha256,
+    };
+
+    if (design.artwork?.sha256 === sourceArtwork.sha256)
+      sourceArtwork = null;
+  }
+
+  if (sourceArtwork && !design.artwork)
+    throw new EnquiryError("Original artwork requires a processed design image.");
+
   const designId = digest(JSON.stringify(design)).slice(0, 16);
   if (
     text("designId", 16, true) !== designId ||
@@ -144,6 +193,7 @@ export function parseEnquiry(data: Record<string, unknown>) {
     quantity: design.quantity,
     designId,
     customization: design,
+    sourceArtwork,
     customerName,
     phone,
     email,
