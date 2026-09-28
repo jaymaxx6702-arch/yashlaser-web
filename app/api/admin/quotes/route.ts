@@ -2,10 +2,31 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { newAccessToken, tokenHash } from "@/lib/commerce-server";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+
+type QuoteBody = {
+  name?: unknown;
+  mobile?: unknown;
+  email?: unknown;
+  items?: unknown;
+  totalMinor?: unknown;
+  validUntil?: unknown;
+  notes?: unknown;
+  sourceType?: unknown;
+};
 
 export async function POST(request: Request) {
   await requireAdmin();
-  const body = await request.json().catch(() => null);
+  let body: QuoteBody | null;
+  try {
+    body = await readJsonBody<QuoteBody>(request, 32 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
 
   const name =
     typeof body?.name === "string" ? body.name.trim().slice(0, 80) : "";
@@ -13,7 +34,7 @@ export async function POST(request: Request) {
     typeof body?.mobile === "string" ? body.mobile.trim().slice(0, 20) : "";
   const email =
     typeof body?.email === "string" ? body.email.trim().slice(0, 160) : "";
-  const items = Array.isArray(body?.items) ? body.items : [];
+  const items = Array.isArray(body?.items) ? body.items.slice(0, 200) : [];
   const total = Number(body?.totalMinor);
   const validUntil =
     typeof body?.validUntil === "string" ? body.validUntil : null;
@@ -38,7 +59,9 @@ export async function POST(request: Request) {
       customer_mobile: mobile,
       customer_email: email || null,
       source_type:
-        typeof body?.sourceType === "string" ? body.sourceType : "custom",
+        typeof body?.sourceType === "string"
+          ? body.sourceType.trim().slice(0, 40)
+          : "custom",
       status: "sent",
       items,
       total_minor:
