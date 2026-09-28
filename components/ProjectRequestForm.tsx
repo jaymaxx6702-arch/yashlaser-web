@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { uploadPrivate } from "@/lib/direct-upload";
 import { business, whatsappUrl } from "@/data/business";
 import type { UiLanguage } from "@/lib/i18n";
+import { BulkPersonalizationBuilder } from "@/components/BulkPersonalizationBuilder";
 
 type Kind = "bulk" | "event" | "custom_acrylic";
 
@@ -61,11 +62,27 @@ export function ProjectRequestForm({
   const prefix = lang === "en" ? "" : "/" + lang;
   const [result, setResult] = useState<{ requestNo: string; token: string } | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [bulkFiles, setBulkFiles] = useState<File[]>([]);
+  const [bulkValid, setBulkValid] = useState(true);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
+  function uploadMime(file: File) {
+    if (file.type) return file.type;
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".csv")) return "text/csv";
+    if (name.endsWith(".xls")) return "application/vnd.ms-excel";
+    if (name.endsWith(".xlsx"))
+      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    return "application/octet-stream";
+  }
+
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (kind === "bulk" && !bulkValid) {
+      setStatus("Fix batch personalisation errors before submitting.");
+      return;
+    }
     setBusy(true);
     setStatus("");
     try {
@@ -91,17 +108,32 @@ export function ProjectRequestForm({
       setResult(data);
       setStatus(t.saved);
 
-      if (file) {
+      const attachments = [file, ...bulkFiles]
+        .filter((value): value is File => Boolean(value))
+        .filter(
+          (value, index, all) =>
+            all.findIndex(
+              (candidate) =>
+                candidate.name === value.name &&
+                candidate.size === value.size &&
+                candidate.lastModified === value.lastModified,
+            ) === index,
+        );
+
+      for (const attachment of attachments) {
+        const mimeType = uploadMime(attachment);
         const sessionResponse = await fetch(
-          "/api/project-requests/" + encodeURIComponent(data.requestNo) + "/upload-session",
+          "/api/project-requests/" +
+            encodeURIComponent(data.requestNo) +
+            "/upload-session",
           {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               token: data.token,
-              fileName: file.name,
-              mimeType: file.type,
-              size: file.size,
+              fileName: attachment.name,
+              mimeType,
+              size: attachment.size,
             }),
           },
         );
@@ -109,27 +141,32 @@ export function ProjectRequestForm({
         if (!sessionResponse.ok)
           throw new Error(session.error || t.uploadPrepare);
 
-        await uploadPrivate({ path: session.path, url: session.url }, file);
+        await uploadPrivate(
+          { path: session.path, url: session.url },
+          attachment,
+        );
 
         const confirm = await fetch(
-          "/api/project-requests/" + encodeURIComponent(data.requestNo) + "/files",
+          "/api/project-requests/" +
+            encodeURIComponent(data.requestNo) +
+            "/files",
           {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               token: data.token,
               path: session.path,
-              fileName: file.name,
-              mimeType: file.type,
-              size: file.size,
+              fileName: attachment.name,
+              mimeType,
+              size: attachment.size,
             }),
           },
         );
         const confirmed = await confirm.json();
         if (!confirm.ok)
           throw new Error(confirmed.error || t.uploadConfirm);
-        setStatus(t.savedFile);
       }
+      if (attachments.length) setStatus(t.savedFile);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : t.unable);
     } finally {
@@ -171,6 +208,16 @@ export function ProjectRequestForm({
               <input name="requiredDate" type="date" />
             </label>
           </>
+        )}
+
+        {kind === "bulk" && (
+          <div className="full">
+            <BulkPersonalizationBuilder
+              lang={lang}
+              onAttachmentsChange={setBulkFiles}
+              onValidityChange={setBulkValid}
+            />
+          </div>
         )}
 
         {kind === "event" && (
@@ -232,7 +279,10 @@ export function ProjectRequestForm({
         </label>
       </div>
 
-      <button className="button" disabled={busy}>
+      <button
+        className="button"
+        disabled={busy || (kind === "bulk" && !bulkValid)}
+      >
         {busy ? t.submitting : t.submit}
       </button>
 

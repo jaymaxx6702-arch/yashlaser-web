@@ -26,6 +26,7 @@ export default async function AdminReviewsPage() {
               <ReviewModeration
                 reviewId={review.id}
                 initialStatus={review.status}
+                initialVerified={Boolean(review.verified_purchase)}
               />
             </article>
           ))}

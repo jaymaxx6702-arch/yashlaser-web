@@ -9,9 +9,14 @@ import { PhotoQualityPanel } from "./PhotoQualityPanel";
 
 const copy = {
   en: {
-    title: "Photo tools",
+    title: "AI Photo Studio",
     help:
-      "These tools run on this device. The first AI operation may download a model. Your photo is not sent to an external image-processing service.",
+      "Upload a photo to unlock on-device AI tools. The first AI operation may download a model; your photo is not sent to an external image-processing service.",
+    ready: "Photo uploaded — choose a tool below.",
+    locked: "Upload a photo below to activate these tools.",
+    quality: "Quality check",
+    background: "Background removal",
+    manual: "Manual cutout refine",
     smartCrop: "Smart crop",
     enhance: "Enhance 2×",
     restore: "Restore original",
@@ -19,9 +24,14 @@ const copy = {
     enhanced: "2× enhancement applied",
   },
   gu: {
-    title: "Photo tools",
+    title: "AI Photo Studio",
     help:
-      "આ tools આ device પર ચાલે છે. પહેલી AI operation વખતે model download થઈ શકે. તમારો photo external image-processing serviceને મોકલાતો નથી.",
+      "Photo upload કરો અને on-device AI tools ચાલુ કરો. પહેલી AI operation વખતે model download થઈ શકે; તમારો photo external image-processing serviceને મોકલાતો નથી.",
+    ready: "Photo upload થયો — નીચે tool પસંદ કરો.",
+    locked: "આ tools ચાલુ કરવા નીચે photo upload કરો.",
+    quality: "Quality check",
+    background: "Background removal",
+    manual: "Manual cutout refine",
     smartCrop: "Smart crop",
     enhance: "2× Enhance",
     restore: "Original restore કરો",
@@ -29,9 +39,14 @@ const copy = {
     enhanced: "2× enhancement લાગુ છે",
   },
   hi: {
-    title: "Photo tools",
+    title: "AI Photo Studio",
     help:
-      "ये tools इसी device पर चलते हैं. पहली AI operation पर model download हो सकता है. Photo external image-processing service को नहीं भेजा जाता.",
+      "Photo upload करके on-device AI tools चालू करें. पहली AI operation पर model download हो सकता है; photo external image-processing service को नहीं भेजा जाता.",
+    ready: "Photo upload हो गया — नीचे tool चुनें.",
+    locked: "इन tools को चालू करने के लिए नीचे photo upload करें.",
+    quality: "Quality check",
+    background: "Background removal",
+    manual: "Manual cutout refine",
     smartCrop: "Smart crop",
     enhance: "2× Enhance",
     restore: "Original restore करें",
@@ -39,9 +54,14 @@ const copy = {
     enhanced: "2× enhancement applied",
   },
   mr: {
-    title: "Photo tools",
+    title: "AI Photo Studio",
     help:
-      "ही tools या deviceवर चालतात. पहिल्या AI operationवेळी model download होऊ शकतो. Photo external image-processing serviceकडे पाठवला जात नाही.",
+      "Photo upload करून on-device AI tools सुरू करा. पहिल्या AI operationवेळी model download होऊ शकतो; photo external image-processing serviceकडे पाठवला जात नाही.",
+    ready: "Photo upload झाला — खाली tool निवडा.",
+    locked: "ही tools सुरू करण्यासाठी खाली photo upload करा.",
+    quality: "Quality check",
+    background: "Background removal",
+    manual: "Manual cutout refine",
     smartCrop: "Smart crop",
     enhance: "2× Enhance",
     restore: "Original restore करा",
@@ -88,18 +108,30 @@ export function PhotoToolsPanel({
 
   const allowSmartCrop = artworkRule.ai?.smartCrop === "optional";
   const allowEnhancement = artworkRule.ai?.enhancement === "optional";
+  const allowBackgroundRemoval =
+    product.categoryId === "standees" &&
+    artworkRule.ai?.backgroundRemoval === "optional";
   const canRefine =
     Boolean(document.backgroundRemoval.adapter) && hasArtwork && hasOriginal;
 
   return (
-    <section className="photo-tools-panel">
+    <section className="photo-tools-panel" aria-label={t.title}>
+      <div>
+        <p className="eyebrow">{t.title}</p>
+        <p className="muted">{t.help}</p>
+      </div>
+      <div className="photo-tool-capabilities" aria-label={t.title}>
+        <span>{t.quality}</span>
+        {allowBackgroundRemoval && <span>{t.background}</span>}
+        {allowSmartCrop && <span>{t.smartCrop}</span>}
+        {allowEnhancement && <span>{t.enhance}</span>}
+        {allowBackgroundRemoval && <span>{t.manual}</span>}
+      </div>
+      {!hasArtwork && <p className="photo-tools-lock">{t.locked}</p>}
       <PhotoQualityPanel report={qualityReport} lang={lang} />
       {hasArtwork && (
         <>
-          <div>
-            <strong>{t.title}</strong>
-            <p className="muted">{t.help}</p>
-          </div>
+          <p className="muted">{t.ready}</p>
           <div className="editor-toolbar">
             {allowSmartCrop && (
               <button type="button" onClick={onSmartCrop} disabled={processing}>

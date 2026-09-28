@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { UiLanguage } from "@/lib/i18n";
 
@@ -47,6 +48,7 @@ const copy = {
 
 export function ClaimOrderForm({ lang = "en" }: { lang?: UiLanguage }) {
   const t = copy[lang];
+  const router = useRouter();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -71,6 +73,7 @@ export function ClaimOrderForm({ lang = "en" }: { lang?: UiLanguage }) {
         : result.error || t.error,
     );
     setBusy(false);
+    if (response.ok) router.refresh();
   }
 
   return (

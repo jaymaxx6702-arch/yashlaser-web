@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.8 |
-| Last Updated | 26 September 2026 |
-| Current Active Task | **YL-110 - Admin Customisation Field/Rule Builder foundation + published-rule storefront loading** |
-| Overall State | PR #6 + PR #7 productionમાં merged; YL-110 draft PR #9માં admin rules + published-rule loader verification ચાલુ |
+| Master File Version | 1.9 |
+| Last Updated | 28 September 2026 |
+| Current Active Task | **Fastmode launch batch — AI Photo Studio visibility + YL-039/040 + YL-083→087 readiness/hardening** |
+| Overall State | main commit 7f59de65d37c15ce3ee0f75d5d6ff2e426e93f1b productionમાં live; AI Photo Engine + asset lineage deployed; fastmode-launch-batch પર launch-critical polish ચાલુ |
 
 ---
 
@@ -207,17 +207,19 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 31 |
-| In Progress | 10 |
+| Completed | 48 |
+| In Progress | 7 |
+| Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 78 |
+| Pending | 54 |
 | **Total** | **123** |
 
-### Reconciled open-work count — 22 September 2026
+### Reconciled open-work count — 28 September 2026
 
-- Master checklistમાં કુલ **92 open tasks** છે: 10 In Progress + 78 Pending + 4 Blocked.
-- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **85 direct website tasks open** છે.
-- આ 85માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **81 actionable website tasks** અત્યારે આગળ લઈ શકાય.
+- Master checklistમાં કુલ **82 open tasks** છે: 11 In Progress + 2 Ready to Enable + 65 Pending + 4 Blocked.
+- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **75 direct website tasks open** છે.
+- આ 75માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **71 actionable website tasks** આગળ લઈ શકાય.
+- Ready to Enable tasks YL-083/YL-084 code + DB ready છે; Vercel production flags ON કર્યા પછી live verification બાકી છે.
 - YL-101 to YL-123 અગાઉની website planning/chatમાં ચર્ચાયેલા પણ 100-task masterમાં explicit ન રહેલા useful features ઉમેરે છે.
 - આ count conservative છે: code foundation થયેલા પરંતુ production flag/business approval/full browser QA વગરના tasks Done mark કર્યા નથી.
 
@@ -323,7 +325,7 @@ Known completed foundation:
 - [x] **YL-007** Commerce feature foundation enable કરવી.
 - [x] **YL-008** YashFlow integration feature foundation enable કરવી.
 - [x] **YL-009** Environment variablesનું documented register બનાવવું; secrets fileમાં લખવા નહીં.
-- [ ] **YL-010** Release checklist, version tag અને rollback procedure final કરવી.
+- [x] **YL-010** Release checklist, version tag અને rollback procedure final કરવી. — `docs/RELEASE_RUNBOOK.md` now locks consolidated CI/deploy gates, version convention, feature-flag rollback, Vercel rollback and additive-migration recovery rules.
 
 ### B. Catalogue, Product Master and Business Data - YL-011 to YL-025
 
@@ -358,24 +360,24 @@ Known completed foundation:
 - [x] **YL-036** Checkout foundation complete કરવી.
 - [ ] [IN PROGRESS] **YL-037** Mobile navigation, product configurator અને checkout polish કરવું.
 - [x] **YL-038** Checkoutમાં pincode delivery check ઉમેરવું.
-- [ ] **YL-039** Search, filters, zero-result fallback અને recommendation behaviour final કરવું.
-- [ ] **YL-040** 404, error, loading અને empty states complete કરવી.
+- [x] **YL-039** Search, filters, zero-result fallback અને recommendation behaviour final કરવું. — Search/subcategory filtering, analytics, zero-result reset અને category recovery recommendations implemented.
+- [x] **YL-040** 404, error, loading અને empty states complete કરવી. — Global loading, error, not-found અને catalogue empty/recovery states implemented.
 
 ### D. Customisation, Bulk, Event and File Workflows - YL-041 to YL-052
 
 - [ ] [IN PROGRESS] **YL-041** Universal product customisation engine complete કરવું.
-- [ ] **YL-042** Text, name, date, logo, photo અને QR inputs product rulesથી ચલાવવા.
-- [ ] **YL-043** Same for All અને Different for Each modes complete કરવું.
-- [ ] **YL-044** Excel/CSV bulk upload template અને validation complete કરવી.
-- [ ] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું.
-- [ ] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા.
-- [ ] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું.
+- [x] **YL-042** Text, name, date, logo, photo અને QR inputs product rulesથી ચલાવવા. — Shared rule contract અને dynamic field renderer current customizerમાં active છે.
+- [x] **YL-043** Same for All અને Different for Each modes complete કરવું. — Bulk request flow now supports common personalisation or per-recipient data mode.
+- [x] **YL-044** Excel/CSV bulk upload template અને validation complete કરવી. — Excel/Google Sheets-compatible CSV template, strict header/row validation, duplicate record detection and private attachment retention implemented.
+- [x] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું. — photo_filename matching, missing/duplicate/unreferenced-file diagnostics, preview and matched-photo upload implemented.
+- [x] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા. — Versioned preview/proof/approved/production asset states and lineage implemented.
+- [x] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું. — Live Supabase audit verified private buckets + RLS/no public object policies, bucket MIME/size limits, signed upload/access paths and duplicate-safe retry behaviour.
   - AI photo-processing expansion YL-101 to YL-109માં separately tracked છે જેથી background removal/upscale/correction જેવી requirements broad taskમાં ખોવાય નહીં.
-- [ ] [IN PROGRESS] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો.
-- [ ] [IN PROGRESS] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો.
-- [ ] [IN PROGRESS] **YL-050** Custom Acrylic request submit-to-admin workflow enable અને test કરવો.
-- [ ] **YL-051** Request number, customer confirmation અને admin follow-up flow test કરવો.
-- [ ] **YL-052** Yash ID portal Phase-1 requirements અને repository plan separately freeze કરવો.
+- [ ] [READY TO ENABLE] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો. — Form, secure request number/token, optional file upload, tracking and admin follow-up code verified; PROJECT_REQUESTS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો. — Event request, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-050** Custom Acrylic request submit-to-admin workflow enable અને test કરવો. — Custom acrylic request, file upload, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-051** Request number, customer confirmation અને admin follow-up flow test કરવો. — Request number + secure token, customer status page and admin message/status actions are implemented; live flag-enabled E2E remains.
+- [x] **YL-052** Yash ID portal Phase-1 requirements અને repository plan separately freeze કરવો. — Separate-app scope, repository plan, data entities, import/matching, privacy, proof and YashFlow handoff are frozen in `docs/YASH_ID_PHASE1.md`.
 
 ### E. Orders, Customer Accounts, Payment and Shipping - YL-053 to YL-064
 
@@ -383,9 +385,9 @@ Known completed foundation:
 - [x] **YL-054** Secure token-based Track Order foundation complete કરવી.
 - [x] **YL-055** Customer-facing order status foundation complete કરવી.
 - [x] **YL-056** Proof version, approve/reject અને approval status foundation complete કરવી.
-- [ ] **YL-057** Supabase Auth Site URL, redirect URLs અને production auth mode verify કરવો.
-- [ ] **YL-058** Guest order secure account-claim flow positive/negative cases સાથે test કરવો.
-- [ ] **YL-059** Account order history, proof, tracking, saved design અને reorder test કરવું.
+- [ ] [IN PROGRESS] **YL-057** Supabase Auth Site URL, redirect URLs અને production auth mode verify કરવો. — Login/signup/server session code exists; dashboard-level Site URL/redirect/auth-mode verification and CUSTOMER_ACCOUNTS_ENABLED rollout remain.
+- [ ] [READY TO ENABLE] **YL-058** Guest order secure account-claim flow positive/negative cases સાથે test કરવો. — Secure tracking-token validation, cross-account conflict guard, user/IP rate-limit hooks and automatic post-claim refresh implemented; live Auth-enabled E2E remains.
+- [ ] [READY TO ENABLE] **YL-059** Account order history, proof, tracking, saved design અને reorder test કરવું. — Account order history/detail, signed proof access, shipment/timeline and product revisit foundation implemented; live Auth-enabled E2E and dedicated saved-design/reorder acceptance remain.
 - [x] **YL-060** Admin commerce/order modules foundation complete કરવી.
 - [ ] [BLOCKED] **YL-061** Payment provider અને merchant account business decision final કરવો.
 - [ ] [BLOCKED] **YL-062** Payment keys, webhook, idempotency, failure/retry/refund flow implement અને test કરવો.
@@ -413,16 +415,16 @@ Known completed foundation:
 - [ ] **YL-078** Proof approval પછી design-change/remake responsibility policyમાં સ્પષ્ટ કરવી.
 - [ ] **YL-079** Customisation, photo quality, proof, lead time, shipping, bulk, payment અને returns FAQ publish કરવી.
 - [ ] **YL-080** Business name, address, contact અને GST/invoice details verify કરવી.
-- [ ] [IN PROGRESS] **YL-081** Reviews submission, moderation, verified badge અને public display enable/test કરવું.
-- [ ] [IN PROGRESS] **YL-082** Support ticket create, admin response અને order-linked complaint flow enable/test કરવો.
+- [ ] [READY TO ENABLE] **YL-081** Reviews submission, moderation, verified badge અને public display enable/test કરવું. — Submission, pending moderation, admin publish/reject, verified-purchase toggle and public published-review display implemented; REVIEWS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-082** Support ticket create, admin response અને order-linked complaint flow enable/test કરવો. — Secure ticket token, optional verified order link, admin response/status and customer tracking implemented; SUPPORT_ENABLED rollout remains.
 
 ### H. Security, Analytics, SEO, Performance and QA - YL-083 to YL-092
 
-- [ ] **YL-083** Public endpoints પર rate limits enable કરીને abuse અને normal-flow test કરવું.
-- [ ] **YL-084** Production analytics enable કરવું.
-- [ ] **YL-085** Search, product view, add-to-cart, checkout અને order completion events verify કરવા.
-- [ ] **YL-086** Titles, descriptions, canonical, Open Graph, sitemap અને robots verify કરવા.
-- [ ] **YL-087** Multilingual canonical/hreflang અને duplicate-content strategy test કરવી.
+- [ ] [READY TO ENABLE] **YL-083** Public endpoints પર rate limits enable કરીને abuse અને normal-flow test કરવું. — Supabase table/RPC/RLS and endpoint guards verified; production `RATE_LIMITS_ENABLED=true` rollout remains.
+- [ ] [READY TO ENABLE] **YL-084** Production analytics enable કરવું. — First-party analytics table/API and event emitters are implemented; production `ANALYTICS_ENABLED=true` rollout remains.
+- [ ] [IN PROGRESS] **YL-085** Search, product view, add-to-cart, checkout અને order completion events verify કરવા. — page_view/search/product_view/add_to_cart instrumentation exists; production flag and end-to-end begin_checkout/checkout_complete verification remain.
+- [x] **YL-086** Titles, descriptions, canonical, Open Graph, sitemap અને robots verify કરવા. — Product metadata/OG, sitemap, robots and public-page canonical coverage implemented; deployment smoke remains part of YL-094.
+- [x] **YL-087** Multilingual canonical/hreflang અને duplicate-content strategy test કરવી. — EN/GU/HI/MR home, collection, category and product pages now use self-canonical URLs with shared hreflang/x-default alternates.
 - [ ] **YL-088** Core Web Vitals, images, lazy-loading અને JS bundle optimise કરવું.
 - [ ] **YL-089** Keyboard, form labels, focus, contrast, errors અને alt-text accessibility audit કરવી.
 - [ ] **YL-090** Admin auth, RLS, role permissions, server-only secrets અને audit logs security test કરવું.
@@ -443,8 +445,8 @@ Known completed foundation:
 ### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
 
 - [ ] [IN PROGRESS] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી.
-- [ ] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો.
-- [ ] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું.
+- [x] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો. — On-device MODNet standee/portrait pilot with transparent output and safe failure fallback implemented.
+- [x] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું. — Non-destructive erase/restore, brush sizing, undo/reset and original/edited compare implemented.
 - [ ] **YL-104** AI image enhancement/upscale pipeline: resolution upscale, sharpness, noise reduction, lighting, white-balance/color correction અને face-safe enhancement implement કરવી; over-processing ટાળવું.
 - [ ] **YL-105** Subject/face-aware smart crop, auto-centering અને product safe-area positioning બનાવવું; customerને manual crop/zoom/position override હંમેશા આપવો.
 - [ ] **YL-106** AI-processed imageને existing customizer canvasમાં non-destructive રીતે integrate કરીને cutout/silhouette અને realistic product mockup preview બનાવવો.
@@ -454,7 +456,7 @@ Known completed foundation:
 
 ### K. Advanced Commerce, Admin and Customer Experience - YL-110 to YL-121
 
-- [ ] **YL-110** Admin Customisation Field/Rule Builder બનાવવો જેથી developer વગર product માટે photo, text, name, date, logo, QR, size, colour, required/optional fields અને validation rules configure થઈ શકે.
+- [x] **YL-110** Admin Customisation Field/Rule Builder બનાવવો જેથી developer વગર product માટે photo, text, name, date, logo, QR, size, colour, required/optional fields અને validation rules configure થઈ શકે. — Versioned private rules, admin product picker/builder, validation and published storefront loading are live.
 - [ ] **YL-111** Name Plate advanced configurator: width × height/shape/material-based pricing rules, profession/business templates, multilingual preview અને minimum-size validation support કરવું.
 - [ ] **YL-112** Business QR Generator suite બનાવવી: UPI, Google Review, WhatsApp, website/menu/Wi-Fi QR types, QR preview/download અને QR-based acrylic product templates સાથે integration.
 - [ ] **YL-113** Advanced event personalisation: Winner/Runner-up/Participant/VIP/Guest/Committee વગેરે recipient groups, Same Design–Different Text, group quantities અને repeat-event reuse support કરવું.
