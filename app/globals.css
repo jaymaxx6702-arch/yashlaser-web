@@ -3,7 +3,7 @@
   --background: #fbfaf7;
   --foreground: #292b26;
   --muted: #707168;
-  --gold: #927440;
+  --gold: #80602d;
   --line: #e3e1d8;
   --soft: #f1efe7;
 }
@@ -327,7 +327,7 @@ em {
   position: absolute;
   bottom: 12px;
   left: 28px;
-  color: #757060;
+  color: #686357;
   font-size: 9px;
 }
 .values-strip {
