@@ -332,3 +332,44 @@ test("privileged admin mutations write to the private audit ledger", () => {
   assert.match(page, /shop_admin_audit_events/);
   assert.match(nav, /\/admin\/audit/);
 });
+
+
+test("privileged admin mutations are recorded in the private audit ledger", () => {
+  const helper = fs.readFileSync("lib/admin-audit.ts", "utf8");
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609281730_admin_audit_events.sql",
+    "utf8",
+  );
+  const viewer = fs.readFileSync("app/admin/audit/page.tsx", "utf8");
+  const routes = [
+    "app/api/admin/reviews/[id]/route.ts",
+    "app/api/admin/support/[id]/route.ts",
+    "app/api/admin/projects/[id]/route.ts",
+    "app/api/admin/orders/[id]/shipment/route.ts",
+    "app/api/admin/quotes/route.ts",
+    "app/api/admin/orders/[id]/yashflow-sync/route.ts",
+    "app/api/admin/proofs/route.ts",
+    "app/api/admin/order-assets/production/route.ts",
+    "app/api/admin/products/import-drafts/route.ts",
+    "app/admin/products/actions.ts",
+    "app/admin/customization-rules/actions.ts",
+  ];
+
+  assert.match(helper, /import "server-only"/);
+  assert.match(helper, /shop_admin_audit_events/);
+  assert.match(helper, /return !error/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all .* public, anon, authenticated/s);
+  assert.match(migration, /grant all .* service_role/s);
+  assert.match(viewer, /requireAdmin/);
+  assert.match(viewer, /shop_admin_audit_events/);
+
+  for (const path of routes) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(
+      source,
+      /recordAdminAudit/,
+      path + " must record an admin audit event.",
+    );
+  }
+});
