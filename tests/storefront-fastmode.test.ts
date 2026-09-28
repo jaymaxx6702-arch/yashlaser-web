@@ -25,8 +25,11 @@ test("catalogue zero-result state gives customers a recovery path", () => {
   assert.match(source, /copy\.allProducts/);
 });
 
-test("storefront has global loading, error and not-found states", () => {
-  assert.ok(fs.existsSync("app/loading.tsx"));
+test("storefront preserves real 404s while customer flows have scoped loading states", () => {
+  assert.ok(!fs.existsSync("app/loading.tsx"));
+  assert.ok(fs.existsSync("app/cart/loading.tsx"));
+  assert.ok(fs.existsSync("app/checkout/loading.tsx"));
+  assert.ok(fs.existsSync("app/account/loading.tsx"));
   assert.ok(fs.existsSync("app/error.tsx"));
   assert.ok(fs.existsSync("app/not-found.tsx"));
 });
