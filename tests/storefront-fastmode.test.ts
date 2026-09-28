@@ -217,3 +217,30 @@ test("bulk project attachments are private uploads with admin-only signed access
   assert.match(route, /createSignedUrl/);
   assert.match(route, /customer-documents/);
 });
+
+
+test("private uploads remain signed, bounded and retry-safe", () => {
+  const direct = fs.readFileSync("lib/direct-upload.ts", "utf8");
+  const enquiry = fs.readFileSync(
+    "app/api/enquiries/uploads/route.ts",
+    "utf8",
+  );
+  const project = fs.readFileSync(
+    "app/api/project-requests/[requestNo]/upload-session/route.ts",
+    "utf8",
+  );
+  const adminFile = fs.readFileSync(
+    "app/api/admin/project-files/[id]/route.ts",
+    "utf8",
+  );
+
+  assert.match(direct, /x-upsert/);
+  assert.match(direct, /response\.status === 409/);
+  assert.match(direct, /AbortSignal\.timeout\(120000\)/);
+  assert.match(enquiry, /createSignedUploadUrl/);
+  assert.match(enquiry, /upsert: false/);
+  assert.match(project, /20 \* 1024 \* 1024/);
+  assert.match(project, /allowed\.has\(mimeType\)/);
+  assert.match(adminFile, /requireAdmin/);
+  assert.match(adminFile, /createSignedUrl/);
+});
