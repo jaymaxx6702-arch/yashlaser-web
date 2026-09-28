@@ -22,6 +22,8 @@ const copy = {
     brush: "Brush size",
     undo: "Undo",
     reset: "Reset",
+    compare: "Compare original",
+    edited: "Show edited",
     cancel: "Cancel",
     apply: "Apply refinement",
     applying: "Applying…",
@@ -35,6 +37,8 @@ const copy = {
     brush: "Brush size",
     undo: "Undo",
     reset: "Reset",
+    compare: "Original જુઓ",
+    edited: "Edited જુઓ",
     cancel: "Cancel",
     apply: "સુધારો લાગુ કરો",
     applying: "લાગુ થઈ રહ્યું છે…",
@@ -48,6 +52,8 @@ const copy = {
     brush: "Brush size",
     undo: "Undo",
     reset: "Reset",
+    compare: "Original देखें",
+    edited: "Edited देखें",
     cancel: "Cancel",
     apply: "सुधार लागू करें",
     applying: "लागू हो रहा है…",
@@ -61,6 +67,8 @@ const copy = {
     brush: "Brush size",
     undo: "Undo",
     reset: "Reset",
+    compare: "Original पाहा",
+    edited: "Edited पाहा",
     cancel: "Cancel",
     apply: "सुधार लागू करा",
     applying: "लागू होत आहे…",
@@ -90,6 +98,7 @@ export function CutoutRefinement({
   const [strokes, setStrokes] = useState<RefinementStroke[]>([]);
   const [mode, setMode] = useState<"erase" | "restore">("erase");
   const [radius, setRadius] = useState(0.035);
+  const [showOriginal, setShowOriginal] = useState(false);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -132,6 +141,11 @@ export function CutoutRefinement({
     const images = bitmaps.current;
     const ctx = node?.getContext("2d");
     if (!node || !ctx || !images || !ready) return;
+    if (showOriginal) {
+      ctx.clearRect(0, 0, node.width, node.height);
+      ctx.drawImage(images.original, 0, 0, node.width, node.height);
+      return;
+    }
     drawRefinementPreview(
       ctx,
       images.processed,
@@ -140,7 +154,7 @@ export function CutoutRefinement({
       node.width,
       node.height,
     );
-  }, [strokes, ready]);
+  }, [strokes, ready, showOriginal]);
 
   function point(event: PointerEvent<HTMLCanvasElement>) {
     const box = event.currentTarget.getBoundingClientRect();
@@ -151,7 +165,7 @@ export function CutoutRefinement({
   }
 
   function down(event: PointerEvent<HTMLCanvasElement>) {
-    if (!ready || busy) return;
+    if (!ready || busy || showOriginal) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     const index = strokes.length;
@@ -237,6 +251,14 @@ export function CutoutRefinement({
         </button>
         <button type="button" onClick={() => setStrokes([])} disabled={busy || strokes.length === 0}>
           {t.reset}
+        </button>
+        <button
+          type="button"
+          aria-pressed={showOriginal}
+          onClick={() => setShowOriginal((value) => !value)}
+          disabled={busy}
+        >
+          {showOriginal ? t.edited : t.compare}
         </button>
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
