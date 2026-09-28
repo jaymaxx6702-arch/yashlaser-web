@@ -4,24 +4,70 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+type ReportRow = {
+  productKey: string;
+  name: string;
+  slug: string;
+  categoryId: string;
+  pricingMode: string;
+  variants: number;
+  latestRevision: number | null;
+  latestState: string | null;
+  status: "ready" | "unchanged" | "blocked";
+  issues: string[];
+};
+
 type Preview = {
   ok: boolean;
   productCount: number;
   variantCount: number;
+  readyCount: number;
+  unchangedCount: number;
+  blockedCount: number;
   issues: { productKey: string | null; message: string }[];
-  preview: {
-    productKey: string;
-    name: string;
-    slug: string;
-    categoryId: string;
-    pricingMode: string;
-    variants: number;
-  }[];
+  report: ReportRow[];
+  preview: ReportRow[];
   truncated: boolean;
   message: string;
 };
 
 const MAX_BYTES = 2 * 1024 * 1024;
+
+function reportCell(value: unknown) {
+  let text = String(value ?? "");
+  if (/^[=+@\-]/.test(text)) text = "'" + text;
+  return '"' + text.replaceAll('"', '""') + '"';
+}
+
+function validationReportCsv(preview: Preview) {
+  const header = [
+    "product_key",
+    "name",
+    "slug",
+    "category_id",
+    "pricing_mode",
+    "variant_count",
+    "latest_revision",
+    "latest_state",
+    "validation_status",
+    "issues",
+  ];
+  const rows = preview.report.map((row) => [
+    row.productKey,
+    row.name,
+    row.slug,
+    row.categoryId,
+    row.pricingMode,
+    row.variants,
+    row.latestRevision ?? "",
+    row.latestState ?? "",
+    row.status,
+    row.issues.join(" | "),
+  ]);
+  return [header, ...rows]
+    .map((row) => row.map(reportCell).join(","))
+    .join("\r\n") + "\r\n";
+}
 
 export function CatalogueCsvManager() {
   const router = useRouter();
@@ -55,15 +101,31 @@ export function CatalogueCsvManager() {
         body: csv,
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Unable to preview CSV.");
+      if (!response.ok)
+        throw new Error(result.error || "Unable to preview CSV.");
       setPreview(result);
       setStatus(result.message);
     } catch (error) {
       setPreview(null);
-      setStatus(error instanceof Error ? error.message : "Unable to preview CSV.");
+      setStatus(
+        error instanceof Error ? error.message : "Unable to preview CSV.",
+      );
     } finally {
       setBusy(false);
     }
+  }
+
+  function downloadValidationReport() {
+    if (!preview) return;
+    const blob = new Blob([validationReportCsv(preview)], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "yashlaser-catalogue-validation-report.csv";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
   }
 
   async function importDrafts() {
@@ -93,15 +155,15 @@ export function CatalogueCsvManager() {
             .join(" "),
         );
       }
-      setStatus(
-        `${result.importedProducts} products and ${result.importedVariants} variants imported as drafts. Nothing was published.`,
-      );
+      setStatus(result.message);
       setPreview(null);
       setCsv("");
       setFileName("");
       router.refresh();
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to import drafts.");
+      setStatus(
+        error instanceof Error ? error.message : "Unable to import drafts.",
+      );
     } finally {
       setBusy(false);
     }
@@ -111,16 +173,22 @@ export function CatalogueCsvManager() {
     <section className="admin-card">
       <div className="admin-top">
         <div>
-          <h2>Catalogue CSV</h2>
+          <h2>Catalogue CSV / Excel workflow</h2>
           <p className="muted">
-            Download the current catalogue, edit it in Excel or Sheets, preview
-            every change, then import only as private draft revisions.
+            Download the current catalogue as an Excel/Google Sheets-compatible
+            CSV, edit it, validate every row, then import only changed products
+            as private draft revisions.
           </p>
         </div>
         <Link href="/api/admin/products/export" prefetch={false}>
           Download current CSV
         </Link>
       </div>
+
+      <p className="muted">
+        Safe fallback: this export reads the current generated catalogue only.
+        Uploading or validating a file never overwrites the live storefront.
+      </p>
 
       <label>
         Upload edited CSV
@@ -132,7 +200,11 @@ export function CatalogueCsvManager() {
         />
       </label>
 
-      {fileName && <p>Selected: <strong>{fileName}</strong></p>}
+      {fileName && (
+        <p>
+          Selected: <strong>{fileName}</strong>
+        </p>
+      )}
 
       <div className="editor-toolbar">
         <button type="button" disabled={busy || !csv} onClick={previewCsv}>
@@ -140,10 +212,17 @@ export function CatalogueCsvManager() {
         </button>
         <button
           type="button"
-          disabled={busy || !preview?.ok}
+          disabled={busy || !preview}
+          onClick={downloadValidationReport}
+        >
+          Download validation report
+        </button>
+        <button
+          type="button"
+          disabled={busy || !preview?.ok || preview.readyCount === 0}
           onClick={importDrafts}
         >
-          Import as drafts
+          Import changed products as drafts
         </button>
       </div>
 
@@ -159,12 +238,16 @@ export function CatalogueCsvManager() {
               <strong>{preview.productCount}</strong>
             </article>
             <article className="admin-card">
-              <small>Variants</small>
-              <strong>{preview.variantCount}</strong>
+              <small>Ready to import</small>
+              <strong>{preview.readyCount}</strong>
             </article>
             <article className="admin-card">
-              <small>Issues</small>
-              <strong>{preview.issues.length}</strong>
+              <small>Unchanged</small>
+              <strong>{preview.unchangedCount}</strong>
+            </article>
+            <article className="admin-card">
+              <small>Blocked</small>
+              <strong>{preview.blockedCount}</strong>
             </article>
           </div>
 
@@ -174,7 +257,9 @@ export function CatalogueCsvManager() {
               <ul>
                 {preview.issues.map((issue, index) => (
                   <li key={index}>
-                    {issue.productKey && <strong>{issue.productKey}: </strong>}
+                    {issue.productKey && (
+                      <strong>{issue.productKey}: </strong>
+                    )}
                     {issue.message}
                   </li>
                 ))}
@@ -183,20 +268,42 @@ export function CatalogueCsvManager() {
           )}
 
           <div className="admin-card">
-            <h3>Preview</h3>
+            <h3>Validation preview</h3>
             <div className="admin-list">
-              {preview.preview.map((item) => (
-                <article className="admin-card" key={item.productKey}>
-                  <strong>{item.name}</strong>
-                  <span>{item.productKey} · /products/{item.slug}</span>
+              {preview.preview.map((item, index) => (
+                <article
+                  className="admin-card"
+                  key={item.productKey || "issue-" + index}
+                >
+                  <strong>{item.name || item.productKey || "CSV issue"}</strong>
+                  {item.slug && (
+                    <span>
+                      {item.productKey} · /products/{item.slug}
+                    </span>
+                  )}
                   <span>
-                    {item.categoryId} · {item.pricingMode} · {item.variants} variants
+                    Status: {item.status}
+                    {item.latestRevision
+                      ? ` · latest revision ${item.latestRevision}`
+                      : ""}
                   </span>
+                  {item.categoryId && (
+                    <span>
+                      {item.categoryId} · {item.pricingMode} · {item.variants}{" "}
+                      variants
+                    </span>
+                  )}
+                  {item.issues.length > 0 && (
+                    <span>{item.issues.join(" · ")}</span>
+                  )}
                 </article>
               ))}
             </div>
             {preview.truncated && (
-              <p className="muted">Showing the first 25 products only.</p>
+              <p className="muted">
+                Showing the first 25 report rows. Download the validation report
+                for the complete result.
+              </p>
             )}
           </div>
         </>
