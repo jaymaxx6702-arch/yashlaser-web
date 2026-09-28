@@ -42,6 +42,14 @@ create index if not exists shop_order_assets_item_idx
   on public.shop_order_assets(order_item_id,asset_kind,version_no desc)
   where order_item_id is not null;
 
+create index if not exists shop_order_assets_source_asset_idx
+  on public.shop_order_assets(source_asset_id)
+  where source_asset_id is not null;
+
+create index if not exists shop_order_assets_proof_idx
+  on public.shop_order_assets(proof_id)
+  where proof_id is not null;
+
 alter table public.shop_order_assets enable row level security;
 revoke all on public.shop_order_assets from anon, authenticated;
 grant all on public.shop_order_assets to service_role;
