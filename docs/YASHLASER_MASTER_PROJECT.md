@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 50 |
-| In Progress | 9 |
+| Completed | 53 |
+| In Progress | 10 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 50 |
+| Pending | 46 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -340,7 +340,7 @@ Known completed foundation:
 - [ ] **YL-019** Duplicate product/use-case/language listings merge અથવા archive કરવી.
 - [ ] **YL-020** Strong legacy Gujarati artworkને template collectionમાં migrate કરવું.
 - [ ] **YL-021** 20 જેટલા unsupported products માટે production workflow define કરવો.
-- [ ] **YL-022** Unsupported productsને workflow ready થાય ત્યાં સુધી auto-route ન થાય તે verify કરવું.
+- [x] **YL-022** Unsupported productsને workflow ready થાય ત્યાં સુધી auto-route ન થાય તે verify કરવું. — Checkout has no automatic YashFlow sync path; YashFlow handoff is admin-triggered and regression-locked.
 - [ ] **YL-023** Three seed productsનું complete end-to-end data validate કરવું.
 - [ ] **YL-024** Admin Product Creation Wizardથી developer વગર product publish test કરવું.
 - [x] **YL-025** CSV/Excel-first catalogue import/export અને data validation report તૈયાર કરવી; fallback safe read-only migration રાખવી. — Excel/Sheets-compatible CSV export, server validation, downloadable report, unchanged detection, draft-only import and read-only static-catalogue fallback completed.
@@ -401,11 +401,11 @@ Known completed foundation:
 - [x] **YL-067** 350 active Shop productsનું YashFlow mapping configure કરવું.
 - [ ] **YL-068** Unsupported product mapping/process final કરવો.
 - [ ] **YL-069** Stable launch પછી optional background automatic sync design કરવું.
-- [ ] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling test કરવું.
+- [ ] [IN PROGRESS] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling test કરવું. — Manual failure state, 25s timeout, stable Shop-order idempotency key, increasing attempt count and partial-success rejection are implemented; live YashFlow fault-injection verification remains.
 - [ ] **YL-071** Product mapping maintenance માટે admin UI બનાવવી.
 - [x] **YL-072** Website orderને structured YashFlow orderમાં મોકલવાની foundation complete કરવી.
 - [ ] **YL-073** Shop status, proof, production અને dispatch status sync edge cases verify કરવી.
-- [ ] **YL-074** Sync audit log, failed queue, retry report અને admin alerts complete કરવું.
+- [x] **YL-074** Sync audit log, failed queue, retry report અને admin alerts complete કરવું. — Integration events, failed-order queue, retry control, attempt report and admin attention banner are implemented.
 
 ### G. Reviews, Support, Trust and Legal - YL-075 to YL-082
 
@@ -439,7 +439,7 @@ Known completed foundation:
 - [ ] **YL-096** Controlled seed real orderથી payment વગર/manual-confirmation launch flow verify કરવો.
 - [ ] **YL-097** First 10 real orders owner/admin દ્વારા manually review કરવા.
 - [ ] **YL-098** First 30 days માટે errors, conversion, search, order, sync અને support monitoring ચલાવવું.
-- [ ] **YL-099** Final launch runbook, rollback, support ownership અને issue-priority matrix freeze કરવી.
+- [x] **YL-099** Final launch runbook, rollback, support ownership અને issue-priority matrix freeze કરવી. — Release gates, rollback, P0–P3 priority, incident handling and support/technical/production ownership are frozen in `docs/RELEASE_RUNBOOK.md`.
 - [ ] **YL-100** Soft launch પછી blockers fix કરીને public launch approve કરવો.
 
 ### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
