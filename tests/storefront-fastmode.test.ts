@@ -244,3 +244,47 @@ test("private uploads remain signed, bounded and retry-safe", () => {
   assert.match(adminFile, /requireAdmin/);
   assert.match(adminFile, /createSignedUrl/);
 });
+
+
+function walkRoutes(directory: string): string[] {
+  const output: string[] = [];
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const path = directory + "/" + entry.name;
+    if (entry.isDirectory()) output.push(...walkRoutes(path));
+    else if (entry.isFile() && entry.name === "route.ts") output.push(path);
+  }
+  return output;
+}
+
+test("API writes use bounded JSON readers instead of raw request.json", () => {
+  for (const path of walkRoutes("app/api")) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.doesNotMatch(
+      source,
+      /request\.json\s*\(/,
+      path + " must use the shared bounded request-body reader.",
+    );
+  }
+});
+
+test("admin and Supabase privileged clients remain server-only and secrets stay non-public", () => {
+  const admin = fs.readFileSync("lib/admin.ts", "utf8");
+  const supabase = fs.readFileSync("lib/supabase.ts", "utf8");
+  const config = fs.readFileSync("next.config.ts", "utf8");
+  const proxy = fs.readFileSync("proxy.ts", "utf8");
+
+  assert.match(admin, /import "server-only"/);
+  assert.match(admin, /ADMIN_USER_IDS/);
+  assert.match(admin, /auth\.getUser/);
+  assert.match(supabase, /import "server-only"/);
+  assert.match(supabase, /SUPABASE_SECRET_KEY/);
+  assert.doesNotMatch(supabase, /NEXT_PUBLIC_SUPABASE_SECRET_KEY/);
+  assert.doesNotMatch(supabase, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
+
+  assert.match(config, /X-Frame-Options/);
+  assert.match(config, /Content-Security-Policy/);
+  assert.match(config, /Cache-Control/);
+  assert.match(config, /private, no-store/);
+  assert.match(proxy, /Cross-site request blocked/);
+  assert.match(proxy, /Origin mismatch/);
+});
