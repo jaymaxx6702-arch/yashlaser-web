@@ -358,17 +358,17 @@ Known completed foundation:
 - [x] **YL-036** Checkout foundation complete કરવી.
 - [ ] [IN PROGRESS] **YL-037** Mobile navigation, product configurator અને checkout polish કરવું.
 - [x] **YL-038** Checkoutમાં pincode delivery check ઉમેરવું.
-- [ ] **YL-039** Search, filters, zero-result fallback અને recommendation behaviour final કરવું.
-- [ ] **YL-040** 404, error, loading અને empty states complete કરવી.
+- [x] **YL-039** Search, filters, zero-result fallback અને recommendation behaviour final કરવું. — Search/subcategory filtering, analytics, zero-result reset અને category recovery recommendations implemented.
+- [x] **YL-040** 404, error, loading અને empty states complete કરવી. — Global loading, error, not-found અને catalogue empty/recovery states implemented.
 
 ### D. Customisation, Bulk, Event and File Workflows - YL-041 to YL-052
 
 - [ ] [IN PROGRESS] **YL-041** Universal product customisation engine complete કરવું.
-- [ ] **YL-042** Text, name, date, logo, photo અને QR inputs product rulesથી ચલાવવા.
+- [x] **YL-042** Text, name, date, logo, photo અને QR inputs product rulesથી ચલાવવા. — Shared rule contract અને dynamic field renderer current customizerમાં active છે.
 - [ ] **YL-043** Same for All અને Different for Each modes complete કરવું.
 - [ ] **YL-044** Excel/CSV bulk upload template અને validation complete કરવી.
 - [ ] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું.
-- [ ] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા.
+- [x] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા. — Versioned preview/proof/approved/production asset states and lineage implemented.
 - [ ] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું.
   - AI photo-processing expansion YL-101 to YL-109માં separately tracked છે જેથી background removal/upscale/correction જેવી requirements broad taskમાં ખોવાય નહીં.
 - [ ] [IN PROGRESS] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો.
@@ -418,11 +418,11 @@ Known completed foundation:
 
 ### H. Security, Analytics, SEO, Performance and QA - YL-083 to YL-092
 
-- [ ] **YL-083** Public endpoints પર rate limits enable કરીને abuse અને normal-flow test કરવું.
-- [ ] **YL-084** Production analytics enable કરવું.
-- [ ] **YL-085** Search, product view, add-to-cart, checkout અને order completion events verify કરવા.
-- [ ] **YL-086** Titles, descriptions, canonical, Open Graph, sitemap અને robots verify કરવા.
-- [ ] **YL-087** Multilingual canonical/hreflang અને duplicate-content strategy test કરવી.
+- [ ] [READY TO ENABLE] **YL-083** Public endpoints પર rate limits enable કરીને abuse અને normal-flow test કરવું. — Supabase table/RPC/RLS and endpoint guards verified; production `RATE_LIMITS_ENABLED=true` rollout remains.
+- [ ] [READY TO ENABLE] **YL-084** Production analytics enable કરવું. — First-party analytics table/API and event emitters are implemented; production `ANALYTICS_ENABLED=true` rollout remains.
+- [ ] [IN PROGRESS] **YL-085** Search, product view, add-to-cart, checkout અને order completion events verify કરવા. — page_view/search/product_view/add_to_cart instrumentation exists; production flag and end-to-end begin_checkout/checkout_complete verification remain.
+- [x] **YL-086** Titles, descriptions, canonical, Open Graph, sitemap અને robots verify કરવા. — Product metadata/OG, sitemap, robots and public-page canonical coverage implemented; deployment smoke remains part of YL-094.
+- [x] **YL-087** Multilingual canonical/hreflang અને duplicate-content strategy test કરવી. — EN/GU/HI/MR home, collection, category and product pages now use self-canonical URLs with shared hreflang/x-default alternates.
 - [ ] **YL-088** Core Web Vitals, images, lazy-loading અને JS bundle optimise કરવું.
 - [ ] **YL-089** Keyboard, form labels, focus, contrast, errors અને alt-text accessibility audit કરવી.
 - [ ] **YL-090** Admin auth, RLS, role permissions, server-only secrets અને audit logs security test કરવું.
@@ -443,8 +443,8 @@ Known completed foundation:
 ### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
 
 - [ ] [IN PROGRESS] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી.
-- [ ] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો.
-- [ ] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું.
+- [x] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો. — On-device MODNet standee/portrait pilot with transparent output and safe failure fallback implemented.
+- [x] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું. — Non-destructive erase/restore, brush sizing, undo/reset and original/edited compare implemented.
 - [ ] **YL-104** AI image enhancement/upscale pipeline: resolution upscale, sharpness, noise reduction, lighting, white-balance/color correction અને face-safe enhancement implement કરવી; over-processing ટાળવું.
 - [ ] **YL-105** Subject/face-aware smart crop, auto-centering અને product safe-area positioning બનાવવું; customerને manual crop/zoom/position override હંમેશા આપવો.
 - [ ] **YL-106** AI-processed imageને existing customizer canvasમાં non-destructive રીતે integrate કરીને cutout/silhouette અને realistic product mockup preview બનાવવો.
