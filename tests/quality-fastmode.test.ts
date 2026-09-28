@@ -7,7 +7,8 @@ test("private customer files stay behind ownership or secret-token checks", () =
     "app/account/orders/[id]/page.tsx",
     "utf8",
   );
-  const proof = fs.readFileSync("app/proof/[token]/page.tsx", "utf8");
+  const proofPage = fs.readFileSync("app/proof/[token]/page.tsx", "utf8");
+  const proofServer = fs.readFileSync("lib/proof-server.ts", "utf8");
   const project = fs.readFileSync(
     "app/api/project-requests/[requestNo]/route.ts",
     "utf8",
@@ -24,7 +25,10 @@ test("private customer files stay behind ownership or secret-token checks", () =
   assert.match(accountDetail, /customer_user_id/);
   assert.match(accountDetail, /user\.id/);
   assert.match(accountDetail, /createSignedUrl/);
-  assert.match(proof, /tokenHash/);
+  assert.match(proofPage, /getProofByToken\(token\)/);
+  assert.match(proofServer, /access_token_hash/);
+  assert.match(proofServer, /tokenHash\(token\)/);
+  assert.match(proofServer, /createSignedUrl/);
   assert.match(project, /access_token_hash/);
   assert.match(project, /tokenHash/);
   assert.match(support, /access_token_hash/);
