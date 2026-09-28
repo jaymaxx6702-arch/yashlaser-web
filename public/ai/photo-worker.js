@@ -79,7 +79,7 @@ self.onmessage = async (event) => {
       return;
     }
     throw new Error("Unknown photo operation.");
-  } catch (error) {
+  } catch {
     self.postMessage({
       id,
       ok: false,
