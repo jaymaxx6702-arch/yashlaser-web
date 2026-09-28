@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 41 |
+| Completed | 42 |
 | In Progress | 7 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 61 |
+| Pending | 60 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -325,7 +325,7 @@ Known completed foundation:
 - [x] **YL-007** Commerce feature foundation enable કરવી.
 - [x] **YL-008** YashFlow integration feature foundation enable કરવી.
 - [x] **YL-009** Environment variablesનું documented register બનાવવું; secrets fileમાં લખવા નહીં.
-- [ ] **YL-010** Release checklist, version tag અને rollback procedure final કરવી.
+- [x] **YL-010** Release checklist, version tag અને rollback procedure final કરવી. — `docs/RELEASE_RUNBOOK.md` now locks consolidated CI/deploy gates, version convention, feature-flag rollback, Vercel rollback and additive-migration recovery rules.
 
 ### B. Catalogue, Product Master and Business Data - YL-011 to YL-025
 
