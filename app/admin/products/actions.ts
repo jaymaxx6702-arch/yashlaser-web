@@ -8,6 +8,7 @@ import {
   nextProductAdminRevision,
   validateProductAdminDraft,
 } from "@/lib/product-admin";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 function readDraft(form: FormData) {
   const raw = String(form.get("product") || "");
@@ -51,6 +52,13 @@ export async function saveProductAdminDraft(form: FormData) {
   });
 
   if (error) throw new Error("Unable to save product draft.");
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "product_admin.draft_create",
+    entityType: "product",
+    entityId: draft.productKey,
+    payload: { revision, slug: draft.slug },
+  });
   revalidatePath("/admin/products");
   redirect(
     "/admin/products?product_key=" +
@@ -81,6 +89,13 @@ export async function publishProductAdminVersion(form: FormData) {
     { p_version_id: id, p_admin_id: admin.id },
   );
   if (publishError) throw new Error("Unable to publish product version.");
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "product_admin.publish",
+    entityType: "product",
+    entityId: data.product_key,
+    payload: { versionId: id },
+  });
 
   revalidatePath("/admin/products");
   redirect(
