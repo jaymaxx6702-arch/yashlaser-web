@@ -71,12 +71,9 @@ export type ResolvedDesignHandoff = {
   previewPath: string;
 };
 
-function readArtworkMetadata(value: unknown): ArtworkIntegrityMetadata | null {
+function readMetadataRecord(value: unknown): ArtworkIntegrityMetadata | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const artwork = (value as Record<string, unknown>).artwork;
-  if (!artwork || typeof artwork !== "object" || Array.isArray(artwork))
-    return null;
-  const source = artwork as Record<string, unknown>;
+  const source = value as Record<string, unknown>;
   if (
     typeof source.bytes !== "number" ||
     !Number.isInteger(source.bytes) ||
@@ -103,6 +100,20 @@ function readArtworkMetadata(value: unknown): ArtworkIntegrityMetadata | null {
   };
 }
 
+function readCurrentArtworkMetadata(
+  customization: unknown,
+): ArtworkIntegrityMetadata | null {
+  if (
+    !customization ||
+    typeof customization !== "object" ||
+    Array.isArray(customization)
+  )
+    return null;
+  return readMetadataRecord(
+    (customization as Record<string, unknown>).artwork,
+  );
+}
+
 export async function resolveDesignHandoff(
   token: string,
   expected: { designId: string; productId: string },
@@ -118,7 +129,7 @@ export async function resolveDesignHandoff(
   const db = getSupabase();
   const { data: item, error } = await db
     .from("enquiry_items")
-    .select("id,design_id,product_id,artwork_path,preview_path,customization")
+    .select("id,design_id,product_id,artwork_path,source_artwork_path,source_artwork_metadata,preview_path,customization")
     .eq("id", ticket.enquiryItemId)
     .maybeSingle();
 
@@ -132,11 +143,18 @@ export async function resolveDesignHandoff(
   )
     throw new Error("Saved design assets are unavailable.");
 
-  const artworkPath =
+  const sourcePath =
+    typeof item.source_artwork_path === "string" && item.source_artwork_path
+      ? item.source_artwork_path
+      : null;
+  const currentPath =
     typeof item.artwork_path === "string" && item.artwork_path
       ? item.artwork_path
       : null;
-  const artworkMetadata = readArtworkMetadata(item.customization);
+  const artworkPath = sourcePath || currentPath;
+  const artworkMetadata = sourcePath
+    ? readMetadataRecord(item.source_artwork_metadata)
+    : readCurrentArtworkMetadata(item.customization);
 
   if (artworkPath && !artworkMetadata)
     throw new Error("Saved original artwork metadata is unavailable.");
