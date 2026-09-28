@@ -109,6 +109,23 @@ export async function syncShopOrderToYashFlow(orderId: string) {
           : `YashFlow sync failed (${response.status}).`,
       );
 
+    const remoteErrors = Array.isArray(result.errors)
+      ? result.errors
+          .map((value) =>
+            typeof value === "string"
+              ? value
+              : value && typeof value === "object" && "error" in value
+                ? String((value as { error?: unknown }).error || "")
+                : "",
+          )
+          .filter(Boolean)
+      : [];
+    if (remoteErrors.length)
+      throw new Error(
+        "YashFlow reported a partial sync failure: " +
+          remoteErrors.slice(0, 5).join("; "),
+      );
+
     const refs = Array.isArray(result.orders) ? result.orders : [];
     await db
       .from("shop_orders")
