@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 45 |
+| Completed | 46 |
 | In Progress | 7 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 57 |
+| Pending | 56 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -371,7 +371,7 @@ Known completed foundation:
 - [x] **YL-044** Excel/CSV bulk upload template અને validation complete કરવી. — Excel/Google Sheets-compatible CSV template, strict header/row validation, duplicate record detection and private attachment retention implemented.
 - [x] **YL-045** Photo filename-to-record auto-match અને error dashboard બનાવવું. — photo_filename matching, missing/duplicate/unreferenced-file diagnostics, preview and matched-photo upload implemented.
 - [x] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા. — Versioned preview/proof/approved/production asset states and lineage implemented.
-- [ ] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું.
+- [x] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું. — Live Supabase audit verified private buckets + RLS/no public object policies, bucket MIME/size limits, signed upload/access paths and duplicate-safe retry behaviour.
   - AI photo-processing expansion YL-101 to YL-109માં separately tracked છે જેથી background removal/upscale/correction જેવી requirements broad taskમાં ખોવાય નહીં.
 - [ ] [READY TO ENABLE] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો. — Form, secure request number/token, optional file upload, tracking and admin follow-up code verified; PROJECT_REQUESTS_ENABLED rollout remains.
 - [ ] [READY TO ENABLE] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો. — Event request, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
