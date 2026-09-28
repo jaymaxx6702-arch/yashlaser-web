@@ -115,3 +115,31 @@ test("reviews support moderation, verified badge and secure customer tracking", 
   assert.match(supportAdmin, /admin_response/);
   assert.match(supportAdmin, /readJsonBody/);
 });
+
+
+test("customer account claim and history foundations are secure and refresh after claim", () => {
+  const claimRoute = fs.readFileSync(
+    "app/api/account/claim-order/route.ts",
+    "utf8",
+  );
+  const claimForm = fs.readFileSync(
+    "components/ClaimOrderForm.tsx",
+    "utf8",
+  );
+  const account = fs.readFileSync("app/account/page.tsx", "utf8");
+  const detail = fs.readFileSync(
+    "app/account/orders/[id]/page.tsx",
+    "utf8",
+  );
+
+  assert.match(claimRoute, /customerUser/);
+  assert.match(claimRoute, /trackCommerceOrder/);
+  assert.match(claimRoute, /already linked to another account/);
+  assert.match(claimRoute, /consumeShopRateLimit/);
+  assert.match(claimForm, /router\.refresh\(\)/);
+  assert.match(account, /customer_user_id/);
+  assert.match(detail, /customer_user_id/);
+  assert.match(detail, /createSignedUrl/);
+  assert.match(detail, /shop_shipments/);
+  assert.match(detail, /shop_order_events/);
+});
