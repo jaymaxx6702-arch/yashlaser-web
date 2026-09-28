@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { recordAdminAudit } from "@/lib/admin-audit";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 type SupportUpdateBody = {
   status?: unknown;
