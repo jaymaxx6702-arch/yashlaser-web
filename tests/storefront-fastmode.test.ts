@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import {
+  bulkPersonalizationTemplateCsv,
+  inspectBulkPersonalizationCsv,
+} from "../lib/bulk-personalization";
 
 test("AI Photo Studio is visible before artwork upload and exposes capabilities", () => {
   const panel = fs.readFileSync(
@@ -145,4 +149,71 @@ test("customer account claim and history foundations are secure and refresh afte
   assert.match(detail, /createSignedUrl/);
   assert.match(detail, /shop_shipments/);
   assert.match(detail, /shop_order_events/);
+});
+
+
+test("bulk personalisation supports same/different modes, CSV validation and filename matching", () => {
+  const template = bulkPersonalizationTemplateCsv();
+  assert.match(template, /record_id/);
+  assert.match(template, /photo_filename/);
+
+  const csv = [
+    "record_id,name,line1,line2,photo_filename",
+    "001,Asha,Winner,Annual Event,001.jpg",
+    "002,Ravi,Runner-up,Annual Event,002.png",
+  ].join("\n");
+  const ok = inspectBulkPersonalizationCsv(csv, ["001.jpg", "002.png"]);
+  assert.equal(ok.rows.length, 2);
+  assert.equal(ok.issues.filter((issue) => issue.kind === "error").length, 0);
+  assert.deepEqual(ok.matchedPhotoNames.sort(), ["001.jpg", "002.png"]);
+
+  const missing = inspectBulkPersonalizationCsv(csv, ["001.jpg"]);
+  assert.ok(
+    missing.issues.some(
+      (issue) =>
+        issue.kind === "error" &&
+        issue.message.includes('Missing uploaded photo "002.png"'),
+    ),
+  );
+
+  const duplicateId = inspectBulkPersonalizationCsv(
+    [
+      "record_id,name,line1,line2,photo_filename",
+      "001,Asha,Winner,Event,001.jpg",
+      "001,Ravi,Runner-up,Event,002.png",
+    ].join("\n"),
+    ["001.jpg", "002.png"],
+  );
+  assert.ok(
+    duplicateId.issues.some((issue) =>
+      issue.message.includes("Duplicate record_id"),
+    ),
+  );
+
+  const component = fs.readFileSync(
+    "components/BulkPersonalizationBuilder.tsx",
+    "utf8",
+  );
+  assert.match(component, /Same for all/);
+  assert.match(component, /Different for each/);
+  assert.match(component, /Download CSV template/);
+  assert.match(component, /matched photos/);
+});
+
+test("bulk project attachments are private uploads with admin-only signed access", () => {
+  const form = fs.readFileSync("components/ProjectRequestForm.tsx", "utf8");
+  const admin = fs.readFileSync("app/admin/projects/page.tsx", "utf8");
+  const route = fs.readFileSync(
+    "app/api/admin/project-files/[id]/route.ts",
+    "utf8",
+  );
+
+  assert.match(form, /BulkPersonalizationBuilder/);
+  assert.match(form, /bulkFiles/);
+  assert.match(form, /uploadPrivate/);
+  assert.match(admin, /shop_project_files/);
+  assert.match(admin, /\/api\/admin\/project-files\//);
+  assert.match(route, /requireAdmin/);
+  assert.match(route, /createSignedUrl/);
+  assert.match(route, /customer-documents/);
 });
