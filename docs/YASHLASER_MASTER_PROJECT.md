@@ -208,10 +208,10 @@ Known completed foundation:
 | Status | Count |
 |---|---:|
 | Completed | 41 |
-| In Progress | 11 |
-| Ready to Enable | 2 |
+| In Progress | 6 |
+| Ready to Enable | 8 |
 | Blocked | 4 |
-| Pending | 65 |
+| Pending | 64 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -373,10 +373,10 @@ Known completed foundation:
 - [x] **YL-046** Preview, proof અને approved production fileને અલગ versioned statesમાં રાખવા. — Versioned preview/proof/approved/production asset states and lineage implemented.
 - [ ] **YL-047** Upload file type, size, retry, privacy અને private access test કરવું.
   - AI photo-processing expansion YL-101 to YL-109માં separately tracked છે જેથી background removal/upscale/correction જેવી requirements broad taskમાં ખોવાય નહીં.
-- [ ] [IN PROGRESS] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો.
-- [ ] [IN PROGRESS] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો.
-- [ ] [IN PROGRESS] **YL-050** Custom Acrylic request submit-to-admin workflow enable અને test કરવો.
-- [ ] **YL-051** Request number, customer confirmation અને admin follow-up flow test કરવો.
+- [ ] [READY TO ENABLE] **YL-048** Bulk Orders request form production flagથી enable અને test કરવો. — Form, secure request number/token, optional file upload, tracking and admin follow-up code verified; PROJECT_REQUESTS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-049** Plan My Event submit-to-admin workflow enable અને test કરવો. — Event request, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-050** Custom Acrylic request submit-to-admin workflow enable અને test કરવો. — Custom acrylic request, file upload, secure tracking and admin response workflow implemented; PROJECT_REQUESTS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-051** Request number, customer confirmation અને admin follow-up flow test કરવો. — Request number + secure token, customer status page and admin message/status actions are implemented; live flag-enabled E2E remains.
 - [ ] **YL-052** Yash ID portal Phase-1 requirements અને repository plan separately freeze કરવો.
 
 ### E. Orders, Customer Accounts, Payment and Shipping - YL-053 to YL-064
@@ -415,8 +415,8 @@ Known completed foundation:
 - [ ] **YL-078** Proof approval પછી design-change/remake responsibility policyમાં સ્પષ્ટ કરવી.
 - [ ] **YL-079** Customisation, photo quality, proof, lead time, shipping, bulk, payment અને returns FAQ publish કરવી.
 - [ ] **YL-080** Business name, address, contact અને GST/invoice details verify કરવી.
-- [ ] [IN PROGRESS] **YL-081** Reviews submission, moderation, verified badge અને public display enable/test કરવું.
-- [ ] [IN PROGRESS] **YL-082** Support ticket create, admin response અને order-linked complaint flow enable/test કરવો.
+- [ ] [READY TO ENABLE] **YL-081** Reviews submission, moderation, verified badge અને public display enable/test કરવું. — Submission, pending moderation, admin publish/reject, verified-purchase toggle and public published-review display implemented; REVIEWS_ENABLED rollout remains.
+- [ ] [READY TO ENABLE] **YL-082** Support ticket create, admin response અને order-linked complaint flow enable/test કરવો. — Secure ticket token, optional verified order link, admin response/status and customer tracking implemented; SUPPORT_ENABLED rollout remains.
 
 ### H. Security, Analytics, SEO, Performance and QA - YL-083 to YL-092
 
