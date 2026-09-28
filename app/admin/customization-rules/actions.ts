@@ -10,6 +10,7 @@ import {
   parseStoredCustomizationRule,
 } from "@/lib/customization/admin-rules";
 import { validateCustomizationDefinition } from "@/lib/customization/contract";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 function productId(form: FormData) {
   const value = String(form.get("product_id") || "").trim();
@@ -31,7 +32,7 @@ function definition(form: FormData) {
 }
 
 export async function saveCustomizationRuleDraft(form: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const product = productId(form);
   const parsed = definition(form);
   const catalogueProduct = products.find((item) => item.id === product);
@@ -56,6 +57,13 @@ export async function saveCustomizationRuleDraft(form: FormData) {
     definition: parsed,
   });
   if (error) throw new Error("Unable to save customization draft.");
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "customization_rule.draft_create",
+    entityType: "customization_rule",
+    entityId: product,
+    payload: { productId: product, revision },
+  });
 
   revalidatePath("/admin/customization-rules");
   redirect(
@@ -66,7 +74,7 @@ export async function saveCustomizationRuleDraft(form: FormData) {
 }
 
 export async function publishCustomizationRule(form: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = String(form.get("id") || "");
   if (!/^[a-f0-9-]{36}$/i.test(id)) throw new Error("Invalid rule id.");
   const db = getSupabase();
@@ -91,6 +99,13 @@ export async function publishCustomizationRule(form: FormData) {
     { p_rule_id: rule.id },
   );
   if (publishError) throw new Error("Unable to publish customization rule.");
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "customization_rule.publish",
+    entityType: "customization_rule",
+    entityId: rule.id,
+    payload: { productId: rule.productId, revision: rule.revision },
+  });
 
   revalidatePath("/admin/customization-rules");
   redirect(

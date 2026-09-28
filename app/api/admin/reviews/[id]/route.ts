@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { recordAdminAudit } from "@/lib/admin-audit";
+
 
 type ReviewUpdateBody = {
   status?: unknown;
@@ -12,7 +14,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const { id } = await context.params;
 
   let body: ReviewUpdateBody | null;
@@ -52,6 +54,14 @@ export async function POST(
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "review.moderated",
+    entityType: "review",
+    entityId: id,
+    payload: { status, verifiedPurchase },
+  });
 
   return NextResponse.json({ ok: true });
 }

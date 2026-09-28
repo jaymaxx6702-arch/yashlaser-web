@@ -244,3 +244,91 @@ test("private uploads remain signed, bounded and retry-safe", () => {
   assert.match(adminFile, /requireAdmin/);
   assert.match(adminFile, /createSignedUrl/);
 });
+
+
+function walkRoutes(directory: string): string[] {
+  const output: string[] = [];
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const path = directory + "/" + entry.name;
+    if (entry.isDirectory()) output.push(...walkRoutes(path));
+    else if (entry.isFile() && entry.name === "route.ts") output.push(path);
+  }
+  return output;
+}
+
+test("API writes use bounded JSON readers instead of raw request.json", () => {
+  for (const path of walkRoutes("app/api")) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.doesNotMatch(
+      source,
+      /request\.json\s*\(/,
+      path + " must use the shared bounded request-body reader.",
+    );
+  }
+});
+
+test("admin and Supabase privileged clients remain server-only and secrets stay non-public", () => {
+  const admin = fs.readFileSync("lib/admin.ts", "utf8");
+  const supabase = fs.readFileSync("lib/supabase.ts", "utf8");
+  const config = fs.readFileSync("next.config.ts", "utf8");
+  const proxy = fs.readFileSync("proxy.ts", "utf8");
+
+  assert.match(admin, /import "server-only"/);
+  assert.match(admin, /ADMIN_USER_IDS/);
+  assert.match(admin, /auth\.getUser/);
+  assert.match(supabase, /import "server-only"/);
+  assert.match(supabase, /SUPABASE_SECRET_KEY/);
+  assert.doesNotMatch(supabase, /NEXT_PUBLIC_SUPABASE_SECRET_KEY/);
+  assert.doesNotMatch(supabase, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
+
+  assert.match(config, /X-Frame-Options/);
+  assert.match(config, /Content-Security-Policy/);
+  assert.match(config, /Cache-Control/);
+  assert.match(config, /private, no-store/);
+  assert.match(proxy, /Cross-site request blocked/);
+  assert.match(proxy, /Origin mismatch/);
+});
+
+
+test("privileged admin mutations write to the private audit ledger", () => {
+  const mutationFiles = [
+    "app/admin/actions.ts",
+    "app/admin/customization-rules/actions.ts",
+    "app/admin/products/actions.ts",
+    "app/api/admin/order-assets/production/route.ts",
+    "app/api/admin/orders/[id]/shipment/route.ts",
+    "app/api/admin/orders/[id]/yashflow-sync/route.ts",
+    "app/api/admin/products/import-drafts/route.ts",
+    "app/api/admin/projects/[id]/route.ts",
+    "app/api/admin/proofs/route.ts",
+    "app/api/admin/quotes/route.ts",
+    "app/api/admin/reviews/[id]/route.ts",
+    "app/api/admin/support/[id]/route.ts",
+  ];
+
+  for (const path of mutationFiles) {
+    const source = fs.readFileSync(path, "utf8");
+    assert.match(
+      source,
+      /recordAdminAudit/,
+      path + " must record privileged mutations.",
+    );
+  }
+
+  const helper = fs.readFileSync("lib/admin-audit.ts", "utf8");
+  const migration = fs.readFileSync(
+    "supabase/migrations/202609281730_admin_audit_events.sql",
+    "utf8",
+  );
+  const page = fs.readFileSync("app/admin/audit/page.tsx", "utf8");
+  const nav = fs.readFileSync("components/AdminNav.tsx", "utf8");
+
+  assert.match(helper, /import "server-only"/);
+  assert.match(helper, /shop_admin_audit_events/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all/);
+  assert.match(migration, /service_role/);
+  assert.match(page, /requireAdmin/);
+  assert.match(page, /shop_admin_audit_events/);
+  assert.match(nav, /\/admin\/audit/);
+});

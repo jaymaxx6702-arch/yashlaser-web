@@ -207,11 +207,11 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 48 |
+| Completed | 49 |
 | In Progress | 7 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 54 |
+| Pending | 53 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
@@ -427,7 +427,7 @@ Known completed foundation:
 - [x] **YL-087** Multilingual canonical/hreflang અને duplicate-content strategy test કરવી. — EN/GU/HI/MR home, collection, category and product pages now use self-canonical URLs with shared hreflang/x-default alternates.
 - [ ] **YL-088** Core Web Vitals, images, lazy-loading અને JS bundle optimise કરવું.
 - [ ] **YL-089** Keyboard, form labels, focus, contrast, errors અને alt-text accessibility audit કરવી.
-- [ ] **YL-090** Admin auth, RLS, role permissions, server-only secrets અને audit logs security test કરવું.
+- [x] **YL-090** Admin auth, RLS, role permissions, server-only secrets અને audit logs security test કરવું. — Admin allowlist/session checks, server-only credentials, cross-site write guards, bounded API bodies, live RLS verification and private service-role-only admin audit ledger/viewer are implemented and regression-locked.
 - [ ] **YL-091** Private uploads, signed URLs, file validation અને customer/org isolation test કરવું.
 - [ ] **YL-092** Android Chrome, Desktop Chrome, Edge અને common screen widths regression test કરવું.
 
