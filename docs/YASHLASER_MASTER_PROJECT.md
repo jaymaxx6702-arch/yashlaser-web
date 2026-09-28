@@ -207,8 +207,8 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 50 |
-| In Progress | 9 |
+| Completed | 51 |
+| In Progress | 8 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
 | Pending | 50 |
@@ -444,7 +444,7 @@ Known completed foundation:
 
 ### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
 
-- [ ] [IN PROGRESS] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી.
+- [x] **YL-101** Uploaded photo માટે resolution, DPI suitability, blur, exposure, contrast અને basic face/person quality analysis foundation બનાવવી; low-quality input માટે clear warning આપવી. — On-device resolution/megapixel, exposure, contrast and Laplacian sharpness warnings are active; supported browsers now add optional native FaceDetector count without identification or external upload. Exact print DPI is intentionally not invented until verified physical size data exists under YL-013.
 - [x] **YL-102** AI background removal અને subject cutout pipeline implement કરવી; transparent PNG/WebP output અને failure fallback રાખવો. — On-device MODNet standee/portrait pilot with transparent output and safe failure fallback implemented.
 - [x] **YL-103** Automatic cutout ખોટું હોય ત્યારે manual refine tools: erase, restore, edge/brush adjustment, undo/reset અને original-vs-edited comparison ઉમેરવું. — Non-destructive erase/restore, brush sizing, undo/reset and original/edited compare implemented.
 - [ ] **YL-104** AI image enhancement/upscale pipeline: resolution upscale, sharpness, noise reduction, lighting, white-balance/color correction અને face-safe enhancement implement કરવી; over-processing ટાળવું.
