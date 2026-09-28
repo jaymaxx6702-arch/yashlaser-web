@@ -113,8 +113,8 @@ function cropAroundTransparentSubject(
   let right = clamp(box.x + box.width + padX, left + 1, bitmapWidth);
   let bottom = clamp(box.y + box.height + padY, top + 1, bitmapHeight);
 
-  let boxWidth = right - left;
-  let boxHeight = bottom - top;
+  const boxWidth = right - left;
+  const boxHeight = bottom - top;
   const current = boxWidth / boxHeight;
 
   if (current < targetAspect) {
