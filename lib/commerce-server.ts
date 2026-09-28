@@ -162,7 +162,12 @@ export async function createCommerceOrder(input: {
     configuration: {
       ...(item.configuration || {}),
       ...(handoffs[index]
-        ? { sourceEnquiryItemId: handoffs[index]!.enquiryItemId }
+        ? {
+            sourceEnquiryItemId: handoffs[index]!.enquiryItemId,
+            ...(handoffs[index]!.artworkMetadata
+              ? { sourceArtwork: handoffs[index]!.artworkMetadata }
+              : {}),
+          }
         : {}),
     },
   }));
@@ -211,11 +216,19 @@ export async function createCommerceOrder(input: {
       originalPath: string | null;
       previewPath: string;
       originalMime: string | null;
+      originalBytes: number | null;
+      originalSha256: string | null;
+      originalWidth: number | null;
+      originalHeight: number | null;
     }[] = [];
 
     for (const link of linked) {
       let originalPath: string | null = null;
       let originalMime: string | null = null;
+      let originalBytes: number | null = null;
+      let originalSha256: string | null = null;
+      let originalWidth: number | null = null;
+      let originalHeight: number | null = null;
 
       if (link.handoff.artworkPath) {
         const extension = link.handoff.artworkPath.split(".").pop() || "webp";
@@ -228,11 +241,16 @@ export async function createCommerceOrder(input: {
           throw new Error("Unable to preserve original artwork.");
         copiedPaths.push(originalPath);
         originalMime =
-          extension === "jpg"
+          link.handoff.artworkMetadata?.mimeType ||
+          (extension === "jpg"
             ? "image/jpeg"
             : extension === "png"
               ? "image/png"
-              : "image/webp";
+              : "image/webp");
+        originalBytes = link.handoff.artworkMetadata?.bytes || null;
+        originalSha256 = link.handoff.artworkMetadata?.sha256 || null;
+        originalWidth = link.handoff.artworkMetadata?.width || null;
+        originalHeight = link.handoff.artworkMetadata?.height || null;
       }
 
       const previewPath =
@@ -249,6 +267,10 @@ export async function createCommerceOrder(input: {
         originalPath,
         previewPath,
         originalMime,
+        originalBytes,
+        originalSha256,
+        originalWidth,
+        originalHeight,
       });
     }
 
@@ -263,6 +285,8 @@ export async function createCommerceOrder(input: {
         storage_bucket: "customer-artwork",
         file_path: asset.originalPath!,
         mime_type: asset.originalMime,
+        file_size: asset.originalBytes,
+        sha256: asset.originalSha256,
       }));
 
     const originalIds = new Map<string, string>();
