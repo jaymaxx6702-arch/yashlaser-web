@@ -10,6 +10,7 @@ import {
   statuses,
 } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 export async function login(form: FormData) {
   const email = String(form.get("email") || "").trim();
@@ -57,7 +58,7 @@ export async function logout() {
   redirect("/admin/login");
 }
 export async function updateEnquiry(form: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = String(form.get("id") || "");
   const status = String(form.get("status") || "");
   const notes = String(form.get("internal_notes") || "");
@@ -74,6 +75,13 @@ export async function updateEnquiry(form: FormData) {
     .select("id")
     .single();
   if (error || !data) redirect(`/admin/enquiries/${id}?error=1`);
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "enquiry.update",
+    entityType: "enquiry",
+    entityId: id,
+    payload: { status, notesUpdated: Boolean(notes) },
+  });
   revalidatePath("/admin");
   revalidatePath(`/admin/enquiries/${id}`);
   redirect(`/admin/enquiries/${id}?saved=1`);
