@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+
+type ShipmentBody = {
+  status?: unknown;
+  courier?: unknown;
+  awb?: unknown;
+  trackingUrl?: unknown;
+};
 
 const statuses = new Set([
   "preparing",
@@ -19,7 +27,16 @@ export async function POST(
 ) {
   await requireAdmin();
   const { id } = await context.params;
-  const body = await request.json().catch(() => null);
+  let body: ShipmentBody | null;
+  try {
+    body = await readJsonBody<ShipmentBody>(request, 8 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const status =
     typeof body?.status === "string" ? body.status : "preparing";
 
@@ -39,6 +56,18 @@ export async function POST(
     typeof body?.trackingUrl === "string"
       ? body.trackingUrl.trim().slice(0, 500)
       : "";
+  if (trackingUrl) {
+    try {
+      const parsed = new URL(trackingUrl);
+      if (!["http:", "https:"].includes(parsed.protocol))
+        throw new Error();
+    } catch {
+      return NextResponse.json(
+        { error: "Tracking URL must use http or https." },
+        { status: 400 },
+      );
+    }
+  }
 
   const db = getSupabase();
   const now = new Date().toISOString();
