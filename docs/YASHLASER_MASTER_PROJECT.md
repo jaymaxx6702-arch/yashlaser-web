@@ -341,7 +341,7 @@ Known completed foundation:
 - [ ] **YL-022** Unsupported productsને workflow ready થાય ત્યાં સુધી auto-route ન થાય તે verify કરવું.
 - [ ] **YL-023** Three seed productsનું complete end-to-end data validate કરવું.
 - [ ] **YL-024** Admin Product Creation Wizardથી developer વગર product publish test કરવું.
-- [ ] **YL-025** CSV/Excel-first catalogue import/export અને data validation report તૈયાર કરવી; fallback safe read-only migration રાખવી.
+- [x] **YL-025** CSV/Excel-first catalogue import/export અને data validation report તૈયાર કરવી; fallback safe read-only migration રાખવી. — Excel/Sheets-compatible CSV export, server validation, downloadable report, unchanged detection, draft-only import and read-only static-catalogue fallback completed.
 
 ### C. Storefront, UX and Multilingual Experience - YL-026 to YL-040
 
