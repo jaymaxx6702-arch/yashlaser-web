@@ -51,3 +51,13 @@ test("global CSS preserves keyboard focus and reduced-motion preferences", () =>
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /scroll-behavior: auto/);
 });
+
+
+test("mobile navigation exposes state and restores focus on Escape", () => {
+  const header = fs.readFileSync("components/SiteHeader.tsx", "utf8");
+  assert.match(header, /aria-expanded=\{open\}/);
+  assert.match(header, /aria-controls="main-navigation"/);
+  assert.match(header, /aria-label=\{open \? extra\.close : extra\.menu\}/);
+  assert.match(header, /menuButton\.current\?\.focus\(\)/);
+  assert.match(header, /setOpen\(false\)/);
+});
