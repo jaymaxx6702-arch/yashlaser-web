@@ -5,12 +5,14 @@ import { useState, type FormEvent } from "react";
 export function AdminProductionSource() {
   const [orderId, setOrderId] = useState("");
   const [status, setStatus] = useState("");
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
     setStatus("Creating locked production source…");
+    setWarnings([]);
     try {
       const response = await fetch("/api/admin/order-assets/production", {
         method: "POST",
@@ -21,6 +23,15 @@ export function AdminProductionSource() {
       if (!response.ok)
         throw new Error(result.error || "Unable to create production source.");
 
+      setWarnings(
+        Array.isArray(result.qualityWarnings)
+          ? result.qualityWarnings
+              .map((warning: { message?: unknown }) =>
+                typeof warning?.message === "string" ? warning.message : "",
+              )
+              .filter(Boolean)
+          : [],
+      );
       setStatus(
         result.idempotent
           ? `Production source v${result.version} already exists from approved proof v${result.sourceProofVersion}.`
@@ -54,6 +65,16 @@ export function AdminProductionSource() {
         {busy ? "Working…" : "Create production source"}
       </button>
       {status && <p role="status">{status}</p>}
+      {warnings.length > 0 && (
+        <div className="admin-card" role="status">
+          <strong>Print-readiness warnings</strong>
+          <ul>
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </form>
   );
 }
