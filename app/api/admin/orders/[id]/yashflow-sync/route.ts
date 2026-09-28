@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { adminUser } from "@/lib/admin";
 import { syncShopOrderToYashFlow } from "@/lib/yashflow";
 import { recordAdminAudit } from "@/lib/admin-audit";
-import { recordAdminAudit } from "@/lib/admin-audit";
+
 
 function safeMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "YashFlow sync failed.";
