@@ -71,8 +71,8 @@ export async function smartCropForBitmap(
 
   const imageAspect = bitmap.width / bitmap.height;
   const targetSampleAspect = targetAspect / imageAspect;
-  let boxWidth = right - left;
-  let boxHeight = bottom - top;
+  const boxWidth = right - left;
+  const boxHeight = bottom - top;
   const current = boxWidth / boxHeight;
 
   if (current < targetSampleAspect) {
