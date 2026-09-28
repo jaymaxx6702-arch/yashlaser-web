@@ -359,8 +359,8 @@ test("privileged admin mutations are recorded in the private audit ledger", () =
   assert.match(helper, /shop_admin_audit_events/);
   assert.match(helper, /return !error/);
   assert.match(migration, /enable row level security/);
-  assert.match(migration, /revoke all .* public, anon, authenticated/s);
-  assert.match(migration, /grant all .* service_role/s);
+  assert.match(migration, /revoke all [\\s\\S]* public, anon, authenticated/);
+  assert.match(migration, /grant all [\\s\\S]* service_role/);
   assert.match(viewer, /requireAdmin/);
   assert.match(viewer, /shop_admin_audit_events/);
 
