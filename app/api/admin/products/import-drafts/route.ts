@@ -5,6 +5,7 @@ import {
   findPublishedSlugConflicts,
   importProductAdminDrafts,
 } from "@/lib/catalogue-import-server";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -57,6 +58,19 @@ export async function POST(request: Request) {
       inspection.drafts,
       admin.id,
     );
+    await recordAdminAudit({
+      adminUserId: admin.id,
+      action: "product_admin.csv_import",
+      entityType: "catalogue",
+      payload: {
+        importedProducts: imported.rows.length,
+        skippedUnchanged: imported.skippedUnchanged,
+        importedVariants: inspection.drafts.reduce(
+          (sum, draft) => sum + draft.variants.length,
+          0,
+        ),
+      },
+    });
     return NextResponse.json({
       ok: true,
       importedProducts: imported.rows.length,
