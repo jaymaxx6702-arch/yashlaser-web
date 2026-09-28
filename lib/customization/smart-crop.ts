@@ -1,14 +1,172 @@
 import type { Crop } from "./model";
 import { cropPreset } from "./geometry";
 
+type DetectionBox = { x: number; y: number; width: number; height: number };
+type FaceDetectorConstructor = new (options?: {
+  maxDetectedFaces?: number;
+  fastMode?: boolean;
+}) => {
+  detect(
+    source: ImageBitmap,
+  ): Promise<Array<{ boundingBox: DetectionBox }>>;
+};
+
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+function focusCrop(
+  width: number,
+  height: number,
+  targetAspect: number,
+  focusX: number,
+  focusY: number,
+): Crop {
+  const preset = cropPreset(width, height, targetAspect);
+  const cropWidth = preset.width * width;
+  const cropHeight = preset.height * height;
+
+  const left = clamp(
+    focusX - cropWidth / 2,
+    0,
+    Math.max(0, width - cropWidth),
+  );
+  // Place detected faces near the upper third so portraits retain more body.
+  const top = clamp(
+    focusY - cropHeight * 0.35,
+    0,
+    Math.max(0, height - cropHeight),
+  );
+
+  return {
+    x: left / width,
+    y: top / height,
+    width: cropWidth / width,
+    height: cropHeight / height,
+  };
+}
+
+async function faceAwareCrop(
+  bitmap: ImageBitmap,
+  targetAspect: number,
+): Promise<Crop | null> {
+  const FaceDetector = (
+    globalThis as typeof globalThis & {
+      FaceDetector?: FaceDetectorConstructor;
+    }
+  ).FaceDetector;
+  if (!FaceDetector) return null;
+
+  try {
+    const detector = new FaceDetector({
+      maxDetectedFaces: 10,
+      fastMode: true,
+    });
+    const faces = await detector.detect(bitmap);
+    if (!faces.length) return null;
+
+    let left = bitmap.width;
+    let top = bitmap.height;
+    let right = 0;
+    let bottom = 0;
+    for (const face of faces) {
+      const box = face.boundingBox;
+      if (
+        !box ||
+        !Number.isFinite(box.x) ||
+        !Number.isFinite(box.y) ||
+        !Number.isFinite(box.width) ||
+        !Number.isFinite(box.height) ||
+        box.width <= 0 ||
+        box.height <= 0
+      )
+        continue;
+      left = Math.min(left, box.x);
+      top = Math.min(top, box.y);
+      right = Math.max(right, box.x + box.width);
+      bottom = Math.max(bottom, box.y + box.height);
+    }
+
+    if (right <= left || bottom <= top) return null;
+    return focusCrop(
+      bitmap.width,
+      bitmap.height,
+      targetAspect,
+      (left + right) / 2,
+      (top + bottom) / 2,
+    );
+  } catch {
+    return null;
+  }
+}
+
+function cropAroundTransparentSubject(
+  bitmapWidth: number,
+  bitmapHeight: number,
+  targetAspect: number,
+  box: DetectionBox,
+): Crop {
+  const padX = box.width * 0.08;
+  const padY = box.height * 0.08;
+  let left = clamp(box.x - padX, 0, bitmapWidth - 1);
+  let top = clamp(box.y - padY, 0, bitmapHeight - 1);
+  let right = clamp(box.x + box.width + padX, left + 1, bitmapWidth);
+  let bottom = clamp(box.y + box.height + padY, top + 1, bitmapHeight);
+
+  let boxWidth = right - left;
+  let boxHeight = bottom - top;
+  const current = boxWidth / boxHeight;
+
+  if (current < targetAspect) {
+    const wanted = boxHeight * targetAspect;
+    const extra = wanted - boxWidth;
+    left -= extra / 2;
+    right += extra / 2;
+  } else {
+    const wanted = boxWidth / targetAspect;
+    const extra = wanted - boxHeight;
+    top -= extra / 2;
+    bottom += extra / 2;
+  }
+
+  if (left < 0) {
+    right -= left;
+    left = 0;
+  }
+  if (right > bitmapWidth) {
+    left -= right - bitmapWidth;
+    right = bitmapWidth;
+  }
+  if (top < 0) {
+    bottom -= top;
+    top = 0;
+  }
+  if (bottom > bitmapHeight) {
+    top -= bottom - bitmapHeight;
+    bottom = bitmapHeight;
+  }
+
+  left = clamp(left, 0, bitmapWidth - 1);
+  top = clamp(top, 0, bitmapHeight - 1);
+  right = clamp(right, left + 1, bitmapWidth);
+  bottom = clamp(bottom, top + 1, bitmapHeight);
+
+  return {
+    x: left / bitmapWidth,
+    y: top / bitmapHeight,
+    width: (right - left) / bitmapWidth,
+    height: (bottom - top) / bitmapHeight,
+  };
 }
 
 export async function smartCropForBitmap(
   bitmap: ImageBitmap,
   targetAspect: number,
-): Promise<{ crop: Crop; subjectAware: boolean }> {
+): Promise<{
+  crop: Crop;
+  subjectAware: boolean;
+  faceAware: boolean;
+}> {
   if (
     !Number.isFinite(targetAspect) ||
     targetAspect <= 0 ||
@@ -16,6 +174,10 @@ export async function smartCropForBitmap(
     bitmap.height < 1
   )
     throw new Error("Smart crop is unavailable.");
+
+  const faceCrop = await faceAwareCrop(bitmap, targetAspect);
+  if (faceCrop)
+    return { crop: faceCrop, subjectAware: true, faceAware: true };
 
   const maxSide = 256;
   const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
@@ -52,70 +214,28 @@ export async function smartCropForBitmap(
   }
 
   const coverage = subjectPixels / (width * height);
-  if (
-    maxX < minX ||
-    maxY < minY ||
-    coverage > 0.94
-  )
+  if (maxX < minX || maxY < minY || coverage > 0.94)
     return {
       crop: cropPreset(bitmap.width, bitmap.height, targetAspect),
       subjectAware: false,
+      faceAware: false,
     };
 
-  const padX = Math.max(2, Math.round((maxX - minX + 1) * 0.08));
-  const padY = Math.max(2, Math.round((maxY - minY + 1) * 0.08));
-  let left = clamp(minX - padX, 0, width - 1);
-  let top = clamp(minY - padY, 0, height - 1);
-  let right = clamp(maxX + padX + 1, left + 1, width);
-  let bottom = clamp(maxY + padY + 1, top + 1, height);
-
-  const imageAspect = bitmap.width / bitmap.height;
-  const targetSampleAspect = targetAspect / imageAspect;
-  const boxWidth = right - left;
-  const boxHeight = bottom - top;
-  const current = boxWidth / boxHeight;
-
-  if (current < targetSampleAspect) {
-    const wanted = boxHeight * targetSampleAspect;
-    const extra = wanted - boxWidth;
-    left -= extra / 2;
-    right += extra / 2;
-  } else {
-    const wanted = boxWidth / targetSampleAspect;
-    const extra = wanted - boxHeight;
-    top -= extra / 2;
-    bottom += extra / 2;
-  }
-
-  if (left < 0) {
-    right -= left;
-    left = 0;
-  }
-  if (right > width) {
-    left -= right - width;
-    right = width;
-  }
-  if (top < 0) {
-    bottom -= top;
-    top = 0;
-  }
-  if (bottom > height) {
-    top -= bottom - height;
-    bottom = height;
-  }
-
-  left = clamp(left, 0, width - 1);
-  top = clamp(top, 0, height - 1);
-  right = clamp(right, left + 1, width);
-  bottom = clamp(bottom, top + 1, height);
+  const box: DetectionBox = {
+    x: (minX / width) * bitmap.width,
+    y: (minY / height) * bitmap.height,
+    width: ((maxX - minX + 1) / width) * bitmap.width,
+    height: ((maxY - minY + 1) / height) * bitmap.height,
+  };
 
   return {
-    crop: {
-      x: left / width,
-      y: top / height,
-      width: (right - left) / width,
-      height: (bottom - top) / height,
-    },
+    crop: cropAroundTransparentSubject(
+      bitmap.width,
+      bitmap.height,
+      targetAspect,
+      box,
+    ),
     subjectAware: true,
+    faceAware: false,
   };
 }
