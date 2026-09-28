@@ -13,6 +13,19 @@ export default async function AdminProjectsPage() {
     .order("created_at", { ascending: false })
     .limit(100);
 
+  const { data: files } = await db
+    .from("shop_project_files")
+    .select("id,request_id,file_name,mime_type,file_size,created_at")
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  const filesByRequest = new Map<string, typeof files>();
+  for (const file of files || []) {
+    const current = filesByRequest.get(file.request_id) || [];
+    current.push(file);
+    filesByRequest.set(file.request_id, current);
+  }
+
   return (
     <>
       <h1>Project requests</h1>
@@ -36,6 +49,27 @@ export default async function AdminProjectsPage() {
                 {item.quote_id ? "Quote linked" : "No quote linked yet"}
               </span>
               <pre>{JSON.stringify(item.payload, null, 2)}</pre>
+              {(filesByRequest.get(item.id) || []).length > 0 && (
+                <div>
+                  <strong>Attachments</strong>
+                  <ul>
+                    {(filesByRequest.get(item.id) || []).map((file) => (
+                      <li key={file.id}>
+                        <a
+                          className="text-link"
+                          href={"/api/admin/project-files/" + file.id}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {file.file_name} ↗
+                        </a>
+                        {" · "}
+                        {Math.max(1, Math.round((file.file_size || 0) / 1024))} KB
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {item.customer_message && (
                 <p>
                   <strong>Current customer message:</strong>{" "}
