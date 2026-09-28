@@ -332,3 +332,85 @@ test("privileged admin mutations write to the private audit ledger", () => {
   assert.match(page, /shop_admin_audit_events/);
   assert.match(nav, /\/admin\/audit/);
 });
+
+
+test("accessibility foundations keep keyboard, motion and text contrast protections", () => {
+  const layout = fs.readFileSync("app/layout.tsx", "utf8");
+  const css = fs.readFileSync("app/globals.css", "utf8");
+  const header = fs.readFileSync("components/SiteHeader.tsx", "utf8");
+  const card = fs.readFileSync("components/ProductCard.tsx", "utf8");
+  const gallery = fs.readFileSync("components/ProductGallery.tsx", "utf8");
+
+  assert.match(layout, /className="skip-link"/);
+  assert.match(layout, /href="#main-content"/);
+  assert.match(css, /--gold: #80602d/);
+  assert.match(css, /\.art-disclaimer[\s\S]*color: #686357/);
+  assert.match(css, /input:focus-visible/);
+  assert.match(css, /select:focus-visible/);
+  assert.match(css, /textarea:focus-visible/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  assert.match(header, /aria-expanded=\{open\}/);
+  assert.match(header, /aria-controls="main-navigation"/);
+  assert.match(header, /if \(e\.key === "Escape"\)/);
+  assert.match(card, /alt=\{image\.alt\}/);
+  assert.match(gallery, /alt=\{photo\.alt\}/);
+});
+
+test("customer and private-file reads remain isolated by user or secure token", () => {
+  const accountOrder = fs.readFileSync(
+    "app/account/orders/[id]/page.tsx",
+    "utf8",
+  );
+  const claim = fs.readFileSync(
+    "app/api/account/claim-order/route.ts",
+    "utf8",
+  );
+  const supportTrack = fs.readFileSync(
+    "app/api/support/[ticketNo]/route.ts",
+    "utf8",
+  );
+  const projectTrack = fs.readFileSync(
+    "app/api/project-requests/[requestNo]/route.ts",
+    "utf8",
+  );
+  const proofApprove = fs.readFileSync(
+    "app/api/proofs/[token]/approve/route.ts",
+    "utf8",
+  );
+  const adminProjectFile = fs.readFileSync(
+    "app/api/admin/project-files/[id]/route.ts",
+    "utf8",
+  );
+
+  assert.match(accountOrder, /\.eq\("customer_user_id", user\.id\)/);
+  assert.match(claim, /already linked to another account/);
+  assert.match(claim, /trackCommerceOrder\(orderNo, token\)/);
+  assert.match(supportTrack, /access_token_hash/);
+  assert.match(supportTrack, /tokenHash\(token\)/);
+  assert.match(projectTrack, /access_token_hash/);
+  assert.match(projectTrack, /tokenHash\(token\)/);
+  assert.match(proofApprove, /access_token_hash/);
+  assert.match(proofApprove, /tokenHash\(token\)/);
+  assert.match(adminProjectFile, /requireAdmin/);
+  assert.match(adminProjectFile, /createSignedUrl/);
+});
+
+test("photo AI keeps heavy model code off the initial customizer execution path", () => {
+  const adapter = fs.readFileSync(
+    "lib/customization/browser-photo-ai.ts",
+    "utf8",
+  );
+  const worker = fs.readFileSync("public/ai/photo-worker.js", "utf8");
+  const card = fs.readFileSync("components/ProductCard.tsx", "utf8");
+  const gallery = fs.readFileSync("components/ProductGallery.tsx", "utf8");
+
+  assert.match(adapter, /new Worker\("\/ai\/photo-worker\.js"/);
+  assert.doesNotMatch(adapter, /@huggingface\/transformers/);
+  assert.match(worker, /transformersPromise = import\(TRANSFORMERS_URL\)/);
+  assert.match(worker, /if \(!backgroundPromise\)/);
+  assert.match(worker, /if \(!enhancePromise\)/);
+  assert.match(card, /from "next\/image"/);
+  assert.match(card, /sizes=/);
+  assert.match(gallery, /from "next\/image"/);
+  assert.match(gallery, /priority/);
+});
