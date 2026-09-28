@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
+import { recordAdminAudit } from "@/lib/admin-audit";
 import {
   nextProductAdminRevision,
   validateProductAdminDraft,
