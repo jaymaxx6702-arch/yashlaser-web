@@ -43,7 +43,8 @@ export async function POST(request: Request) {
     if (
       ticket.requestId !== input.requestId ||
       ticket.payloadHash !== input.payloadHash ||
-      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork)
+      Boolean(ticket.artworkPath) !== Boolean(input.customization.artwork) ||
+      Boolean(ticket.sourceArtworkPath) !== Boolean(input.sourceArtwork)
     )
       throw new EnquiryError(
         "Uploads do not match this enquiry. Please retry.",
@@ -63,13 +64,17 @@ export async function POST(request: Request) {
         throw new EnquiryError("Uploaded file does not match the design.");
       return buffer;
     };
-    const artwork = input.customization.artwork;
-    if (artwork && ticket.artworkPath) {
-      const buffer = await download(
-        ticket.artworkPath,
-        artwork.bytes,
-        artwork.sha256,
-      );
+    const verifyArtwork = async (
+      path: string,
+      artwork: {
+        bytes: number;
+        sha256: string;
+        mimeType: string;
+        width: number;
+        height: number;
+      },
+    ) => {
+      const buffer = await download(path, artwork.bytes, artwork.sha256);
       try {
         const meta = await sharp(buffer, {
           limitInputPixels: 25000000,
@@ -95,7 +100,13 @@ export async function POST(request: Request) {
           "The uploaded photograph is invalid. Choose a valid JPG, PNG or WebP image.",
         );
       }
-    }
+    };
+
+    const artwork = input.customization.artwork;
+    if (artwork && ticket.artworkPath)
+      await verifyArtwork(ticket.artworkPath, artwork);
+    if (input.sourceArtwork && ticket.sourceArtworkPath)
+      await verifyArtwork(ticket.sourceArtworkPath, input.sourceArtwork);
     const preview = await download(
       ticket.previewPath,
       ticket.previewBytes,
@@ -142,6 +153,8 @@ export async function POST(request: Request) {
             ? null
             : (variant?.effectivePriceMinor ?? product.effectivePriceMinor),
         artwork_path: ticket.artworkPath,
+        source_artwork_path: ticket.sourceArtworkPath ?? null,
+        source_artwork_metadata: input.sourceArtwork,
         preview_path: ticket.previewPath,
         customization: design,
         design_id: input.designId,

@@ -4,8 +4,10 @@ export type UploadSession = {
   receipt: string;
   expiresAt: number;
   artwork: Target | null;
+  sourceArtwork: Target | null;
   preview: Target;
   artworkDone?: boolean;
+  sourceArtworkDone?: boolean;
   previewDone?: boolean;
 };
 export async function postEnquiryJson(path: string, payload: unknown) {

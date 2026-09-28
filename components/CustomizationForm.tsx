@@ -22,6 +22,12 @@ import {
   type CustomizationSnapshot,
 } from "@/lib/customization/snapshot";
 import type { BackgroundRemovalAdapter } from "@/lib/customization/background-removal";
+import { CutoutRefinement } from "@/components/customization/CutoutRefinement";
+import { PhotoToolsPanel } from "@/components/customization/PhotoToolsPanel";
+import {
+  modnetBrowserAdapter,
+  swin2srBrowserAdapter,
+} from "@/lib/customization/browser-photo-ai";
 import { addCartItem } from "@/lib/cart";
 import type { UiLanguage } from "@/lib/i18n";
 
@@ -292,6 +298,10 @@ export function CustomizationForm({
   lang?: UiLanguage;
 }) {
   const t = formCopy[lang];
+  const builtInBackgroundRemoval =
+    p.categoryId === "standees" ? modnetBrowserAdapter : undefined;
+  const activeBackgroundRemoval =
+    backgroundRemovalAdapter ?? builtInBackgroundRemoval;
   const prefix = lang === "en" ? "" : "/" + lang;
   const productPath = prefix + "/products/" + p.slug;
   const editor = useCustomization(
@@ -318,6 +328,7 @@ export function CustomizationForm({
     session: UploadSession;
   } | null>(null);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [refineOpen, setRefineOpen] = useState(false);
   async function prepare(review = false) {
     editor.setError("");
     setBusy(true);
@@ -361,6 +372,10 @@ export function CustomizationForm({
         quantity: doc.quantity,
         customization: doc,
         designId: snapshot.designId,
+        sourceArtwork:
+          editor.derived && editor.sourceMetadata
+            ? editor.sourceMetadata
+            : null,
         website: String(new FormData(e.currentTarget).get("website") || ""),
       };
       let reference = "YL-DRAFT-" + requestId.slice(0, 8).toUpperCase(),
@@ -392,6 +407,13 @@ export function CustomizationForm({
           }
         }
         if (!saved && session) {
+          if (session.sourceArtwork && !session.sourceArtworkDone) {
+            if (!editor.sourceArtwork)
+              throw new Error(t.selectArtwork);
+            setUploadStatus(t.uploadArtwork);
+            await uploadPrivate(session.sourceArtwork, editor.sourceArtwork);
+            session.sourceArtworkDone = true;
+          }
           if (session.artwork && !session.artworkDone) {
             if (!editor.artwork)
               throw new Error(t.selectArtwork);
@@ -558,6 +580,36 @@ export function CustomizationForm({
       )}
       {step === "design" ? (
         <>
+          {refineOpen && editor.artwork && editor.sourceArtwork && (
+            <CutoutRefinement
+              processed={editor.artwork}
+              original={editor.sourceArtwork}
+              lang={lang}
+              onCancel={() => setRefineOpen(false)}
+              onApply={async (blob) => {
+                await editor.applyRefinedArtwork(blob);
+                setRefineOpen(false);
+              }}
+            />
+          )}
+          <PhotoToolsPanel
+            product={p}
+            document={editor.document}
+            hasArtwork={Boolean(editor.artwork)}
+            hasOriginal={Boolean(editor.sourceArtwork)}
+            derived={editor.derived}
+            enhanced={editor.enhanced}
+            qualityReport={editor.qualityReport}
+            processing={locked}
+            onSmartCrop={() => void editor.applySmartCrop()}
+            onEnhance={() => void editor.applyEnhancement(swin2srBrowserAdapter)}
+            onRestoreOriginal={() => {
+              setRefineOpen(false);
+              void editor.restoreOriginalArtwork();
+            }}
+            onRefineCutout={() => setRefineOpen(true)}
+            lang={lang}
+          />
           <CustomizationEditor
             document={editor.document}
             bitmap={editor.bitmap}
@@ -566,16 +618,17 @@ export function CustomizationForm({
             onUpload={(f) => void editor.upload(f, f.name)}
             onReset={() => {
               editor.reset();
+              setRefineOpen(false);
               setSnapshot(null);
               setSuccess(null);
               requestKey.current = { fingerprint: "", id: "" };
             }}
             onOverflow={setOverflow}
             processing={locked}
-            adapter={backgroundRemovalAdapter}
+            adapter={activeBackgroundRemoval}
             onRemoveBackground={() => {
-              if (backgroundRemovalAdapter)
-                void editor.applyBackgroundRemoval(backgroundRemovalAdapter);
+              if (activeBackgroundRemoval)
+                void editor.applyBackgroundRemoval(activeBackgroundRemoval);
             }}
             onDownload={() => void prepare()}
             lang={lang}

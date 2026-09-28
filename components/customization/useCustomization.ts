@@ -11,6 +11,7 @@ import type { UiLanguage } from "@/lib/i18n";
 import {
   createDocument,
   validateDocument,
+  type Artwork,
   type CustomizationDocument,
 } from "@/lib/customization/model";
 import { inspectArtwork } from "@/lib/customization/artwork";
@@ -25,12 +26,20 @@ import {
   removeBackground,
   type BackgroundRemovalAdapter,
 } from "@/lib/customization/background-removal";
+import type { ImageEnhancementAdapter } from "@/lib/customization/browser-photo-ai";
+import {
+  analyzeBitmapQuality,
+  type PhotoQualityReport,
+} from "@/lib/customization/photo-quality";
+import { smartCropForBitmap } from "@/lib/customization/smart-crop";
+import { frameFor, relativeBox, templates } from "@/lib/customization/templates";
 
 const statusCopy = {
   en: {
     loading: "Loading your draft…",
     mismatch: "Saved artwork did not match. Please upload it again.",
     unavailable: "Saved artwork is unavailable. Please upload it again.",
+    originalUnavailable: "The original source photo is unavailable.",
     restored: "Draft restored on this browser.",
     saves: "Draft saves on this browser for 24 hours.",
     restoreFailed:
@@ -45,11 +54,17 @@ const statusCopy = {
     clearFailed:
       "The saved draft could not be cleared. Clear this site’s browser data on a shared device.",
     backgroundFailed: "Background removal failed.",
+    enhancementFailed: "2× enhancement failed on this device.",
+    enhancementAlready: "This photo has already been enhanced in this draft.",
+    enhanceAfterCutout:
+      "Restore the original before enhancement. Enhancement is disabled after background removal.",
+    smartCropFailed: "Smart crop could not be calculated.",
   },
   gu: {
     loading: "તમારો draft લોડ થઈ રહ્યો છે…",
     mismatch: "સેવ કરેલું artwork મેળ ખાતું નથી. કૃપા કરીને ફરી upload કરો.",
     unavailable: "સેવ કરેલું artwork ઉપલબ્ધ નથી. કૃપા કરીને ફરી upload કરો.",
+    originalUnavailable: "Original source photo ઉપલબ્ધ નથી.",
     restored: "આ browserમાં draft restore થયો.",
     saves: "Draft આ browserમાં 24 કલાક માટે save થાય છે.",
     restoreFailed:
@@ -64,11 +79,17 @@ const statusCopy = {
     clearFailed:
       "Saved draft clear થઈ શક્યો નથી. Shared device હોય તો આ siteનું browser data clear કરો.",
     backgroundFailed: "Background removal નિષ્ફળ થયું.",
+    enhancementFailed: "આ device પર 2× enhancement નિષ્ફળ થયું.",
+    enhancementAlready: "આ draftમાં photo પહેલેથી enhance થયેલો છે.",
+    enhanceAfterCutout:
+      "Enhancement પહેલાં original restore કરો. Background removal પછી enhancement બંધ છે.",
+    smartCropFailed: "Smart crop ગણતરી થઈ શકી નથી.",
   },
   hi: {
     loading: "आपका draft लोड हो रहा है…",
     mismatch: "सेव किया गया artwork मेल नहीं खाता. कृपया फिर से upload करें.",
     unavailable: "सेव किया गया artwork उपलब्ध नहीं है. कृपया फिर से upload करें.",
+    originalUnavailable: "Original source photo उपलब्ध नहीं है.",
     restored: "इस browser में draft restore हो गया.",
     saves: "Draft इस browser में 24 घंटे तक save रहता है.",
     restoreFailed:
@@ -83,11 +104,17 @@ const statusCopy = {
     clearFailed:
       "Saved draft clear नहीं हो सका. Shared device पर इस site का browser data clear करें.",
     backgroundFailed: "Background removal असफल हुआ.",
+    enhancementFailed: "इस device पर 2× enhancement असफल हुआ.",
+    enhancementAlready: "इस draft में photo पहले ही enhance हो चुकी है.",
+    enhanceAfterCutout:
+      "Enhancement से पहले original restore करें. Background removal के बाद enhancement बंद है.",
+    smartCropFailed: "Smart crop calculate नहीं हो सका.",
   },
   mr: {
     loading: "तुमचा draft लोड होत आहे…",
     mismatch: "सेव्ह केलेले artwork जुळत नाही. कृपया पुन्हा upload करा.",
     unavailable: "सेव्ह केलेले artwork उपलब्ध नाही. कृपया पुन्हा upload करा.",
+    originalUnavailable: "Original source photo उपलब्ध नाही.",
     restored: "या browserमध्ये draft restore झाला.",
     saves: "Draft या browserमध्ये 24 तास save राहतो.",
     restoreFailed:
@@ -102,8 +129,22 @@ const statusCopy = {
     clearFailed:
       "Saved draft clear करता आला नाही. Shared device असल्यास या siteचे browser data clear करा.",
     backgroundFailed: "Background removal अयशस्वी झाले.",
+    enhancementFailed: "या deviceवर 2× enhancement अयशस्वी झाले.",
+    enhancementAlready: "या draftमध्ये photo आधीच enhance झाली आहे.",
+    enhanceAfterCutout:
+      "Enhancementपूर्वी original restore करा. Background removalनंतर enhancement बंद आहे.",
+    smartCropFailed: "Smart crop calculate करता आला नाही.",
   },
 } as const;
+
+type CurrentState = {
+  document: CustomizationDocument;
+  artwork: Blob | null;
+  sourceArtwork: Blob | null;
+  sourceMetadata: Artwork | null;
+  derived: boolean;
+  enhanced: boolean;
+};
 
 export function useCustomization(
   product: CustomizationProduct,
@@ -115,24 +156,52 @@ export function useCustomization(
   const [document, setDocumentState] = useState(() =>
     createDocument(product, selection),
   );
-  const [artwork, setArtwork] = useState<Blob | null>(null),
-    [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
-  const [ready, setReady] = useState(false),
-    [processing, setProcessing] = useState(false),
-    [storageMessage, setStorageMessage] = useState<string>(t.loading),
-    [error, setError] = useState("");
+  const [artwork, setArtwork] = useState<Blob | null>(null);
+  const [sourceArtwork, setSourceArtwork] = useState<Blob | null>(null);
+  const [sourceMetadata, setSourceMetadata] = useState<Artwork | null>(null);
+  const [derived, setDerived] = useState(false);
+  const [enhanced, setEnhanced] = useState(false);
+  const [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
+  const [qualityReport, setQualityReport] =
+    useState<PhotoQualityReport | null>(null);
+  const [ready, setReady] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [storageMessage, setStorageMessage] = useState<string>(t.loading);
+  const [error, setError] = useState("");
 
-  const current = useRef({ document, artwork });
-  const activeBitmap = useRef<ImageBitmap | null>(null),
-    operation = useRef(0),
-    timer = useRef<ReturnType<typeof setTimeout> | null>(null),
-    abort = useRef<AbortController | null>(null);
+  const current = useRef<CurrentState>({
+    document,
+    artwork,
+    sourceArtwork,
+    sourceMetadata,
+    derived,
+    enhanced,
+  });
+  const activeBitmap = useRef<ImageBitmap | null>(null);
+  const operation = useRef(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abort = useRef<AbortController | null>(null);
   const productRef = useRef(product);
 
   useEffect(() => {
-    current.current = { document, artwork };
+    current.current = {
+      document,
+      artwork,
+      sourceArtwork,
+      sourceMetadata,
+      derived,
+      enhanced,
+    };
     productRef.current = product;
-  }, [document, artwork, product]);
+  }, [
+    document,
+    artwork,
+    sourceArtwork,
+    sourceMetadata,
+    derived,
+    enhanced,
+    product,
+  ]);
 
   const initial = useRef({ selection, overrides });
 
@@ -176,7 +245,7 @@ export function useCustomization(
     let cancelled = false;
 
     const invalidate = () => {
-      operation.current++;
+      operation.current += 1;
       abort.current?.abort();
       activeBitmap.current?.close();
       activeBitmap.current = null;
@@ -207,8 +276,49 @@ export function useCustomization(
               inspected.bitmap.close();
               throw new Error(t.mismatch);
             }
+
+            const isDerived = Boolean(draft.derived);
+            const sourceBlob = draft.sourceArtwork ?? draft.artwork;
+            if (isDerived && !draft.sourceArtwork) {
+              inspected.bitmap.close();
+              throw new Error(t.originalUnavailable);
+            }
+
+            let sourceMeta = draft.sourceMetadata ?? null;
+            if (!sourceMeta || !sourceBlob) {
+              sourceMeta = isDerived ? null : inspected.metadata;
+            }
+
+            if (sourceBlob && sourceMeta) {
+              if (sourceMeta.sha256 === inspected.metadata.sha256) {
+                setQualityReport(
+                  await analyzeBitmapQuality(inspected.bitmap).catch(() => null),
+                );
+              } else {
+                const sourceInspected = await inspectArtwork(
+                  sourceBlob,
+                  sourceMeta.name,
+                );
+                if (sourceInspected.metadata.sha256 !== sourceMeta.sha256) {
+                  sourceInspected.bitmap.close();
+                  inspected.bitmap.close();
+                  throw new Error(t.mismatch);
+                }
+                setQualityReport(
+                  await analyzeBitmapQuality(sourceInspected.bitmap).catch(
+                    () => null,
+                  ),
+                );
+                sourceInspected.bitmap.close();
+              }
+            }
+
             replaceBitmap(inspected.bitmap);
             setArtwork(draft.artwork);
+            setSourceArtwork(sourceBlob);
+            setSourceMetadata(sourceMeta ?? inspected.metadata);
+            setDerived(isDerived);
+            setEnhanced(Boolean(draft.enhanced));
           } else if (checked.artwork) {
             throw new Error(t.unavailable);
           }
@@ -245,7 +355,15 @@ export function useCustomization(
         /* Artwork draft can still be saved when localStorage is disabled. */
       }
 
-      await saveDraft(product.id, { ...latest, updatedAt: Date.now() });
+      await saveDraft(product.id, {
+        document: latest.document,
+        artwork: latest.artwork,
+        sourceArtwork: latest.sourceArtwork,
+        sourceMetadata: latest.sourceMetadata,
+        derived: latest.derived,
+        enhanced: latest.enhanced,
+        updatedAt: Date.now(),
+      });
       setStorageMessage(t.saved);
       return true;
     } catch {
@@ -262,7 +380,16 @@ export function useCustomization(
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [document, artwork, ready, flush]);
+  }, [
+    document,
+    artwork,
+    sourceArtwork,
+    sourceMetadata,
+    derived,
+    enhanced,
+    ready,
+    flush,
+  ]);
 
   useEffect(() => {
     if (!ready) return;
@@ -273,10 +400,14 @@ export function useCustomization(
     return () => window.removeEventListener("pagehide", save);
   }, [ready, flush]);
 
-  async function upload(
+  async function replaceArtwork(
     file: Blob,
     name: string,
-    adapter: string | null = null,
+    options: {
+      adapter?: string | null;
+      preserveSource?: boolean;
+      enhanced?: boolean;
+    } = {},
   ) {
     const token = ++operation.current;
     setProcessing(true);
@@ -289,24 +420,53 @@ export function useCustomization(
         return;
       }
 
-      const d = current.current.document;
+      const preserveSource = Boolean(options.preserveSource);
+      const sourceBlob = preserveSource
+        ? current.current.sourceArtwork
+        : file;
+      const sourceMeta = preserveSource
+        ? current.current.sourceMetadata
+        : next.metadata;
+      if (!sourceBlob || !sourceMeta) {
+        next.bitmap.close();
+        throw new Error(t.originalUnavailable);
+      }
+
       const nextDocument: CustomizationDocument = {
-        ...d,
+        ...current.current.document,
         artwork: next.metadata,
         image: {
-          ...d.image,
+          ...current.current.document.image,
           crop: { x: 0, y: 0, width: 1, height: 1 },
           zoom: 1,
           panX: 0,
           panY: 0,
         },
-        backgroundRemoval: { adapter },
+        backgroundRemoval: {
+          adapter:
+            options.adapter === undefined
+              ? current.current.document.backgroundRemoval.adapter
+              : options.adapter,
+        },
+      };
+
+      if (!preserveSource)
+        setQualityReport(
+          await analyzeBitmapQuality(next.bitmap).catch(() => null),
+        );
+
+      const nextState: CurrentState = {
+        document: nextDocument,
+        artwork: file,
+        sourceArtwork: sourceBlob,
+        sourceMetadata: sourceMeta,
+        derived: preserveSource,
+        enhanced: Boolean(options.enhanced),
       };
 
       try {
         await saveDraft(product.id, {
-          document: nextDocument,
-          artwork: file,
+          ...nextState,
           updatedAt: Date.now(),
         });
       } catch {
@@ -318,9 +478,13 @@ export function useCustomization(
         return;
       }
 
-      current.current = { document: nextDocument, artwork: file };
+      current.current = nextState;
       replaceBitmap(next.bitmap);
       setArtwork(file);
+      setSourceArtwork(sourceBlob);
+      setSourceMetadata(sourceMeta);
+      setDerived(preserveSource);
+      setEnhanced(Boolean(options.enhanced));
       setDocument(nextDocument);
     } catch (e) {
       if (token === operation.current)
@@ -330,23 +494,47 @@ export function useCustomization(
     }
   }
 
+  async function upload(file: Blob, name: string) {
+    await replaceArtwork(file, name, {
+      adapter: null,
+      preserveSource: false,
+      enhanced: false,
+    });
+  }
+
   function reset() {
-    operation.current++;
+    operation.current += 1;
     abort.current?.abort();
     replaceBitmap(null);
     setArtwork(null);
+    setSourceArtwork(null);
+    setSourceMetadata(null);
+    setDerived(false);
+    setEnhanced(false);
+    setQualityReport(null);
 
     const clean = createDocument(productRef.current, {
       variantId: current.current.document.variantId,
       quantity: current.current.document.quantity,
     });
 
-    current.current = { document: clean, artwork: null };
+    current.current = {
+      document: clean,
+      artwork: null,
+      sourceArtwork: null,
+      sourceMetadata: null,
+      derived: false,
+      enhanced: false,
+    };
     setDocument(clean);
 
     void saveDraft(product.id, {
       document: clean,
       artwork: null,
+      sourceArtwork: null,
+      sourceMetadata: null,
+      derived: false,
+      enhanced: false,
       updatedAt: Date.now(),
     }).catch(() => setStorageMessage(t.clearFailed));
 
@@ -354,8 +542,31 @@ export function useCustomization(
     setError("");
   }
 
+  async function restoreOriginalArtwork() {
+    const source = current.current.sourceArtwork;
+    const metadata = current.current.sourceMetadata;
+    if (!source || !metadata) {
+      setError(t.originalUnavailable);
+      return;
+    }
+    await replaceArtwork(source, metadata.name, {
+      adapter: null,
+      preserveSource: false,
+      enhanced: false,
+    });
+  }
+
+  async function applyRefinedArtwork(result: Blob) {
+    await replaceArtwork(result, "refined-cutout.png", {
+      adapter:
+        current.current.document.backgroundRemoval.adapter || "manual-cutout",
+      preserveSource: true,
+      enhanced: current.current.enhanced,
+    });
+  }
+
   async function applyBackgroundRemoval(adapter: BackgroundRemovalAdapter) {
-    if (!artwork) return;
+    if (!current.current.artwork) return;
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
@@ -365,19 +576,102 @@ export function useCustomization(
     try {
       const result = await removeBackground(
         adapter,
-        artwork,
+        current.current.artwork,
         controller.signal,
       );
-      await upload(
+      if (controller.signal.aborted) return;
+      setProcessing(false);
+      await replaceArtwork(
         result,
-        "background-removed." + (result.type === "image/png" ? "png" : "webp"),
-        adapter.id,
+        "background-removed." +
+          (result.type === "image/png" ? "png" : "webp"),
+        {
+          adapter: adapter.id,
+          preserveSource: true,
+          enhanced: current.current.enhanced,
+        },
       );
     } catch (e) {
       if (!controller.signal.aborted)
         setError(e instanceof Error ? e.message : t.backgroundFailed);
+      setProcessing(false);
+    }
+  }
+
+  async function applyEnhancement(adapter: ImageEnhancementAdapter) {
+    const source = current.current.artwork;
+    if (!source) return;
+    if (current.current.enhanced) {
+      setError(t.enhancementAlready);
+      return;
+    }
+    if (current.current.document.backgroundRemoval.adapter) {
+      setError(t.enhanceAfterCutout);
+      return;
+    }
+    if (
+      current.current.document.artwork &&
+      current.current.document.artwork.width *
+        current.current.document.artwork.height >
+        4_000_000
+    ) {
+      setError(
+        "2× enhancement is limited to source images up to 4 megapixels on this device.",
+      );
+      return;
+    }
+
+    abort.current?.abort();
+    const controller = new AbortController();
+    abort.current = controller;
+    setProcessing(true);
+    setError("");
+    try {
+      const result = await adapter.enhance(source, {
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      setProcessing(false);
+      await replaceArtwork(result, "enhanced-x2.png", {
+        adapter: null,
+        preserveSource: true,
+        enhanced: true,
+      });
+    } catch (e) {
+      if (!controller.signal.aborted)
+        setError(e instanceof Error ? e.message : t.enhancementFailed);
+      setProcessing(false);
+    }
+  }
+
+  async function applySmartCrop() {
+    const active = activeBitmap.current;
+    if (!active) return;
+    setProcessing(true);
+    setError("");
+    try {
+      const template = templates[current.current.document.templateId];
+      const frame = frameFor(template);
+      const photo = relativeBox(frame, template.photo);
+      const result = await smartCropForBitmap(
+        active,
+        photo.width / photo.height,
+      );
+      setDocument({
+        ...current.current.document,
+        image: {
+          ...current.current.document.image,
+          crop: result.crop,
+          zoom: 1,
+          panX: 0,
+          panY: 0,
+        },
+      });
+      return result;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t.smartCropFailed);
     } finally {
-      if (!controller.signal.aborted) setProcessing(false);
+      setProcessing(false);
     }
   }
 
@@ -385,7 +679,12 @@ export function useCustomization(
     document,
     setDocument,
     artwork,
+    sourceArtwork,
+    sourceMetadata,
+    derived,
+    enhanced,
     bitmap,
+    qualityReport,
     ready,
     processing,
     storageMessage,
@@ -394,6 +693,10 @@ export function useCustomization(
     upload,
     reset,
     flush,
+    restoreOriginalArtwork,
+    applyRefinedArtwork,
     applyBackgroundRemoval,
+    applyEnhancement,
+    applySmartCrop,
   };
 }

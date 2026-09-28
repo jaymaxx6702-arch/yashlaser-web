@@ -22,6 +22,11 @@ import {
 } from "../lib/customization/templates";
 import { removeBackground } from "../lib/customization/background-removal";
 import {
+  analyzePixelBuffer,
+  assessPhotoQuality,
+} from "../lib/customization/photo-quality";
+import { validateRefinementStrokes } from "../lib/customization/refinement";
+import {
   assertAiOperationAllowed,
   runAiOperation,
   supportsAiCapability,
@@ -723,4 +728,106 @@ test("customer customization pages use published rules with a safe fallback", ()
   assert.match(page, /product=\{customizationProduct\}/);
   assert.match(localized, /getPublishedCustomizationDefinition\(p\)/);
   assert.match(localized, /product=\{customizationProduct\}/);
+});
+
+
+test("photo quality screening is deterministic, advisory and never invents DPI", () => {
+  const pixels = new Uint8ClampedArray(4 * 9);
+  for (let i = 0; i < pixels.length; i += 4) {
+    pixels[i] = 20;
+    pixels[i + 1] = 20;
+    pixels[i + 2] = 20;
+    pixels[i + 3] = 255;
+  }
+  const signals = analyzePixelBuffer(pixels, 3, 3);
+  const report = assessPhotoQuality({
+    width: 600,
+    height: 500,
+    signals,
+  });
+  assert.equal(report.status, "warning");
+  assert.ok(report.issues.some((issue) => issue.code === "resolution-low"));
+  assert.ok(report.issues.some((issue) => issue.code === "too-dark"));
+  assert.ok(report.issues.some((issue) => issue.code === "contrast-low"));
+  assert.ok(report.issues.some((issue) => issue.code === "blur-risk"));
+
+  const source = fs.readFileSync(
+    "lib/customization/photo-quality.ts",
+    "utf8",
+  );
+  assert.doesNotMatch(source, /\bdpi\b/i);
+  assert.doesNotMatch(source, /\bppi\b/i);
+});
+
+test("manual cutout refinement bounds strokes and keeps original/processed roles explicit", () => {
+  assert.deepEqual(
+    validateRefinementStrokes([
+      {
+        mode: "erase",
+        radius: 0.03,
+        points: [
+          { x: 0.2, y: 0.3 },
+          { x: 0.4, y: 0.5 },
+        ],
+      },
+    ])[0].mode,
+    "erase",
+  );
+  assert.throws(() =>
+    validateRefinementStrokes([
+      { mode: "erase", radius: 0.5, points: [{ x: 0, y: 0 }] },
+    ]),
+  );
+  assert.throws(() =>
+    validateRefinementStrokes([
+      { mode: "restore", radius: 0.03, points: [{ x: -1, y: 0 }] },
+    ]),
+  );
+
+  const component = fs.readFileSync(
+    "components/customization/CutoutRefinement.tsx",
+    "utf8",
+  );
+  assert.match(component, /processed/);
+  assert.match(component, /original/);
+  assert.match(component, /Erase/);
+  assert.match(component, /Restore/);
+});
+
+test("browser photo AI is opt-in, on-device and model capabilities stay explicit", () => {
+  const adapter = fs.readFileSync(
+    "lib/customization/browser-photo-ai.ts",
+    "utf8",
+  );
+  const worker = fs.readFileSync("public/ai/photo-worker.js", "utf8");
+  const form = fs.readFileSync("components/CustomizationForm.tsx", "utf8");
+  const tools = fs.readFileSync(
+    "components/customization/PhotoToolsPanel.tsx",
+    "utf8",
+  );
+
+  assert.match(adapter, /modnet-browser-q8-v1/);
+  assert.match(adapter, /swin2sr-browser-x2-q8-v1/);
+  assert.match(worker, /@huggingface\/transformers@4\.3\.0/);
+  assert.match(worker, /Xenova\/modnet/);
+  assert.match(worker, /Xenova\/swin2SR-classical-sr-x2-64/);
+  assert.match(form, /p\.categoryId === "standees"/);
+  assert.match(form, /sourceArtwork/);
+  assert.match(tools, /first AI operation may download a model/);
+  assert.doesNotMatch(worker, /fetch\([^)]*blob/i);
+});
+
+test("smart crop stays deterministic and manual crop remains available", () => {
+  const source = fs.readFileSync("lib/customization/smart-crop.ts", "utf8");
+  assert.match(source, /cropPreset/);
+  assert.match(source, /alpha <= 32/);
+  assert.match(source, /subjectAware: false/);
+  assert.match(source, /subjectAware: true/);
+
+  const editor = fs.readFileSync(
+    "components/customization/CustomizationEditor.tsx",
+    "utf8",
+  );
+  assert.match(editor, /cropPreset/);
+  assert.match(editor, /cropMode/);
 });
