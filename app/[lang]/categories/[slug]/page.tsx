@@ -3,7 +3,7 @@ import { languageAlternates } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { Catalogue, type CatalogueParams } from "@/components/Catalogue";
 import { categories } from "@/data/catalog";
-import { isUiLanguage, uiCopy } from "@/lib/i18n";
+import { categoryCopy, isUiLanguage, uiCopy } from "@/lib/i18n";
 
 export async function generateMetadata({
   params,
