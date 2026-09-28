@@ -26,5 +26,5 @@ export async function recordAdminAudit(input: AdminAuditInput) {
     payload: input.payload || {},
   });
 
-  if (error) throw new Error("Unable to record admin audit event.");
+  return !error;
 }
