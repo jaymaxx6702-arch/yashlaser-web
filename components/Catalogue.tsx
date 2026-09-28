@@ -173,7 +173,41 @@ export function Catalogue({
           ))}
         </div>
       ) : (
-        <p>{copy.noMatching}</p>
+        <section className="empty-state" aria-live="polite">
+          <p className="eyebrow">
+            {lang === "gu"
+              ? "બીજો રસ્તો અજમાવો"
+              : lang === "hi"
+                ? "दूसरा रास्ता आज़माएँ"
+                : lang === "mr"
+                  ? "दुसरा पर्याय वापरा"
+                  : "Try another path"}
+          </p>
+          <h2>{copy.noMatching}</h2>
+          <p className="muted">
+            {lang === "gu"
+              ? "શોધ સાફ કરો અથવા નીચેની મુખ્ય કેટેગરીમાંથી પસંદ કરો."
+              : lang === "hi"
+                ? "खोज साफ करें या नीचे की मुख्य कैटेगरी में से चुनें."
+                : lang === "mr"
+                  ? "शोध साफ करा किंवा खालील मुख्य कॅटेगरीमधून निवडा."
+                  : "Clear the search or continue with one of the main categories below."}
+          </p>
+          <div className="editor-toolbar">
+            <Link className="button" href={prefix + "/products"}>
+              {copy.allProducts}
+            </Link>
+            {categories.slice(0, 4).map((item) => (
+              <Link
+                key={item.id}
+                className="button button-secondary"
+                href={prefix + categoryHref(item.id)}
+              >
+                {categoryCopy[lang][item.id].shortName}
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
       <nav className="pagination" aria-label="Catalogue pages">
