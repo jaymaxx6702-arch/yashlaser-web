@@ -55,12 +55,53 @@ export async function createDesignHandoffForRequest(input: {
   );
 }
 
+export type ArtworkIntegrityMetadata = {
+  bytes: number;
+  sha256: string;
+  mimeType: string;
+  width: number;
+  height: number;
+};
+
 export type ResolvedDesignHandoff = {
   ticket: DesignHandoffTicket;
   enquiryItemId: string;
   artworkPath: string | null;
+  artworkMetadata: ArtworkIntegrityMetadata | null;
   previewPath: string;
 };
+
+function readArtworkMetadata(value: unknown): ArtworkIntegrityMetadata | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const artwork = (value as Record<string, unknown>).artwork;
+  if (!artwork || typeof artwork !== "object" || Array.isArray(artwork))
+    return null;
+  const source = artwork as Record<string, unknown>;
+  if (
+    typeof source.bytes !== "number" ||
+    !Number.isInteger(source.bytes) ||
+    source.bytes <= 0 ||
+    typeof source.sha256 !== "string" ||
+    !/^[a-f0-9]{64}$/.test(source.sha256) ||
+    typeof source.mimeType !== "string" ||
+    !["image/jpeg", "image/png", "image/webp"].includes(source.mimeType) ||
+    typeof source.width !== "number" ||
+    !Number.isInteger(source.width) ||
+    source.width <= 0 ||
+    typeof source.height !== "number" ||
+    !Number.isInteger(source.height) ||
+    source.height <= 0
+  )
+    return null;
+
+  return {
+    bytes: source.bytes,
+    sha256: source.sha256,
+    mimeType: source.mimeType,
+    width: source.width,
+    height: source.height,
+  };
+}
 
 export async function resolveDesignHandoff(
   token: string,
@@ -77,7 +118,7 @@ export async function resolveDesignHandoff(
   const db = getSupabase();
   const { data: item, error } = await db
     .from("enquiry_items")
-    .select("id,design_id,product_id,artwork_path,preview_path")
+    .select("id,design_id,product_id,artwork_path,preview_path,customization")
     .eq("id", ticket.enquiryItemId)
     .maybeSingle();
 
@@ -91,13 +132,20 @@ export async function resolveDesignHandoff(
   )
     throw new Error("Saved design assets are unavailable.");
 
+  const artworkPath =
+    typeof item.artwork_path === "string" && item.artwork_path
+      ? item.artwork_path
+      : null;
+  const artworkMetadata = readArtworkMetadata(item.customization);
+
+  if (artworkPath && !artworkMetadata)
+    throw new Error("Saved original artwork metadata is unavailable.");
+
   return {
     ticket,
     enquiryItemId: item.id,
-    artworkPath:
-      typeof item.artwork_path === "string" && item.artwork_path
-        ? item.artwork_path
-        : null,
+    artworkPath,
+    artworkMetadata,
     previewPath: item.preview_path,
   };
 }
