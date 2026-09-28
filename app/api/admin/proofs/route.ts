@@ -7,6 +7,7 @@ import {
   registerProofAsset,
   supersedePreviousProofAssets,
 } from "@/lib/proof-assets";
+import { recordAdminAudit } from "@/lib/admin-audit";
 
 type ProofBody = {
   orderId?: unknown;
@@ -17,7 +18,7 @@ type ProofBody = {
 };
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   let body: ProofBody | null;
   try {
@@ -163,6 +164,14 @@ export async function POST(request: Request) {
     to_status: "proof",
     note: `Proof v${version} ready`,
     source: "admin",
+  });
+
+  await recordAdminAudit({
+    adminUserId: admin.id,
+    action: "proof.create",
+    entityType: "order",
+    entityId: orderId,
+    payload: { proofId: proof.id, version },
   });
 
   return NextResponse.json({
