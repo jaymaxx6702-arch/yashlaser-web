@@ -1,7 +1,9 @@
 import type { Product } from "@/data/catalog";
 import {
   categoryCustomizationDefinitions,
+  getCustomizationDefinition,
   legacyTextFields,
+  type CustomizationDefinition,
 } from "@/lib/customization/contract";
 
 export type CustomizationProduct = Pick<
@@ -14,7 +16,9 @@ export type CustomizationProduct = Pick<
   | "pricingMode"
   | "effectivePriceMinor"
   | "priceMinor"
->;
+> & {
+  customizationDefinition?: CustomizationDefinition;
+};
 
 export function resolveSelection(
   product: CustomizationProduct,
@@ -28,10 +32,15 @@ export function resolveSelection(
     typeof quantity === "string" && /^\d+$/.test(quantity)
       ? Number(quantity)
       : 1;
+  const quantityRule = getCustomizationDefinition(product).quantity;
   return {
     variantId: selected?.id ?? "",
     quantity:
-      Number.isInteger(parsed) && parsed >= 1 && parsed <= 10000 ? parsed : 1,
+      Number.isInteger(parsed) &&
+      parsed >= quantityRule.min &&
+      parsed <= quantityRule.max
+        ? parsed
+        : quantityRule.min,
   };
 }
 

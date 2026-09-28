@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { AdminProofUploader } from "@/components/AdminProofUploader";
+import { AdminProductionSource } from "@/components/AdminProductionSource";
 
 export default async function AdminProofsPage() {
   await requireAdmin();
@@ -13,6 +14,7 @@ export default async function AdminProofsPage() {
         </div>
       </div>
       <AdminProofUploader />
+      <AdminProductionSource />
       <p>
         Proof records require the commerce migration and private <code>shop-proofs</code> bucket.
       </p>

@@ -3,6 +3,7 @@ import { getSupabase } from "@/lib/supabase";
 import { tokenHash } from "@/lib/commerce-server";
 import { consumeRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { RequestBodyError, readJsonBody } from "@/lib/request-security";
+import { syncProofAssetState } from "@/lib/proof-assets";
 
 export async function POST(
   request: Request,
@@ -59,6 +60,20 @@ export async function POST(
       { error: "This proof is no longer actionable. Refresh and review the latest status." },
       { status: 409 },
     );
+
+  try {
+    await syncProofAssetState(proof.id, "approved", now);
+  } catch {
+    await db
+      .from("shop_proofs")
+      .update({ status: "ready", approved_at: null })
+      .eq("id", proof.id)
+      .eq("status", "approved");
+    return NextResponse.json(
+      { error: "Unable to synchronize proof approval." },
+      { status: 500 },
+    );
+  }
 
   await db.from("shop_proof_actions").insert({
     proof_id: proof.id,

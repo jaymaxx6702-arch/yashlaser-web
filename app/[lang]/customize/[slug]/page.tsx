@@ -5,6 +5,7 @@ import { findProduct } from "@/data/catalog";
 import { CustomizationForm } from "@/components/CustomizationForm";
 import { submissionEnabled } from "@/lib/supabase";
 import { resolveSelection } from "@/lib/customization";
+import { getPublishedCustomizationDefinition } from "@/lib/customization/server-rules";
 import { isUiLanguage } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -36,19 +37,26 @@ export default async function LocalizedCustomizePage({
   if (!p) notFound();
 
   const query = await searchParams;
-  const selection = resolveSelection(p, query.variant, query.quantity);
+  const customizationDefinition =
+    await getPublishedCustomizationDefinition(p);
+  const customizationProduct = {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    categoryId: p.categoryId,
+    variants: p.variants,
+    pricingMode: p.pricingMode,
+    effectivePriceMinor: p.effectivePriceMinor,
+    priceMinor: p.priceMinor,
+    ...(customizationDefinition ? { customizationDefinition } : {}),
+  };
+  const selection = resolveSelection(
+    customizationProduct,
+    query.variant,
+    query.quantity,
+  );
   const t = copy[lang];
   const prefix = "/" + lang;
-  const {
-    id,
-    slug,
-    name,
-    categoryId,
-    variants,
-    pricingMode,
-    effectivePriceMinor,
-    priceMinor,
-  } = p;
 
   return (
     <main id="main-content" className="container customize-page" lang={lang}>
@@ -74,16 +82,7 @@ export default async function LocalizedCustomizePage({
         }}
         key={`${p.id}-${selection.variantId}-${selection.quantity}`}
         initialSelection={selection}
-        product={{
-          id,
-          slug,
-          name,
-          categoryId,
-          variants,
-          pricingMode,
-          effectivePriceMinor,
-          priceMinor,
-        }}
+        product={customizationProduct}
         onlineSubmission={submissionEnabled()}
       />
     </main>
