@@ -27,13 +27,13 @@ export function validateRefinementStrokes(
       !Array.isArray(stroke.points) ||
       stroke.points.length < 1 ||
       stroke.points.length > 4000 ||
-      stroke.points.some((point) => !bounded(point.x) || !bounded(point.y))
+      stroke.points.some((point: RefinementPoint) => !bounded(point.x) || !bounded(point.y))
     )
       throw new Error("Invalid cutout refinement stroke.");
     return {
       mode: stroke.mode,
       radius: stroke.radius,
-      points: stroke.points.map((point) => ({ x: point.x, y: point.y })),
+      points: stroke.points.map((point: RefinementPoint) => ({ x: point.x, y: point.y })),
     };
   });
 }
