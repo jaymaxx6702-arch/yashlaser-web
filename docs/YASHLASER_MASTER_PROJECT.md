@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 2.2 |
+| Master File Version | 2.3 |
 | Last Updated | 29 September 2026 |
 | Current Active Task | **YL-071 Product mapping maintenance admin UI** |
-| Overall State | PR #26 is live on production main `38292e7032be93e9bc8dc27747813f5b56ee90f6`; PR #27 YL-070 deterministic fault harness is CI-green and pending production merge approval |
+| Overall State | PR #27 is live on production main `048cfe0edc63a244ef8438cf0773842d38e8a322`; YL-071 mapping maintenance backend + Website admin UI are CI-green in YashFlow PR #5 and Website PR #28, pending ordered production merge/deploy |
 
 ---
 
@@ -208,15 +208,15 @@ Known completed foundation:
 | Status | Count |
 |---|---:|
 | Completed | 58 |
-| In Progress | 9 |
+| In Progress | 10 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 42 |
+| Pending | 41 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
 
-- Master checklist dashboard મુજબ કુલ **65 open tasks** છે: 9 In Progress + 10 Ready to Enable + 42 Pending + 4 Blocked.
+- Master checklist dashboard મુજબ કુલ **65 open tasks** છે: 10 In Progress + 10 Ready to Enable + 41 Pending + 4 Blocked.
 - તેમાં હાલ open **YL-069, YL-071 અને YL-073** જેવા 3 YashFlow-specific/non-direct-Shop tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **62 direct website tasks open** છે.
 - આ 62માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **58 actionable website tasks** આગળ લઈ શકાય.
 - Ready to Enable tasks YL-083/YL-084 code + DB ready છે; Vercel production flags ON કર્યા પછી live verification બાકી છે.
@@ -402,7 +402,7 @@ Known completed foundation:
 - [x] **YL-068** Unsupported product mapping/process final કરવો. — Active mapping માટે active workflow stage ફરજિયાત માન્યો; Wooden Memento (27), Name Plate (7) અને Key-Chain (3)ના workflow-less mappings quarantine/inactive કર્યા, જેથી unsafe routing ન થાય.
 - [ ] **YL-069** Stable launch પછી optional background automatic sync design કરવું.
 - [x] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling verify કરવું. — Production-safe deterministic harness missing-mapping 409, timeout, duplicate replay (`existing:true`) અને partial multi-item response rejection cover કરે છે; exact one-ref-per-item validation added. YashFlow DB unique `shop_order_item_id` constraint અને 313 route-ready / 37 quarantined mapping audit સાથે verified.
-- [ ] **YL-071** Product mapping maintenance માટે admin UI બનાવવી.
+- [ ] [IN PROGRESS] **YL-071** Product mapping maintenance માટે admin UI બનાવવી. — YashFlow shared-secret mapping GET/PATCH API અને Website Admin search/filter/editor implemented; activation server-side workflow readiness વગર reject થાય છે, quarantined mappings reversible રહે છે, admin audit logging enabled. YashFlow PR #5 + Website PR #28 બંને CI-green; production ordered deploy + live admin verification બાકી છે.
 - [x] **YL-072** Website orderને structured YashFlow orderમાં મોકલવાની foundation complete કરવી.
 - [ ] **YL-073** Shop status, proof, production અને dispatch status sync edge cases verify કરવી.
 - [x] **YL-074** Sync audit log, failed queue, retry report અને admin alerts complete કરવું. — Integration events, failed-order queue, retry control, attempt report અને admin attention banner implemented.
@@ -543,6 +543,17 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 ---
 
 ## 13. Change Log
+
+### Version 2.3 - 29 September 2026
+
+- YL-071 માટે secure Shop → YashFlow Product Mapping Maintenance implementation તૈયાર કર્યું.
+- YashFlow PR #5માં shared-secret protected GET/PATCH mapping API ઉમેર્યું; active mapping માત્ર active product + active workflow stage હોય ત્યારે જ allow થાય છે.
+- Website PR #28માં Admin Integrations screen પર mapped/quarantined/unmapped metrics, search, status filters, target selector, activate/quarantine control અને audit logging ઉમેર્યા.
+- Browserને YashFlow secret અથવા direct YashFlow Supabase access આપવામાં આવતું નથી; Website server-only proxy same integration secret વાપરે છે.
+- Website security regression અનુસાર mapping mutation bounded JSON reader પર ફેરવ્યું; Shop CI green.
+- YashFlow quality gateમાં legacy ESLint baseline વધાર્યા વગર old `web-push-server.ts` explicit-any debt fix કર્યું; TypeScript, critical checks, SQL sanity, production build, runtime smoke અને ESLint all green.
+- YL-071 હજી IN PROGRESS છે: પહેલા YashFlow PR #5 backend productionમાં merge/deploy, પછી Website PR #28 deploy અને live Admin UI verification કરવાનું છે.
+
 
 ### Version 2.2 - 29 September 2026
 
