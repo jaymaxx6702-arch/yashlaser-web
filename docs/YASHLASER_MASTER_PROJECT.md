@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 2.3 |
+| Master File Version | 2.4 |
 | Last Updated | 29 September 2026 |
-| Current Active Task | **YL-071 Product mapping maintenance admin UI** |
-| Overall State | PR #27 is live on production main `048cfe0edc63a244ef8438cf0773842d38e8a322`; YL-071 mapping maintenance backend + Website admin UI are CI-green in YashFlow PR #5 and Website PR #28, pending ordered production merge/deploy |
+| Current Active Task | **YL-075 Terms & Conditions business review/publish** |
+| Overall State | Website PR #28 is live on production main `d9eb43f778a16a0aa690549963d97a5c4e911855`; website open PR count is zero. YL-071 Website admin UI is deployed, while its YashFlow mapping API dependency is intentionally deferred and YashFlow changes remain untouched. |
 
 ---
 
@@ -208,9 +208,9 @@ Known completed foundation:
 | Status | Count |
 |---|---:|
 | Completed | 58 |
-| In Progress | 10 |
+| In Progress | 9 |
 | Ready to Enable | 10 |
-| Blocked | 4 |
+| Blocked | 5 |
 | Pending | 41 |
 | **Total** | **123** |
 
@@ -402,7 +402,7 @@ Known completed foundation:
 - [x] **YL-068** Unsupported product mapping/process final કરવો. — Active mapping માટે active workflow stage ફરજિયાત માન્યો; Wooden Memento (27), Name Plate (7) અને Key-Chain (3)ના workflow-less mappings quarantine/inactive કર્યા, જેથી unsafe routing ન થાય.
 - [ ] **YL-069** Stable launch પછી optional background automatic sync design કરવું.
 - [x] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling verify કરવું. — Production-safe deterministic harness missing-mapping 409, timeout, duplicate replay (`existing:true`) અને partial multi-item response rejection cover કરે છે; exact one-ref-per-item validation added. YashFlow DB unique `shop_order_item_id` constraint અને 313 route-ready / 37 quarantined mapping audit સાથે verified.
-- [ ] [IN PROGRESS] **YL-071** Product mapping maintenance માટે admin UI બનાવવી. — YashFlow shared-secret mapping GET/PATCH API અને Website Admin search/filter/editor implemented; activation server-side workflow readiness વગર reject થાય છે, quarantined mappings reversible રહે છે, admin audit logging enabled. YashFlow PR #5 + Website PR #28 બંને CI-green; production ordered deploy + live admin verification બાકી છે.
+- [ ] [BLOCKED] **YL-071** Product mapping maintenance માટે admin UI બનાવવી. — Website Admin search/filter/editor, audit proxy અને safe activate/quarantine UI productionમાં live છે. પરંતુ mapping mutations માટે જરૂરી YashFlow shared-secret mapping API user instruction પ્રમાણે defer છે; YashFlow changes untouched રાખવાના હોવાથી full mapping maintenance enable કરેલું નથી.
 - [x] **YL-072** Website orderને structured YashFlow orderમાં મોકલવાની foundation complete કરવી.
 - [ ] **YL-073** Shop status, proof, production અને dispatch status sync edge cases verify કરવી.
 - [x] **YL-074** Sync audit log, failed queue, retry report અને admin alerts complete કરવું. — Integration events, failed-order queue, retry control, attempt report અને admin attention banner implemented.
@@ -543,6 +543,16 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 ---
 
 ## 13. Change Log
+
+### Version 2.4 - 29 September 2026
+
+- Website PR #28 productionમાં merge/deploy થયું; production main SHA `d9eb43f778a16a0aa690549963d97a5c4e911855`, Vercel READY અને `shop.yashlaser.in` alias attached verify થયા.
+- Homepage, `/api/health` અને Admin Integrations route live smoke 200 OK; છેલ્લા 1 કલાકના runtime error scanમાં errors મળ્યા નથી.
+- Website repository audit મુજબ કોઈ open PR બાકી નથી. જૂની diverged branches newer merged PRsથી superseded/reconciled છે; regression ટાળવા stale branches ફરી merge કરાઈ નથી.
+- User instruction મુજબ YashFlow changes untouched રાખ્યા. YL-071 Website-side UI live છે, પરંતુ YashFlow mapping API dependency intentionally deferred હોવાથી task BLOCKED ગણાય છે.
+- Dashboard status YL-071 માટે In Progressમાંથી Blockedમાં ખસેડ્યો; total open task count બદલાતો નથી.
+- Current Active Task website-only YL-075 પર ખસેડ્યો.
+
 
 ### Version 2.3 - 29 September 2026
 
