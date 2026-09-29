@@ -1,6 +1,7 @@
 import "server-only";
 import { getSupabase } from "@/lib/supabase";
 import { safeIntegrationError } from "@/lib/integration-errors";
+import { postYashFlowOrder } from "@/lib/yashflow-transport";
 
 export const yashFlowSyncEnabled = () =>
   process.env.YASHFLOW_SYNC_ENABLED === "true" &&
@@ -9,13 +10,6 @@ export const yashFlowSyncEnabled = () =>
 
 function baseUrl() {
   return (process.env.YASHFLOW_API_URL || "").replace(/\/$/, "");
-}
-
-function authHeaders() {
-  return {
-    "content-type": "application/json",
-    authorization: `Bearer ${process.env.YASHFLOW_API_SECRET || ""}`,
-  };
 }
 
 export async function syncShopOrderToYashFlow(orderId: string) {
@@ -73,53 +67,13 @@ export async function syncShopOrderToYashFlow(orderId: string) {
   };
 
   try {
-    const response = await fetch(`${baseUrl()}/api/integrations/shop/orders`, {
-      method: "POST",
-      headers: {
-        ...authHeaders(),
-        "idempotency-key": "shop-order:" + order.id,
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(25000),
+    const result = await postYashFlowOrder({
+      url: baseUrl(),
+      secret: process.env.YASHFLOW_API_SECRET || "",
+      orderId: order.id,
+      payload,
+      timeoutMs: 25000,
     });
-    const contentType = response.headers.get("content-type") || "";
-    const raw = await response.text();
-    let result: Record<string, unknown> = {};
-    if (contentType.includes("application/json")) {
-      try {
-        result = JSON.parse(raw) as Record<string, unknown>;
-      } catch {
-        throw new Error(`YashFlow returned invalid JSON (${response.status}).`);
-      }
-    } else {
-      const preview = raw.replace(/\s+/g, " ").slice(0, 180);
-      throw new Error(
-        `YashFlow API returned non-JSON (${response.status}, ${contentType || "unknown content-type"}) from ${baseUrl()}. ${preview}`,
-      );
-    }
-    if (!response.ok)
-      throw new Error(
-        typeof result.error === "string"
-          ? result.error
-          : `YashFlow sync failed (${response.status}).`,
-      );
-
-    const remoteErrors = Array.isArray(result.errors)
-      ? result.errors
-          .map((value) =>
-            typeof value === "string"
-              ? value
-              : value && typeof value === "object" && "error" in value
-                ? String((value as { error?: unknown }).error || "")
-                : "",
-          )
-          .filter(Boolean)
-      : [];
-    if (remoteErrors.length)
-      throw new Error(
-        "YashFlow reported a partial sync failure: " +
-          remoteErrors.slice(0, 5).join("; "),
-      );
 
     const refs = Array.isArray(result.orders) ? result.orders : [];
     await db
