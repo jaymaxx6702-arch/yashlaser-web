@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 1.9 |
-| Last Updated | 28 September 2026 |
-| Current Active Task | **Fastmode quality batch — YL-088 performance + YL-089 accessibility + YL-091 private isolation** |
-| Overall State | main commit b10e09c0f4966fe33b6ad29df6504b5428aaa6e2 productionમાં live; launch/security hardening deployed; fastmode-quality-batch પર accessibility, isolation અને performance verification ચાલુ |
+| Master File Version | 2.0 |
+| Last Updated | 29 September 2026 |
+| Current Active Task | **YL-070 live YashFlow failure-mode verification + reconciled operations batch CI** |
+| Overall State | current main preserved; operations batch rebuilt from current main on fastmode-ops-batch-v2-20260929; production merge/deploy pending full Shop CI and explicit live-push approval |
 
 ---
 
@@ -207,18 +207,18 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 53 |
-| In Progress | 9 |
+| Completed | 56 |
+| In Progress | 10 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
-| Pending | 47 |
+| Pending | 43 |
 | **Total** | **123** |
 
 ### Reconciled open-work count — 28 September 2026
 
-- Master checklistમાં કુલ **82 open tasks** છે: 11 In Progress + 2 Ready to Enable + 65 Pending + 4 Blocked.
-- તેમાં **YL-052 (Yash ID)** અને **YL-068 to YL-071, YL-073 to YL-074 (YashFlow-specific)** જેવા 7 non-direct-Shop open tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **75 direct website tasks open** છે.
-- આ 75માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **71 actionable website tasks** આગળ લઈ શકાય.
+- Master checklist dashboard મુજબ કુલ **67 open tasks** છે: 10 In Progress + 10 Ready to Enable + 43 Pending + 4 Blocked.
+- તેમાં હાલ open **YL-068 to YL-071 અને YL-073** જેવા 5 YashFlow-specific/non-direct-Shop tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **62 direct website tasks open** છે.
+- આ 62માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **58 actionable website tasks** આગળ લઈ શકાય.
 - Ready to Enable tasks YL-083/YL-084 code + DB ready છે; Vercel production flags ON કર્યા પછી live verification બાકી છે.
 - YL-101 to YL-123 અગાઉની website planning/chatમાં ચર્ચાયેલા પણ 100-task masterમાં explicit ન રહેલા useful features ઉમેરે છે.
 - આ count conservative છે: code foundation થયેલા પરંતુ production flag/business approval/full browser QA વગરના tasks Done mark કર્યા નથી.
@@ -340,7 +340,7 @@ Known completed foundation:
 - [ ] **YL-019** Duplicate product/use-case/language listings merge અથવા archive કરવી.
 - [ ] **YL-020** Strong legacy Gujarati artworkને template collectionમાં migrate કરવું.
 - [ ] **YL-021** 20 જેટલા unsupported products માટે production workflow define કરવો.
-- [ ] **YL-022** Unsupported productsને workflow ready થાય ત્યાં સુધી auto-route ન થાય તે verify કરવું.
+- [x] **YL-022** Unsupported productsને workflow ready થાય ત્યાં સુધી auto-route ન થાય તે verify કરવું. — Checkoutમાં automatic YashFlow sync path નથી; handoff admin-triggered છે અને regression testથી lock છે.
 - [ ] **YL-023** Three seed productsનું complete end-to-end data validate કરવું.
 - [ ] **YL-024** Admin Product Creation Wizardથી developer વગર product publish test કરવું.
 - [x] **YL-025** CSV/Excel-first catalogue import/export અને data validation report તૈયાર કરવી; fallback safe read-only migration રાખવી. — Excel/Sheets-compatible CSV export, server validation, downloadable report, unchanged detection, draft-only import and read-only static-catalogue fallback completed.
@@ -401,11 +401,11 @@ Known completed foundation:
 - [x] **YL-067** 350 active Shop productsનું YashFlow mapping configure કરવું.
 - [ ] **YL-068** Unsupported product mapping/process final કરવો.
 - [ ] **YL-069** Stable launch પછી optional background automatic sync design કરવું.
-- [ ] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling test કરવું.
+- [ ] [IN PROGRESS] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling test કરવું. — Manual failed-state, 25s timeout, stable Shop-order idempotency key, increasing attempt count અને partial-success rejection implemented; live YashFlow fault-injection verification બાકી છે.
 - [ ] **YL-071** Product mapping maintenance માટે admin UI બનાવવી.
 - [x] **YL-072** Website orderને structured YashFlow orderમાં મોકલવાની foundation complete કરવી.
 - [ ] **YL-073** Shop status, proof, production અને dispatch status sync edge cases verify કરવી.
-- [ ] **YL-074** Sync audit log, failed queue, retry report અને admin alerts complete કરવું.
+- [x] **YL-074** Sync audit log, failed queue, retry report અને admin alerts complete કરવું. — Integration events, failed-order queue, retry control, attempt report અને admin attention banner implemented.
 
 ### G. Reviews, Support, Trust and Legal - YL-075 to YL-082
 
@@ -439,7 +439,7 @@ Known completed foundation:
 - [ ] **YL-096** Controlled seed real orderથી payment વગર/manual-confirmation launch flow verify કરવો.
 - [ ] **YL-097** First 10 real orders owner/admin દ્વારા manually review કરવા.
 - [ ] **YL-098** First 30 days માટે errors, conversion, search, order, sync અને support monitoring ચલાવવું.
-- [ ] **YL-099** Final launch runbook, rollback, support ownership અને issue-priority matrix freeze કરવી.
+- [x] **YL-099** Final launch runbook, rollback, support ownership અને issue-priority matrix freeze કરવી. — Release gates, rollback, P0–P3 priority, incident handling અને support/technical/production ownership docs/RELEASE_RUNBOOK.mdમાં frozen છે.
 - [ ] **YL-100** Soft launch પછી blockers fix કરીને public launch approve કરવો.
 
 ### J. AI Photo and Intelligent Customisation - YL-101 to YL-109
@@ -543,6 +543,16 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 ---
 
 ## 13. Change Log
+
+### Version 2.0 - 29 September 2026
+
+- Stale/diverged PR #24ને production mainમાં merge કરવાને બદલે current main પરથી clean branch `fastmode-ops-batch-v2-20260929` બનાવવામાં આવી.
+- YashFlow retry safety માટે stable Shop-order idempotency key, increasing attempt count, 25-second timeout અને partial-success rejection reconcile કરાયા.
+- Admin Integrations screenમાં failed-sync queue, recent sync attempts, retry control અને admin attention banner ઉમેરાયા.
+- Checkout auto-routing regression lock સાથે YL-022 verified complete; YL-074 operations visibility/retry tooling અને YL-099 release/incident ownership runbook completed.
+- YL-070 હજી IN PROGRESS છે: live YashFlow missing-mapping/downtime/duplicate/partial-failure fault-injection verification બાકી છે.
+- Production main/live deploy આ branch preparationથી બદલાયા નથી; full Shop CI અને explicit live-push approval પહેલાં merge નહીં કરવો.
+
 
 ### Version 1.8 - 26 September 2026
 
