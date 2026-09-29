@@ -2,6 +2,9 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
 import { YashFlowSyncButton } from "@/components/YashFlowSyncButton";
+import { YashFlowMappingManager } from "@/components/admin/YashFlowMappingManager";
+import { products } from "@/data/catalog";
+import { getYashFlowMappings } from "@/lib/yashflow-mappings";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +12,11 @@ export default async function AdminIntegrationsPage() {
   await requireAdmin();
   const db = getSupabase();
 
-  const [{ data: failedOrders, error: failedError }, { data: events, error: eventError }] =
-    await Promise.all([
+  const [
+    { data: failedOrders, error: failedError },
+    { data: events, error: eventError },
+    mappingResult,
+  ] = await Promise.all([
       db
         .from("shop_orders")
         .select(
@@ -25,6 +31,15 @@ export default async function AdminIntegrationsPage() {
         .eq("kind", "yashflow_order_sync")
         .order("created_at", { ascending: false })
         .limit(200),
+      getYashFlowMappings()
+        .then((snapshot) => ({ snapshot, error: null }))
+        .catch((error: unknown) => ({
+          snapshot: null,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unable to load YashFlow product mappings.",
+        })),
     ]);
 
   const successCount = (events || []).filter(
@@ -65,6 +80,24 @@ export default async function AdminIntegrationsPage() {
           </article>
         </div>
       </section>
+
+      {mappingResult.snapshot ? (
+        <YashFlowMappingManager
+          shopProducts={products.map((product) => ({
+            id: product.id,
+            name: product.name,
+            categoryId: product.categoryId,
+          }))}
+          snapshot={mappingResult.snapshot}
+        />
+      ) : (
+        <section className="admin-card">
+          <h2>Product mapping maintenance</h2>
+          <p role="alert">
+            Mapping service unavailable: {mappingResult.error}
+          </p>
+        </section>
+      )}
 
       <section className="admin-card">
         <h2>Failed sync queue</h2>
