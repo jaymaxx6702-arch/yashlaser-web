@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 2.1 |
+| Master File Version | 2.2 |
 | Last Updated | 29 September 2026 |
-| Current Active Task | **YL-070 live YashFlow failure-mode verification + reconciled operations batch CI** |
-| Overall State | PR #25 is merged and live on production main `3a002241c4621635f4e84bf2da87fffddf9ea27b`; YL-070 hardening continues on branch `web29-yl070-hardening` |
+| Current Active Task | **YL-071 Product mapping maintenance admin UI** |
+| Overall State | PR #26 is live on production main `38292e7032be93e9bc8dc27747813f5b56ee90f6`; PR #27 YL-070 deterministic fault harness is CI-green and pending production merge approval |
 
 ---
 
@@ -207,8 +207,8 @@ Known completed foundation:
 
 | Status | Count |
 |---|---:|
-| Completed | 57 |
-| In Progress | 10 |
+| Completed | 58 |
+| In Progress | 9 |
 | Ready to Enable | 10 |
 | Blocked | 4 |
 | Pending | 42 |
@@ -216,8 +216,8 @@ Known completed foundation:
 
 ### Reconciled open-work count — 28 September 2026
 
-- Master checklist dashboard મુજબ કુલ **66 open tasks** છે: 10 In Progress + 10 Ready to Enable + 42 Pending + 4 Blocked.
-- તેમાં હાલ open **YL-069 to YL-071 અને YL-073** જેવા 4 YashFlow-specific/non-direct-Shop tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **62 direct website tasks open** છે.
+- Master checklist dashboard મુજબ કુલ **65 open tasks** છે: 9 In Progress + 10 Ready to Enable + 42 Pending + 4 Blocked.
+- તેમાં હાલ open **YL-069, YL-071 અને YL-073** જેવા 3 YashFlow-specific/non-direct-Shop tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **62 direct website tasks open** છે.
 - આ 62માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **58 actionable website tasks** આગળ લઈ શકાય.
 - Ready to Enable tasks YL-083/YL-084 code + DB ready છે; Vercel production flags ON કર્યા પછી live verification બાકી છે.
 - YL-101 to YL-123 અગાઉની website planning/chatમાં ચર્ચાયેલા પણ 100-task masterમાં explicit ન રહેલા useful features ઉમેરે છે.
@@ -401,7 +401,7 @@ Known completed foundation:
 - [x] **YL-067** Shop-to-YashFlow mapping foundation configure કરવી. — 350 mapping records audited; 313 active route-ready અને 37 unsafe/workflow-less mappings inactive quarantineમાં છે.
 - [x] **YL-068** Unsupported product mapping/process final કરવો. — Active mapping માટે active workflow stage ફરજિયાત માન્યો; Wooden Memento (27), Name Plate (7) અને Key-Chain (3)ના workflow-less mappings quarantine/inactive કર્યા, જેથી unsafe routing ન થાય.
 - [ ] **YL-069** Stable launch પછી optional background automatic sync design કરવું.
-- [ ] [IN PROGRESS] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling test કરવું. — 25s timeout, stable Shop-order idempotency key, increasing attempt count, failed queue, partial-success rejection અને YashFlow-side unique `shop_order_item_id` guard verified. Live mapping audit quarantined 37 route-unsafe mappings; endpoint availability verified. Active authenticated POST fault-injection for downtime/duplicate/partial cases remains.
+- [x] **YL-070** Missing mapping, downtime, duplicate retry અને partial failure handling verify કરવું. — Production-safe deterministic harness missing-mapping 409, timeout, duplicate replay (`existing:true`) અને partial multi-item response rejection cover કરે છે; exact one-ref-per-item validation added. YashFlow DB unique `shop_order_item_id` constraint અને 313 route-ready / 37 quarantined mapping audit સાથે verified.
 - [ ] **YL-071** Product mapping maintenance માટે admin UI બનાવવી.
 - [x] **YL-072** Website orderને structured YashFlow orderમાં મોકલવાની foundation complete કરવી.
 - [ ] **YL-073** Shop status, proof, production અને dispatch status sync edge cases verify કરવી.
@@ -544,6 +544,16 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 2.2 - 29 September 2026
+
+- YL-070 માટે production secrets expose કર્યા વગર deterministic fault-mode harness ઉમેર્યો.
+- Missing mapping 409, timeout normalization, duplicate replay with `existing:true`, અને partial multi-item success rejection automated testsમાં cover થયા.
+- Sync success હવે requested દરેક Shop item માટે exactly one unique YashFlow order reference મળ્યા પછી જ mark થાય છે; missing, duplicate અથવા unexpected refs partial failure ગણાય છે.
+- YashFlow DBમાં `website_order_imports.shop_order_item_id` unique constraint અને mapping audit (313 active route-ready, 37 quarantined) અગાઉ verify થયેલ evidence સાથે YL-070 complete mark કર્યું.
+- Full Shop CI: lint, production build, offline verification, production-server boot અને route/API smoke all green.
+- Current Active Task YL-071 set કર્યો: Product mapping maintenance admin UI.
+
+
 ### Version 2.1 - 29 September 2026
 
 - PR #25 productionમાં merge/deploy થયું; production main SHA `3a002241c4621635f4e84bf2da87fffddf9ea27b`, Vercel READY અને `shop.yashlaser.in` alias attached verify થયા.
@@ -676,7 +686,7 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 - Payments: OFF રાખવા.
 - Analytics: હજી enable/test કરવાનું બાકી.
 - YashFlow: manual Sync / Retry current safe method.
-- Current known mapping: 350 mapping records; 313 active route-ready, 37 workflow-less quarantine/inactive; unsupported products auto-route ન કરવા.
+- Current known mapping: 350 mapping records; 313 active route-ready, 37 workflow-less quarantine/inactive; unsupported products auto-route ન કરવા. YL-070 fault harness CI-green.
 - Current scope: Websiteના બાકી બધા કામ પૂર્ણ કરવા; YashFlow appના changes અત્યારે નહીં.
 
 ---
