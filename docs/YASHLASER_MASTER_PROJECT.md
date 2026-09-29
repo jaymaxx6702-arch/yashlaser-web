@@ -13,7 +13,7 @@
 | Master File Version | 2.0 |
 | Last Updated | 29 September 2026 |
 | Current Active Task | **YL-070 live YashFlow failure-mode verification + reconciled operations batch CI** |
-| Overall State | current main preserved; operations batch rebuilt from current main on fastmode-ops-batch-v2-20260929; production merge/deploy pending full Shop CI and explicit live-push approval |
+| Overall State | current main preserved; PR #25 Shop CI and Vercel preview verified green; production merge/deploy pending explicit live-push approval |
 
 ---
 
@@ -551,7 +551,7 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 - Admin Integrations screenમાં failed-sync queue, recent sync attempts, retry control અને admin attention banner ઉમેરાયા.
 - Checkout auto-routing regression lock સાથે YL-022 verified complete; YL-074 operations visibility/retry tooling અને YL-099 release/incident ownership runbook completed.
 - YL-070 હજી IN PROGRESS છે: live YashFlow missing-mapping/downtime/duplicate/partial-failure fault-injection verification બાકી છે.
-- Production main/live deploy આ branch preparationથી બદલાયા નથી; full Shop CI અને explicit live-push approval પહેલાં merge નહીં કરવો.
+- PR #25 Shop CI (lint, production build, offline verification, production-server boot, route/API smoke) અને Vercel preview green verify થયા; production main/live deploy explicit live-push approval પહેલાં merge નહીં કરવો.
 
 
 ### Version 1.8 - 26 September 2026
