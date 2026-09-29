@@ -22,8 +22,8 @@ test("YashFlow retries are idempotent and failures remain visible", () => {
   assert.match(source, /yashflow_sync_status: "failed"/);
   assert.match(source, /shop_integration_events/);
   assert.match(source, /partial sync failure/);
-  assert.match(source, /AbortSignal\\.timeout\\(25000\\)/);
-  assert.match(source, /throw new Error\\(message\\)/);
+  assert.match(source, /AbortSignal\.timeout\(25000\)/);
+  assert.match(source, /throw new Error\(message\)/);
 });
 
 test("integration errors redact secret-like values before logging or returning", () => {
