@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { safeIntegrationError } from "../lib/integration-errors";
 
 test("Shop checkout never auto-routes unsupported products to YashFlow", () => {
   const checkout = fs.readFileSync("app/api/checkout/route.ts", "utf8");
@@ -22,6 +23,20 @@ test("YashFlow retries are idempotent and failures remain visible", () => {
   assert.match(source, /shop_integration_events/);
   assert.match(source, /partial sync failure/);
   assert.match(source, /AbortSignal\.timeout\(25000\)/);
+  assert.match(source, /throw new Error\(message\)/);
+});
+
+test("integration errors redact secret-like values before logging or returning", () => {
+  const secret = ["sb_secret_example", "continued"].join("\n");
+  const bearer = "Bearer abcdefghijklmnopqrstuvwxyz012345";
+  const jwt = "eyJabcdefghijklmnopqrstuvwxyz0123456789";
+  const result = safeIntegrationError(
+    new Error(`request failed ${secret} ${bearer} ${jwt}`),
+  );
+  assert.doesNotMatch(result, /continued/);
+  assert.doesNotMatch(result, /abcdefghijklmnopqrstuvwxyz012345/);
+  assert.match(result, /sb_secret_\[redacted\]/);
+  assert.match(result, /Bearer \[redacted\]/);
 });
 
 test("admin exposes failed sync queue, retry report and attention alert", () => {
