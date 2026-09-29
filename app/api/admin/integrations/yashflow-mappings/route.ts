@@ -3,7 +3,14 @@ import { NextResponse } from "next/server";
 import { adminUser } from "@/lib/admin";
 import { recordAdminAudit } from "@/lib/admin-audit";
 import { safeIntegrationError } from "@/lib/integration-errors";
+import { RequestBodyError, readJsonBody } from "@/lib/request-security";
 import { updateYashFlowMapping } from "@/lib/yashflow-mappings";
+
+type MappingUpdateBody = {
+  shopProductId?: unknown;
+  yashflowProductId?: unknown;
+  isActive?: unknown;
+};
 
 export async function PATCH(request: Request) {
   const user = await adminUser();
@@ -14,7 +21,16 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const body = await request.json().catch(() => null);
+  let body: MappingUpdateBody | null;
+  try {
+    body = await readJsonBody<MappingUpdateBody>(request, 8 * 1024);
+  } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid request." },
+      { status },
+    );
+  }
   const shopProductId =
     typeof body?.shopProductId === "string"
       ? body.shopProductId.trim().slice(0, 160)
