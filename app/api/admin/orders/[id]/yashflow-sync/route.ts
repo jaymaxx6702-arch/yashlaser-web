@@ -2,14 +2,8 @@ import { NextResponse } from "next/server";
 import { adminUser } from "@/lib/admin";
 import { syncShopOrderToYashFlow } from "@/lib/yashflow";
 import { recordAdminAudit } from "@/lib/admin-audit";
+import { safeIntegrationError } from "@/lib/integration-errors";
 
-
-function safeMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : "YashFlow sync failed.";
-  return message
-    .replace(/sb_secret_[A-Za-z0-9._-]+/g, "sb_secret_[redacted]")
-    .replace(/eyJ[A-Za-z0-9._-]{20,}/g, "[redacted token]");
-}
 
 export async function POST(
   _request: Request,
@@ -32,7 +26,7 @@ export async function POST(
     });
     return NextResponse.json(result);
   } catch (error) {
-    const message = safeMessage(error);
+    const message = safeIntegrationError(error);
     await recordAdminAudit({
       adminUserId: user.id,
       action: "yashflow.sync_failed",
