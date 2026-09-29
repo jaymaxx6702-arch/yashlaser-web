@@ -1,5 +1,6 @@
 import "server-only";
 import { getSupabase } from "@/lib/supabase";
+import { safeIntegrationError } from "@/lib/integration-errors";
 
 export const yashFlowSyncEnabled = () =>
   process.env.YASHFLOW_SYNC_ENABLED === "true" &&
@@ -8,12 +9,6 @@ export const yashFlowSyncEnabled = () =>
 
 function baseUrl() {
   return (process.env.YASHFLOW_API_URL || "").replace(/\/$/, "");
-}
-
-function safeIntegrationError(message: string) {
-  return message
-    .replace(/sb_secret_[A-Za-z0-9._\-\s]+/g, "sb_secret_[redacted]")
-    .replace(/eyJ[A-Za-z0-9._\-]{20,}/g, "[redacted token]");
 }
 
 function authHeaders() {
@@ -145,8 +140,7 @@ export async function syncShopOrderToYashFlow(orderId: string) {
     });
     return { ...result, syncAttempt: attempt };
   } catch (error) {
-    const rawMessage = error instanceof Error ? error.message : "YashFlow sync failed.";
-    const message = safeIntegrationError(rawMessage);
+    const message = safeIntegrationError(error);
     await db
       .from("shop_orders")
       .update({
@@ -161,7 +155,7 @@ export async function syncShopOrderToYashFlow(orderId: string) {
       error: message.slice(0, 2000),
       attempts: attempt,
     });
-    throw error;
+    throw new Error(message);
   }
 }
 
