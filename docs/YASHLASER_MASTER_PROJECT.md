@@ -10,10 +10,10 @@
 | Internal Operations | YashFlow |
 | Future Bulk ID Portal | `id.yashlaser.in` અથવા final approved subdomain |
 | Technology | Next.js + Supabase + Vercel |
-| Master File Version | 2.4 |
+| Master File Version | 2.5 |
 | Last Updated | 29 September 2026 |
 | Current Active Task | **YL-075 Terms & Conditions business review/publish** |
-| Overall State | Website PR #28 is live on production main `d9eb43f778a16a0aa690549963d97a5c4e911855`; website open PR count is zero. YL-071 Website admin UI is deployed, while its YashFlow mapping API dependency is intentionally deferred and YashFlow changes remain untouched. |
+| Overall State | Website feature/status reconciliation through PR #29 is live; verified production baseline `f7f4bf1607592fc7cce796308e42bff9234a9937` is READY on Vercel and `shop.yashlaser.in` responds 200. Website backlog is fully reconciled in this checklist; YashFlow changes remain intentionally untouched. |
 
 ---
 
@@ -199,7 +199,7 @@ Known completed foundation:
 - English, Gujarati, Hindi અને Marathi localisation code push થયું છે.
 - Stage 19 multilingual/product-detail/security hardening `main`માં merge થઈ ગયું છે; merge commit `95bf0d708f416a845f660cfd7c07fa30fdce3e45` માટે GitHub main CI અને Vercel production deployment બંને `success` verified છે.
 
-> **Verification note:** 22 September 2026 reconciliationમાં latest `main` source, successful production CI/deploy અને route/API smoke verification ફરી ચકાસવામાં આવ્યા.
+> **Verification note:** 29 September 2026 સુધી latest website `main`, production Vercel READY state, `shop.yashlaser.in` homepage અને `/api/health` 200 responses, zero recent runtime errors અને zero open website PRs verify કરવામાં આવ્યા. YashFlow repository changes intentionally excluded છે.
 
 ---
 
@@ -214,9 +214,9 @@ Known completed foundation:
 | Pending | 41 |
 | **Total** | **123** |
 
-### Reconciled open-work count — 28 September 2026
+### Reconciled open-work count — 29 September 2026
 
-- Master checklist dashboard મુજબ કુલ **65 open tasks** છે: 10 In Progress + 10 Ready to Enable + 41 Pending + 4 Blocked.
+- Master checklist dashboard મુજબ કુલ **65 open tasks** છે: 9 In Progress + 10 Ready to Enable + 41 Pending + 5 Blocked.
 - તેમાં હાલ open **YL-069, YL-071 અને YL-073** જેવા 3 YashFlow-specific/non-direct-Shop tasks અલગ ગણીએ તો `shop.yashlaser.in` માટે **62 direct website tasks open** છે.
 - આ 62માંથી 4 provider/business-input blocked tasks (YL-061 to YL-064) કાઢીએ તો **58 actionable website tasks** આગળ લઈ શકાય.
 - Ready to Enable tasks YL-083/YL-084 code + DB ready છે; Vercel production flags ON કર્યા પછી live verification બાકી છે.
@@ -544,6 +544,17 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ## 13. Change Log
 
+### Version 2.5 - 29 September 2026
+
+- આખું 123-task Master Checklist ફરી audit કરીને current website production state સાથે reconcile કર્યું.
+- Dashboard arithmetic corrected/confirmed: **58 Completed + 9 In Progress + 10 Ready to Enable + 5 Blocked + 41 Pending = 123**; open tasks **65**.
+- Open-work summaryમાં રહેલો જૂનો 10 In Progress / 4 Blocked mismatch સુધારીને 9 In Progress / 5 Blocked કર્યો.
+- Production verification note current કર્યો: website baseline `f7f4bf1607592fc7cce796308e42bff9234a9937`, Vercel READY, homepage + health 200, recent runtime error scan clean.
+- Section 14નો stale Wave-1/PR #7 handoff દૂર કરીને current website-only handoff ઉમેર્યો: Active YL-075, current counts, blockers, ready-to-enable work અને YashFlow pause.
+- Completed અને remaining tasksના existing per-task statuses preserve કર્યા; verify થયા વગર કોઈ pending taskને Done mark કરાયો નથી.
+- YashFlow repository/app changes user instruction પ્રમાણે untouched રાખ્યાં.
+
+
 ### Version 2.4 - 29 September 2026
 
 - Website PR #28 productionમાં merge/deploy થયું; production main SHA `d9eb43f778a16a0aa690549963d97a5c4e911855`, Vercel READY અને `shop.yashlaser.in` alias attached verify થયા.
@@ -700,15 +711,16 @@ Launch stable થયા પછી existing planning પ્રમાણે D2C, B
 
 ### Current handoff
 
-- Active: **YL-110 - Admin Customisation Field/Rule Builder foundation + published-rule storefront loading.**\n- PR #6 Wave 1 foundation productionમાં merged/deployed છે. Current working branch: **`yl-042-dynamic-fields-ui`**, draft PR **#7**.
-- Current Wave: **Wave 1 shared foundation** — YL-023, YL-041/042, YL-046/047, YL-108, YL-110 foundation.
-- Next Wave: **Wave 2 AI Photo Engine** — YL-101 to YL-106, YL-109; YL-107 પછી.
-- Pilot product: **Photo Standee**, પછી વધુ 2 seed products; engine reusable રાખવો.
-- Payments: OFF રાખવા.
-- Analytics: હજી enable/test કરવાનું બાકી.
-- YashFlow: manual Sync / Retry current safe method.
-- Current known mapping: 350 mapping records; 313 active route-ready, 37 workflow-less quarantine/inactive; unsupported products auto-route ન કરવા. YL-070 fault harness CI-green.
-- Current scope: Websiteના બાકી બધા કામ પૂર્ણ કરવા; YashFlow appના changes અત્યારે નહીં.
+- Active website task: **YL-075 — Terms & Conditions business review/publish**.
+- Production website baseline: PR #28 + PR #29 merged; verified live baseline SHA **`f7f4bf1607592fc7cce796308e42bff9234a9937`**, Vercel READY, `shop.yashlaser.in` homepage + `/api/health` 200.
+- Website repository audit: **0 open website PRs** before this checklist-only reconciliation; stale/diverged branches are superseded by newer merged PRs and must not be blindly merged.
+- Checklist dashboard: **58 Completed / 9 In Progress / 10 Ready to Enable / 5 Blocked / 41 Pending = 123**.
+- Open work: **65 tasks**. YL-069/YL-071/YL-073 are YashFlow-specific/non-direct-Shop; direct website open work remains **62**, with **58 actionable** after provider/business blockers YL-061 to YL-064.
+- YL-071 Website-side Mapping Admin UI is live, but full mutation backend remains **BLOCKED/deferred** because YashFlow changes are intentionally paused.
+- Payments remain OFF pending provider/merchant decision. Courier automation remains blocked pending provider/rate decision.
+- Analytics and rate limits have code/DB foundations and remain **READY TO ENABLE** pending production flag rollout + verification.
+- Current website priorities after legal/business review: YL-075→YL-080, then remaining catalogue/customiser/auth/QA/AI tasks according to dependency roadmap.
+- Current scope: **Website only. YashFlow repository/app changes નહીં કરવા.**
 
 ---
 
